@@ -24,7 +24,7 @@
   },
   "contributors": [],
   "scripts": {
-    "dev": "",
+    "dev": "nodemon app.js",
     "test": ""
   },
   "devDependencies": {
