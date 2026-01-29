@@ -1,47 +1,30 @@
-import * as React from "react";
-import { CssBaseline, AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
+import { Routes, Route } from "react-router-dom";
+import { CssBaseline, Box } from "@mui/material";
 
-function App() {
+import Navbar from "./components/Navbar";
+
+import Home from "./pages/Home";
+import CurrentStudent from "./pages/CurrentStudent";
+import NewStudent from "./pages/NewStudent";
+import Admin from "./pages/Admin";
+import NotFound from "./pages/NotFound";
+
+export default function App() {
   return (
     <>
       <CssBaseline />
+      <Navbar />
 
-      {/* Fixed NavBar */}
-      <AppBar position="fixed" sx={{ backgroundColor: "green" }}>
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Running Start Digital
-          </Typography>
-          <Button color="inherit">HOME</Button>
-          <Button color="inherit">CURENT STUDENT</Button>
-          <Button color="inherit">NEW STUDENT</Button>
-          <Button color="inherit">ADMIN</Button>
-        </Toolbar>
-      </AppBar>
-
-      {/* Full-screen content */}
-      <Box
-        sx={{
-          width: "100vw",
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          textAlign: "center",
-          backgroundColor: "#f5f5f5",
-          pt: "64px", 
-        }}
-      >
-        <Typography variant="h3" gutterBottom>
-          Running Start Digital Support Portal
-        </Typography>
-        <Typography variant="h6">
-          Project setup in progress.
-        </Typography>
+      {/* Page content below the fixed navbar */}
+      <Box sx={{ pt: "64px", minHeight: "100vh", backgroundColor: "#f5f5f5" }}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/current-student" element={<CurrentStudent />} />
+          <Route path="/new-student" element={<NewStudent />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </Box>
     </>
   );
 }
-
-export default App;
