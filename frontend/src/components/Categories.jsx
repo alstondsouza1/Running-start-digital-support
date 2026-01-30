@@ -1,13 +1,17 @@
 import { Card, CardContent, Typography, Grid } from "@mui/material";
 
 export default function Categories({ categories, onSelectCategory }) {
+  const handleSelect = (id) => {
+    if (onSelectCategory) onSelectCategory(id);
+  };
+
   return (
     <Grid container spacing={3} sx={{ mt: 1 }}>
       {categories.map((cat) => (
         <Grid item xs={12} sm={6} md={3} key={cat.id}>
           <Card
-            sx={{ cursor: "pointer", height: "100%" }}
-            onClick={() => onSelectCategory(cat.id)}
+            sx={{ cursor: onSelectCategory ? "pointer" : "default", height: "100%" }}
+            onClick={() => handleSelect(cat.id)}
           >
             <CardContent>
               <Typography variant="h6" gutterBottom>
