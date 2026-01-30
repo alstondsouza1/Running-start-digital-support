@@ -17,8 +17,8 @@ export default function Navbar() {
           Current Student
         </Button>
 
-        <Button color="inherit" component={Link} to="/new-student">
-          New Student
+        <Button color="inherit" component={Link} to="/prospective-student">
+          Prospective Student
         </Button>
 
         <Button color="inherit" component={Link} to="/admin">

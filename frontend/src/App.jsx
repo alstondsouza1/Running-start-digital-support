@@ -5,7 +5,7 @@ import Navbar from "./components/Navbar";
 
 import Home from "./pages/Home";
 import CurrentStudent from "./pages/CurrentStudent";
-import NewStudent from "./pages/NewStudent";
+import ProspectiveStudent from "./pages/ProspectiveStudent";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
@@ -20,7 +20,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/current-student" element={<CurrentStudent />} />
-          <Route path="/new-student" element={<NewStudent />} />
+          <Route path="/prospective-student" element={<ProspectiveStudent />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
