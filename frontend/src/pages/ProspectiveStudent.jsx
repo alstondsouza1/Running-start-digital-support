@@ -1,9 +1,13 @@
-export default function ProspectiveStudent() {
-    return (
-      <div style={{ padding: 24 }}>
-        <h2>Prospective Student</h2>
-        <p>Content coming soon.</p>
-      </div>
-    );
+import Categories from "../components/Categories";
+import { categorySets } from "../data/categories";
+
+export default function NewStudent() {
+  return (
+    <div style={{ padding: 24 }}>
+      <h2>Prospective Students & Parents</h2>
+      <p>Learn about eligibility, enrollment, and classes.</p>
+
+      <Categories categories={categorySets.prospective} />
+    </div>
+  );
 }
-  
