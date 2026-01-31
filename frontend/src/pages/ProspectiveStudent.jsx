@@ -1,19 +1,58 @@
+import { useMemo, useState } from "react";
+import { Box, Typography } from "@mui/material";
 import Categories from "../components/Categories";
 import { categorySets } from "../data/categories";
-import { useNavigate } from "react-router-dom";
 
 export default function ProspectiveStudent() {
-  const navigate = useNavigate();
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+
+  const selectedCategory = useMemo(() => {
+    return categorySets.prospective.find((c) => c.id === selectedCategoryId) || null;
+  }, [selectedCategoryId]);
+
+  const handleSelectCategory = (id) => {
+    setSelectedCategoryId((prev) => (prev === id ? null : id));
+  };
 
   return (
-    <div style={{ padding: 24 }}>
-      <h2>Prospective Students & Parents</h2>
-      <p>Learn about eligibility, enrollment, and classes.</p>
+    <Box sx={{ p: 3 }}>
+      <Typography variant="h4" sx={{ mb: 1 }}>
+        Prospective Students & Parents
+      </Typography>
+      <Typography sx={{ mb: 2 }}>
+        Learn about eligibility, enrollment, and classes.
+      </Typography>
 
       <Categories
         categories={categorySets.prospective}
-        onSelectCategory={(id) => navigate(`/prospective/${id}`)}
+        selectedId={selectedCategoryId}
+        onSelectCategory={handleSelectCategory}
       />
-    </div>
+
+      {selectedCategory && (
+        <Box
+          sx={{
+            mt: 3,
+            p: 3,
+            backgroundColor: "white",
+            borderRadius: 2,
+            boxShadow: 1,
+            textAlign: "left",
+            maxWidth: 1000,
+          }}
+        >
+          <Typography variant="h5" sx={{ mb: 1 }}>
+            {selectedCategory.name}
+          </Typography>
+          <Typography color="text.secondary" sx={{ mb: 2 }}>
+            {selectedCategory.description}
+          </Typography>
+
+          <Typography>
+            Content coming soon. (This is where FAQs for this category will go.)
+          </Typography>
+        </Box>
+      )}
+    </Box>
   );
 }

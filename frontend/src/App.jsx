@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import { CssBaseline, Box } from "@mui/material";
+import { CssBaseline, Box, Toolbar } from "@mui/material";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -9,7 +9,6 @@ import CurrentStudent from "./pages/CurrentStudent";
 import ProspectiveStudent from "./pages/ProspectiveStudent";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
-import CategoryPlaceholder from "./pages/CategoryPlaceholder";
 
 export default function App() {
   return (
@@ -17,20 +16,21 @@ export default function App() {
       <CssBaseline />
       <Navbar />
 
-      <Box sx={{ pt: "64px", minHeight: "100vh", backgroundColor: "#f5f5f5" }}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/current-student" element={<CurrentStudent />} />
-          <Route path="/prospective-student" element={<ProspectiveStudent />} />
-          <Route path="/admin" element={<Admin />} />
+      <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <Toolbar />
 
-          <Route path="/:audience/:category" element={<CategoryPlaceholder />} />
+        <Box sx={{ flexGrow: 1, backgroundColor: "#f5f5f5" }}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/current-student" element={<CurrentStudent />} />
+            <Route path="/prospective-student" element={<ProspectiveStudent />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Box>
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Footer />
       </Box>
-
-      <Footer />
     </>
   );
 }
