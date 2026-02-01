@@ -3,29 +3,28 @@ import { Box, Typography } from "@mui/material";
 import Categories from "../components/Categories";
 import { categorySets } from "../data/categories";
 
-export default function CurrentStudent() {
+export default function ProspectiveStudent() {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
   const selectedCategory = useMemo(() => {
-    return categorySets.current.find((c) => c.id === selectedCategoryId) || null;
+    return categorySets.prospective.find((c) => c.id === selectedCategoryId) || null;
   }, [selectedCategoryId]);
 
   const handleSelectCategory = (id) => {
-    // toggle (click same card again to close)
     setSelectedCategoryId((prev) => (prev === id ? null : id));
   };
 
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" sx={{ mb: 1 }}>
-        Current Running Start Students
+        Prospective Students & Parents
       </Typography>
       <Typography sx={{ mb: 2 }}>
-        Find answers to common questions below.
+        Learn about eligibility, enrollment, and classes.
       </Typography>
 
       <Categories
-        categories={categorySets.current}
+        categories={categorySets.prospective}
         selectedId={selectedCategoryId}
         onSelectCategory={handleSelectCategory}
       />
