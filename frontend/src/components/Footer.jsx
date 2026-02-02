@@ -14,6 +14,7 @@ export default function Footer() {
     >
       <Typography variant="body2">
         © {new Date().getFullYear()} Running Start Digital. All rights reserved.
+        Contact us!
       </Typography>
     </Box>
   );
