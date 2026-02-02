@@ -39,7 +39,7 @@ export default function Navbar() {
           Current Student
         </Button>
 
-        <Button color="inherit" component={Link} to="/prospective-student">
+        <Button component={Link} to="/prospective-student" color="inherit" sx={navButtonStyle}>
           Prospective Student
         </Button>
 
