@@ -1,4 +1,11 @@
 import { useState } from "react";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Paper,
+} from "@mui/material";
 
 export default function Admin() {
   const [username, setUsername] = useState("");
@@ -19,75 +26,75 @@ export default function Admin() {
 
   if (isLoggedIn) {
     return (
-      <div style={{ padding: 24 }}>
-        <h2>Admin</h2>
-        <p>Welcome! Admin tools coming soon. WIP</p>
-      </div>
+      <Box sx={{ p: 3 }}>
+        <Typography variant="h4">Admin</Typography>
+        <Typography>Welcome! Admin tools coming soon. WIP</Typography>
+      </Box>
     );
   }
 
   return (
-    <div
-      style={{
-        minHeight: "75vh",
+    <Box
+      sx={{
+        minHeight: "100vh",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#f5f5f5",
+        backgroundColor: "#aee68d",
       }}
     >
-      <div
-        style={{
+      <Paper
+        elevation={3}
+        sx={{
           width: 320,
-          padding: 24,
-          backgroundColor: "white",
-          borderRadius: 8,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+          p: 3,
+          borderRadius: 2,
         }}
       >
-        <h2 style={{ textAlign: "center" }}>Admin Login</h2>
+        <Typography variant="h5" align="center" gutterBottom>
+          Admin Login
+        </Typography>
 
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: 12 }}>
-            <label>Username</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              style={{ width: "100%", padding: 8 }}
-            />
-          </div>
+        <Box component="form" onSubmit={handleSubmit}>
+          <TextField
+            label="Username"
+            fullWidth
+            margin="normal"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
 
-          <div style={{ marginBottom: 12 }}>
-            <label>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={{ width: "100%", padding: 8 }}
-            />
-          </div>
+          <TextField
+            label="Password"
+            type="password"
+            fullWidth
+            margin="normal"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
           {error && (
-            <p style={{ color: "red", marginBottom: 12 }}>{error}</p>
+            <Typography color="error" variant="body2" sx={{ mt: 1 }}>
+              {error}
+            </Typography>
           )}
 
-          <button
+          <Button
             type="submit"
-            style={{
-              width: "100%",
-              padding: 10,
-              backgroundColor: "#1976d2",
-              color: "white",
-              border: "none",
-              borderRadius: 4,
-              cursor: "pointer",
+            fullWidth
+            variant="contained"
+            sx={{
+              mt: 2,
+              backgroundColor: "#006225",
+              "&:hover": {
+                backgroundColor: "#D14900",
+              },
             }}
           >
             Login
-          </button>
-        </form>
-      </div>
-    </div>
+          </Button>
+        </Box>
+      </Paper>
+    </Box>
   );
 }
