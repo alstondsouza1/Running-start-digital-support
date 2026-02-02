@@ -14,7 +14,14 @@ export default function Footer() {
     >
       <Typography variant="body2">
         © {new Date().getFullYear()} Running Start Digital. All rights reserved.
-        Contact us!
+        {" "}Contact us!
+      </Typography>
+      
+      <Typography variant="body2">
+        Phone: 253-288-3380 •
+        {" "}Email: runningstart@greenriver.edu •
+        {" "}(Do not include ID# or file attachments) •
+        {" "}Student Affairs & Success Center – SA 135
       </Typography>
     </Box>
   );
