@@ -9,7 +9,7 @@ export default function Admin() {
   function handleSubmit(e) {
     e.preventDefault();
 
-    if (username === "admin" && password === "password123") {
+    if (username === "admin" && password === "1234") {
       setIsLoggedIn(true);
       setError("");
     } else {
@@ -21,7 +21,7 @@ export default function Admin() {
     return (
       <div style={{ padding: 24 }}>
         <h2>Admin</h2>
-        <p>Welcome! Admin tools coming soon.</p>
+        <p>Welcome! Admin tools coming soon. WIP</p>
       </div>
     );
   }
