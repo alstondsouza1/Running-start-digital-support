@@ -6,10 +6,10 @@
 //     OTHER: "other",
 //   });
 
-import { categorySets } from "./categories";
+import { prospectiveByKey } from "./categories";
 export const prospectiveStudentsQuestions = [
     {
-        type: categorySets.prospective.general,
+        type: prospectiveByKey.general,
         question: "What is the Running Start Program?",
         answer: {
             bullets: [
@@ -21,7 +21,7 @@ export const prospectiveStudentsQuestions = [
         },
     },
     {
-        type: categorySets.prospective.general,
+        type: prospectiveByKey.general,
         question: "How do I know if Running Start is right for me?",
         answer: {
             intro: "Running Start is a good fit for students who:",
@@ -37,7 +37,7 @@ export const prospectiveStudentsQuestions = [
         },
     },
     {
-        type: categorySets.prospective.general,
+        type: prospectiveByKey.general,
         question: "How do students qualify for Running Start?",
         answer: {
             intro: "Prospective students must meet the following criteria:",
@@ -59,7 +59,7 @@ export const prospectiveStudentsQuestions = [
         },
     },
     {
-        type: categorySets.prospective.general,
+        type: prospectiveByKey.general,
         question: "Can students take English assessment at another college and have it apply at Green River?",
         answer: {
             bullets: [
@@ -71,7 +71,7 @@ export const prospectiveStudentsQuestions = [
     },
 
     {
-        type: categorySets.prospective.general,
+        type: prospectiveByKey.general,
         question: "Can home and private schooled students participate in Running Start?",
         answer: {
             bullets: [
@@ -82,7 +82,7 @@ export const prospectiveStudentsQuestions = [
         }
     },
     {
-        type: categorySets.prospective.general,
+        type: prospectiveByKey.general,
         question: "How many terms can a student enroll in Running Start?",
         answer: {
             intro: "All qualified students can enroll for three terms (Fall, Winter, and Spring) during their junior year and three terms (Fall, Winter, and Spring) during their senior year. There are special circumstances that can allow students to:",
@@ -100,7 +100,7 @@ export const prospectiveStudentsQuestions = [
         }
     },
     {
-        type: categorySets.prospective.general,
+        type: prospectiveByKey.general,
         question: "Can Students attend Green River full-time or part-time?",
         answer: {
             bullets: [
@@ -111,7 +111,7 @@ export const prospectiveStudentsQuestions = [
         }
     },
     {
-        type: categorySets.prospective.registration,
+        type: prospectiveByKey.registration,
         question: "What happens if students miss the enrollment deadline?",
         answer: {
             bullets: [
@@ -122,7 +122,7 @@ export const prospectiveStudentsQuestions = [
         }
     },
     {
-        type: categorySets.prospective.registration,
+        type: prospectiveByKey.registration,
         question: "My placement scores didn't accurately reflect my abilities…help!",
         answer: {
             bullets: [
@@ -134,7 +134,7 @@ export const prospectiveStudentsQuestions = [
         }
     },
     {
-        type: categorySets.prospective.classes,
+        type: prospectiveByKey.classes,
         question: "Can students take online classes?",
         answer: {
             intro: "Yes. Running Start students will be treated as regular college students and enroll in regular college classes. Online courses are part of the normal delivery of college curriculum. While online (eLearning) classes give more scheduling flexibility, they can be challenging for some students. Before enrolling in an eLearning class students may want to ask themselves how well the following statements describe them: ",
@@ -174,7 +174,7 @@ export const prospectiveStudentsQuestions = [
         }
     },
     {
-        type: categorySets.prospective.classes,
+        type: prospectiveByKey.classes,
         question: "How do I know which classes at Green River apply toward high school graduation requirements?",
         answer: {
             bullets: [
@@ -185,7 +185,7 @@ export const prospectiveStudentsQuestions = [
         }
     },
     {
-        type: categorySets.prospective.classes,
+        type: prospectiveByKey.classes,
         question: "Can students receive a degree from Green River at the same time they get their high school diploma?",
         answer: {
             bullets: [
@@ -196,7 +196,7 @@ export const prospectiveStudentsQuestions = [
         }
     },
     {
-        type: categorySets.prospective.classes,
+        type: prospectiveByKey.classes,
         question: "Should students stay at Green River to finish my AA degree before transferring?",
         answer: {
             bullets: [{
@@ -205,7 +205,7 @@ export const prospectiveStudentsQuestions = [
         }
     },
     {
-        type: categorySets.prospective.classes,
+        type: prospectiveByKey.classes,
         question: "Do Running Start classes transfer to other colleges/universities?",
         answer: {
             bullets: [{
@@ -214,7 +214,7 @@ export const prospectiveStudentsQuestions = [
         }
     },
     {
-        type: categorySets.prospective.classes,
+        type: prospectiveByKey.classes,
         question: "What if my student doesn't graduate from high school? Can he/she still do Running Start?",
         answer: {
             bullets: [{
