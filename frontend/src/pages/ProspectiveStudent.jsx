@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, List, ListItem, ListItemText, Link, Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
 import Categories from "../components/Categories";
 import { categorySets } from "../data/categories";
+import { prospectiveStudentsQuestions } from "../data/prospectiveStudent";
 
 export default function ProspectiveStudent() {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
@@ -10,6 +11,9 @@ export default function ProspectiveStudent() {
     return categorySets.prospective.find((c) => c.id === selectedCategoryId) || null;
   }, [selectedCategoryId]);
 
+  const questionsForCategory = useMemo(() => prospectiveStudentsQuestions.filter((question) => question.type.id === selectedCategoryId), [selectedCategoryId]
+  );
+  
   const handleSelectCategory = (id) => {
     setSelectedCategoryId((prev) => (prev === id ? null : id));
   };
@@ -48,9 +52,44 @@ export default function ProspectiveStudent() {
             {selectedCategory.description}
           </Typography>
 
-          <Typography>
-            Content coming soon. (This is where FAQs for this category will go.)
-          </Typography>
+          {questionsForCategory.length === 0 && (
+            <Typography color="text.secondary">
+              No questions in this category yet.
+            </Typography>
+          )}
+          {questionsForCategory.length > 0 &&
+            questionsForCategory.map((item, index) => (
+              <Accordion key={index} disableGutters sx={{ "&:before": { display: "none" }, boxShadow: 0, borderBottom: "1px solid", borderColor: "divider" }}>
+                <AccordionSummary expandIcon={<span aria-hidden="true">▼</span>}>
+                  <Typography fontWeight={500}>{item.question}</Typography>
+                </AccordionSummary>
+                <AccordionDetails sx={{ pt: 0 }}>
+                  {item.answer?.intro && (
+                    <Typography sx={{ mb: 1 }}>{item.answer.intro}</Typography>
+                  )}
+                  {item.answer?.bullets?.length > 0 && (
+                    <List dense disablePadding>
+                      {item.answer.bullets.map((bullet, i) => (
+                        <ListItem key={i} sx={{ display: "list-item", listStyleType: "disc", pl: 0, py: 0.25 }}>
+                          <ListItemText
+                            primary={
+                              <>
+                                {bullet.url && (
+                                  <Link href={bullet.url} target="_blank" rel="noopener noreferrer">
+                                    {bullet.text}
+                                  </Link>
+                                )}
+                                {!bullet.url && bullet.text}
+                              </>
+                            }
+                          />
+                        </ListItem>
+                      ))}
+                    </List>
+                  )}
+                </AccordionDetails>
+              </Accordion>
+            ))}
         </Box>
       )}
     </Box>
