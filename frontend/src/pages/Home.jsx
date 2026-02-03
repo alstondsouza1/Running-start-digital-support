@@ -7,18 +7,19 @@ export default function Home() {
   const navigate = useNavigate();
 
   const cardStyles = {
-  width: 240,
-  height: 280,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  cursor: "pointer",
-  border: "4px solid transparent",
-  transition: "border-color 0.25s ease, transform 0.2s, box-shadow 0.2s",
-  "&:hover": {
-    borderColor: "#D14900",
-    boxShadow: 6,
-    transform: "scale(1.04)",
+    width: 260,
+    height: 300,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    borderRadius: 2,
+    border: "2px solid transparent",
+    transition: "all 0.25s ease",
+    "&:hover": {
+      borderColor: "#2c882b",
+      boxShadow: 6,
+      transform: "translateY(-4px)",
     },
   };
 
@@ -34,37 +35,39 @@ export default function Home() {
         px: 3,
       }}
     >
-      <Typography variant="h4" gutterBottom>
-        Welcome to Green River College!
+      {/* Header */}
+      <Typography variant="h4" fontWeight={600}>
+        Welcome to Green River College
       </Typography>
 
-      <Typography variant="h6" gutterBottom>
-        Are you a current or future student?
+      <Typography color="text.secondary">
+        Choose an option below to find answers and resources
       </Typography>
 
-      <Box sx={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+      {/* Cards */}
+      <Box sx={{ display: "flex", gap: 4, mt: 3, flexWrap: "wrap" }}>
         {/* Current Student */}
-        <Card
-          sx={cardStyles}
-          onClick={() => navigate("/current-student")}
-        >
+        <Card sx={cardStyles} onClick={() => navigate("/current-student")}>
           <CardContent sx={{ textAlign: "center" }}>
-            <SchoolIcon sx={{ fontSize: 80 }} />
+            <SchoolIcon sx={{ fontSize: 70, color: "#2c882b" }} />
             <Typography variant="h6" sx={{ mt: 2 }}>
               Current Student
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              Enrollment, classes, records, and support
             </Typography>
           </CardContent>
         </Card>
 
         {/* Future Student */}
-        <Card
-          sx={cardStyles}
-          onClick={() => navigate("/new-student")}
-        >
+        <Card sx={cardStyles} onClick={() => navigate("/prospective-student")}>
           <CardContent sx={{ textAlign: "center" }}>
-            <PersonAddIcon sx={{ fontSize: 80 }} />
+            <PersonAddIcon sx={{ fontSize: 70, color: "#2c882b" }} />
             <Typography variant="h6" sx={{ mt: 2 }}>
               Future Student
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              Eligibility, registration, and next steps
             </Typography>
           </CardContent>
         </Card>
@@ -72,4 +75,3 @@ export default function Home() {
     </Box>
   );
 }
-  
