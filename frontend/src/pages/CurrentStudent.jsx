@@ -21,7 +21,7 @@ export default function CurrentStudent() {
         Current Running Start Students
       </Typography>
       <Typography sx={{ mb: 2 }}>
-        Find answers to common questions below.
+        Explore fee waiver/book loan info, class planning, deadlines, and campus resources.
       </Typography>
 
       <Categories

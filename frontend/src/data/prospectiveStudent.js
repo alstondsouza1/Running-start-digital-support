@@ -1,8 +1,9 @@
-import { prospectiveByKey } from "./categories";
-
 export const prospectiveStudentsQuestions = [
+  // ----------------------------
+  // HOW TO GET STARTED
+  // ----------------------------
   {
-    type: prospectiveByKey.general,
+    type: "how-to-get-started",
     question: "What is the Running Start Program?",
     answer: {
       bullets: [
@@ -14,25 +15,7 @@ export const prospectiveStudentsQuestions = [
     },
   },
   {
-    type: prospectiveByKey.general,
-    question: "How do I know if Running Start is right for me?",
-    answer: {
-      intro: "Running Start is a good fit for students who:",
-      bullets: [
-        { text: "Are ready for the challenge of college-level coursework." },
-        {
-          text: "Are motivated to participate in the college environment and possess the maturity to do so.",
-        },
-        { text: "Seek academic challenges not available at their high school." },
-        {
-          text: "View Program Benefits and Considerations",
-          url: "https://greenriver.edu/students/academics/running-start/prospective-running-start-students/benefits-and-considerations.html",
-        },
-      ],
-    },
-  },
-  {
-    type: prospectiveByKey.general,
+    type: "how-to-get-started",
     question: "How do students qualify for Running Start?",
     answer: {
       intro: "Prospective students must meet the following criteria:",
@@ -54,7 +37,7 @@ export const prospectiveStudentsQuestions = [
     },
   },
   {
-    type: prospectiveByKey.general,
+    type: "how-to-get-started",
     question:
       "Can students take English assessment at another college and have it apply at Green River?",
     answer: {
@@ -67,7 +50,7 @@ export const prospectiveStudentsQuestions = [
     },
   },
   {
-    type: prospectiveByKey.general,
+    type: "how-to-get-started",
     question: "Can home and private schooled students participate in Running Start?",
     answer: {
       bullets: [
@@ -78,8 +61,28 @@ export const prospectiveStudentsQuestions = [
       ],
     },
   },
+
+  // ----------------------------
+  // COST AND FINANCIAL ASSISTANCE
+  // ----------------------------
   {
-    type: prospectiveByKey.general,
+    type: "cost-financial-assistance",
+    question: "Can Students attend Green River full-time or part-time?",
+    answer: {
+      bullets: [
+        {
+          text:
+            "Yes, students have a choice of attending full-time or part-time. The average credit load for Running Start students is 12-15 credits per term (approximately 3 classes). The maximum number of credits for which Running Start will cover tuition is 21 credits per term, providing you do not exceed the combined enrollment limit listed on your Running Start Enrollment Verification Form.",
+        },
+      ],
+    },
+  },
+
+  // ----------------------------
+  // DATES & DEADLINES
+  // ----------------------------
+  {
+    type: "dates-deadlines",
     question: "How many terms can a student enroll in Running Start?",
     answer: {
       intro:
@@ -95,21 +98,7 @@ export const prospectiveStudentsQuestions = [
     },
   },
   {
-    type: prospectiveByKey.general,
-    question: "Can Students attend Green River full-time or part-time?",
-    answer: {
-      bullets: [
-        {
-          text:
-            "Yes, students have a choice of attending full-time or part-time. The average credit load for Running Start students is 12-15 credits per term (approximately 3 classes). The maximum number of credits for which Running Start will cover tuition is 21 credits per term, providing you do not exceed the combined enrollment limit listed on your Running Start Enrollment Verification Form.",
-        },
-      ],
-    },
-  },
-
-  // Registration
-  {
-    type: prospectiveByKey.registration,
+    type: "dates-deadlines",
     question: "What happens if students miss the enrollment deadline?",
     answer: {
       bullets: [
@@ -120,8 +109,31 @@ export const prospectiveStudentsQuestions = [
       ],
     },
   },
+
+  // ----------------------------
+  // LIFE AS A RUNNING START STUDENT
+  // ----------------------------
   {
-    type: prospectiveByKey.registration,
+    type: "life-as-a-running-start-student",
+    question: "How do I know if Running Start is right for me?",
+    answer: {
+      intro: "Running Start is a good fit for students who:",
+      bullets: [
+        { text: "Are ready for the challenge of college-level coursework." },
+        {
+          text:
+            "Are motivated to participate in the college environment and possess the maturity to do so.",
+        },
+        { text: "Seek academic challenges not available at their high school." },
+        {
+          text: "View Program Benefits and Considerations",
+          url: "https://greenriver.edu/students/academics/running-start/prospective-running-start-students/benefits-and-considerations.html",
+        },
+      ],
+    },
+  },
+  {
+    type: "life-as-a-running-start-student",
     question: "My placement scores didn't accurately reflect my abilities…help!",
     answer: {
       bullets: [
@@ -133,10 +145,8 @@ export const prospectiveStudentsQuestions = [
       ],
     },
   },
-
-  // Classes
   {
-    type: prospectiveByKey.classes,
+    type: "life-as-a-running-start-student",
     question: "Can students take online classes?",
     answer: {
       intro:
@@ -156,7 +166,7 @@ export const prospectiveStudentsQuestions = [
     },
   },
   {
-    type: prospectiveByKey.classes,
+    type: "life-as-a-running-start-student",
     question:
       "How do I know which classes at Green River apply toward high school graduation requirements?",
     answer: {
@@ -169,7 +179,7 @@ export const prospectiveStudentsQuestions = [
     },
   },
   {
-    type: prospectiveByKey.classes,
+    type: "life-as-a-running-start-student",
     question:
       "Can students receive a degree from Green River at the same time they get their high school diploma?",
     answer: {
@@ -182,7 +192,7 @@ export const prospectiveStudentsQuestions = [
     },
   },
   {
-    type: prospectiveByKey.classes,
+    type: "life-as-a-running-start-student",
     question: "Should students stay at Green River to finish my AA degree before transferring?",
     answer: {
       bullets: [
@@ -194,7 +204,7 @@ export const prospectiveStudentsQuestions = [
     },
   },
   {
-    type: prospectiveByKey.classes,
+    type: "life-as-a-running-start-student",
     question: "Do Running Start classes transfer to other colleges/universities?",
     answer: {
       bullets: [
@@ -206,8 +216,9 @@ export const prospectiveStudentsQuestions = [
     },
   },
   {
-    type: prospectiveByKey.classes,
-    question: "What if my student doesn't graduate from high school? Can he/she still do Running Start?",
+    type: "life-as-a-running-start-student",
+    question:
+      "What if my student doesn't graduate from high school? Can he/she still do Running Start?",
     answer: {
       bullets: [
         {

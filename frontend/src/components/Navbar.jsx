@@ -40,7 +40,7 @@ export default function Navbar() {
         </Button>
 
         <Button component={Link} to="/prospective-student" color="inherit" sx={navButtonStyle}>
-          Prospective Student
+          Future Student
         </Button>
 
         <Button component={Link} to="/admin" color="inherit" sx={navButtonStyle}>

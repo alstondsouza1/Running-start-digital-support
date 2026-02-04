@@ -1,15 +1,15 @@
 export const faqsByAudience = {
   current: {
-    enrollment: [],
-    classes: [],
-    "records-support": [],
-    policies: [],
+    "fee-waiver-book-loan": [],
+    "how-to-plan-classes": [],
+    "dates-deadlines": [],
+    "campus-resources": [],
   },
 
   prospective: {
-    general: [],
-    eligibility: [],
-    registration: [],
-    classes: [],
+    "how-to-get-started": [],
+    "cost-financial-assistance": [],
+    "dates-deadlines": [],
+    "life-as-a-running-start-student": [],
   },
 };

@@ -1,57 +1,52 @@
 export const categorySets = {
   current: [
     {
-      id: "enrollment",
-      name: "Enrollment",
-      description: "Registration holds, deadlines, and schedule changes",
+      id: "fee-waiver-book-loan",
+      name: "Fee Waiver & Book Loan",
+      description: "Fee waiver steps, book loan info, and related support",
     },
     {
-      id: "classes",
-      name: "Classes",
-      description: "What you can take, online learning, transfer credits",
+      id: "how-to-plan-classes",
+      name: "How to Plan Classes",
+      description: "Advising, planning schedules, and choosing classes",
     },
     {
-      id: "records-support",
-      name: "Records & Support",
-      description: "Blocked records, placement help, advising steps",
+      id: "dates-deadlines",
+      name: "Dates & Deadlines",
+      description: "Enrollment deadlines, important dates, and term timelines",
     },
     {
-      id: "policies",
-      name: "Policies & Other",
-      description: "FERPA, moving districts, general program rules",
+      id: "campus-resources",
+      name: "Campus Resources",
+      description: "Support services, offices, and student resources at GRC",
     },
   ],
 
   prospective: [
     {
-      id: "general",
-      name: "General Questions",
-      description: "What Running Start is and whether it's a good fit",
+      id: "how-to-get-started",
+      name: "How to Get Started",
+      description: "Steps to begin, enrollment basics, and first-time guidance",
     },
     {
-      id: "eligibility",
-      name: "Eligibility",
-      description: "Who qualifies, age/grade, placement requirements",
+      id: "cost-financial-assistance",
+      name: "Cost and Financial Assistance",
+      description: "Costs, fees, waivers, and financial help options",
     },
     {
-      id: "registration",
-      name: "Registration & Enrollment",
-      description: "Deadlines, assessment, how to start the process",
+      id: "dates-deadlines",
+      name: "Dates & Deadlines",
+      description: "Key deadlines, timelines, and important dates",
     },
     {
-      id: "classes",
-      name: "Classes & Credits",
-      description: "Allowed courses, online classes, credit transfer",
-    },
-    {
-      id: "other",
-      name: "Other",
-      description: "Questions non-directly related to other categories",
+      id: "life-as-a-running-start-student",
+      name: "Life as a Running Start Student",
+      description: "What to expect, workload, campus life, and readiness",
     },
   ],
 };
 
-// Lookup by id for code that needs categorySets.prospective.[id]
+// lookup by id for code that needs categorySets.prospective.[id]
 export const prospectiveByKey = Object.fromEntries(
   categorySets.prospective.map((c) => [c.id, c])
 );

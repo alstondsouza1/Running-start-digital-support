@@ -5,7 +5,7 @@ import {
   List,
   ListItem,
   ListItemText,
-  Link,
+  Link as MuiLink,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -23,7 +23,7 @@ export default function ProspectiveStudent() {
   }, [selectedCategoryId]);
 
   const questionsForCategory = useMemo(() => {
-    return prospectiveStudentsQuestions.filter((q) => q.type.id === selectedCategoryId);
+    return prospectiveStudentsQuestions.filter((q) => q.type === selectedCategoryId);
   }, [selectedCategoryId]);
 
   const handleSelectCategory = (id) => {
@@ -33,11 +33,11 @@ export default function ProspectiveStudent() {
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" sx={{ mb: 1 }}>
-        Prospective Students & Parents
+        Future Running Start Students
       </Typography>
 
       <Typography sx={{ mb: 2 }}>
-        Learn about eligibility, enrollment, and classes.
+        Learn how to get started, understand costs, and explore life as a Running Start student.
       </Typography>
 
       <Categories
@@ -85,9 +85,7 @@ export default function ProspectiveStudent() {
             >
               <AccordionSummary
                 expandIcon={<span aria-hidden="true">▼</span>}
-                sx={{
-                  "& .MuiAccordionSummary-content": { my: 1 },
-                }}
+                sx={{ "& .MuiAccordionSummary-content": { my: 1 } }}
               >
                 <Typography fontWeight={500}>{item.question}</Typography>
               </AccordionSummary>
@@ -112,13 +110,13 @@ export default function ProspectiveStudent() {
                         <ListItemText
                           primary={
                             bullet.url ? (
-                              <Link
+                              <MuiLink
                                 href={bullet.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
                               >
                                 {bullet.text}
-                              </Link>
+                              </MuiLink>
                             ) : (
                               bullet.text
                             )
