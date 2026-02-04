@@ -40,7 +40,7 @@ export default function Admin() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#aee68d",
+        backgroundColor: "#f1ffe9",
       }}
     >
       <Paper
