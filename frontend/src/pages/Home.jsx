@@ -54,7 +54,7 @@ export default function Home() {
               Current Student
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Enrollment, classes, records, and support
+              Fee waivers, book loans, class planning, deadlines, and campus resources
             </Typography>
           </CardContent>
         </Card>
@@ -67,7 +67,7 @@ export default function Home() {
               Future Student
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Eligibility, registration, and next steps
+              How to get started, costs & financial help, deadlines, and student life
             </Typography>
           </CardContent>
         </Card>
