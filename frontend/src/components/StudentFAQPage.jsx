@@ -85,7 +85,7 @@ export default function StudentFAQPage({
 
             {questionsForCategory.map((item) => (
               <Accordion
-                key={item.question}
+                key={`${item.type}-${item.question}`}
                 disableGutters
                 sx={{
                   "&:before": { display: "none" },
