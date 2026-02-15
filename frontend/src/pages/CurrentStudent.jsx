@@ -1,9 +1,14 @@
+import StudentFAQPage from "../components/StudentFAQPage";
+import { categorySets } from "../data/categories";
+import { currentStudentsQuestions } from "../data/currentStudent";
+
 export default function CurrentStudent() {
-    return (
-      <div style={{ padding: 24 }}>
-        <h2>Current Student</h2>
-        <p>Content coming soon.</p>
-      </div>
-    );
+  return (
+    <StudentFAQPage
+      title="Current Running Start Students"
+      description="Explore fee waiver/book loan info, class planning, deadlines, and campus resources."
+      categories={categorySets.current}
+      questions={currentStudentsQuestions}
+    />
+  );
 }
-  
