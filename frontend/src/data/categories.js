@@ -24,26 +24,26 @@ export const categorySets = {
 
   prospective: [
     {
-      id: "how-to-get-started",
-      name: "How to Get Started",
-      description: "Steps to begin, enrollment basics, and first-time guidance",
+      id: "general",
+      name: "General Questions",
+      description: "Program overview, eligibility, and participation basics",
     },
     {
-      id: "cost-financial-assistance",
-      name: "Cost and Financial Assistance",
-      description: "Costs, fees, waivers, and financial help options",
+      id: "enrollment",
+      name: "Enrollment",
+      description: "Deadlines, placement, and getting registered",
     },
     {
-      id: "dates-deadlines",
-      name: "Dates & Deadlines",
-      description: "Key deadlines, timelines, and important dates",
+      id: "classes",
+      name: "Classes",
+      description: "Allowed courses, online learning, transfer, and degrees",
     },
     {
-      id: "life-as-a-running-start-student",
-      name: "Life as a Running Start Student",
-      description: "What to expect, workload, campus life, and readiness",
+      id: "other",
+      name: "Other",
+      description: "Moving districts, FERPA, and parent/guardian info",
     },
-  ],
+  ],  
 };
 
 // lookup by id for code that needs categorySets.prospective.[id]
