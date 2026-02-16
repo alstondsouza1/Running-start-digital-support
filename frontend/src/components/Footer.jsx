@@ -18,8 +18,8 @@ export default function Footer() {
       </Typography>
       
       <Typography variant="body2">
-        Phone: 253-288-3380 •
-        {" "}Email: runningstart@greenriver.edu •
+        253-288-3380 •
+        {" "}runningstart@greenriver.edu •
         {" "}(Do not include ID# or file attachments) •
         {" "}Student Affairs & Success Center – SA 135
       </Typography>
