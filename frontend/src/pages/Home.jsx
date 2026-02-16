@@ -54,12 +54,12 @@ export default function Home() {
               Current Student
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Fee waivers, book loans, class planning, deadlines, and campus resources
+              Fee waivers & book loans, class planning, dates & deadlines, and campus resources
             </Typography>
           </CardContent>
         </Card>
 
-        {/* Future Student */}
+        {/* Prospective / Future Student */}
         <Card sx={cardStyles} onClick={() => navigate("/prospective-student")}>
           <CardContent sx={{ textAlign: "center" }}>
             <PersonAddIcon sx={{ fontSize: 70, color: "#2c882b" }} />
@@ -67,7 +67,7 @@ export default function Home() {
               Future Student
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              How to get started, costs & financial help, deadlines, and student life
+              General questions, enrollment, classes, and other (FERPA + moving districts)
             </Typography>
           </CardContent>
         </Card>

@@ -16,7 +16,7 @@ import Categories from "./Categories";
 export default function StudentFAQPage({
   title,
   description,
-  categories,
+  categories = [],
   questions = [],
 }) {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
