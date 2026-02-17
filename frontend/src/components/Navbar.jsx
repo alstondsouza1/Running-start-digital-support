@@ -1,6 +1,6 @@
 import { AppBar, Toolbar, Typography, Button } from "@mui/material";
 import { Link } from "react-router-dom";
-import Logo from "../assets/GRC_Logo_WHITE.png";
+import Logo from "../assets/GRC_Logo_White.png";
 
 export default function Navbar() {
   const hoverColor = "#BBD416";
