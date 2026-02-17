@@ -50,6 +50,7 @@ export default function Categories({ categories, onSelectCategory, selectedId })
               onKeyDown={(e) => handleKeyDown(e, cat.id)}
               role={clickable ? "button" : undefined}
               tabIndex={clickable ? 0 : undefined}
+              aria-pressed={clickable ? isSelected : undefined}
               sx={{
                 cursor: clickable ? "pointer" : "default",
                 width: { xs: "100%", sm: `${CARD_WIDTH}px` },
