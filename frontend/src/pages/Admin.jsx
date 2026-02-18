@@ -81,7 +81,14 @@ export default function Admin() {
         >
           <Typography variant="h4">Admin Dashboard</Typography>
 
-          <Button variant="outlined" onClick={handleLogout}>
+          <Button
+            variant="contained"
+            onClick={handleLogout}
+            sx={{
+              backgroundColor: "#006225",
+              "&:hover": { backgroundColor: "#D14900" },
+            }}
+          >
             Logout
           </Button>
         </Box>
