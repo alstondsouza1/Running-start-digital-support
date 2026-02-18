@@ -9,7 +9,11 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  TextField,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
+import ClearIcon from "@mui/icons-material/Clear";
 
 import Categories from "./Categories";
 import { matchesQuery, normalize } from "../utils/search";
@@ -35,7 +39,7 @@ export default function StudentFAQPage({
 }) {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
-  // NEW (search state)
+  // search state
   const [searchTerm, setSearchTerm] = useState("");
   const isSearching = normalize(searchTerm).length > 0;
 
@@ -48,7 +52,6 @@ export default function StudentFAQPage({
     return questions.filter((q) => q.type === selectedCategoryId);
   }, [questions, selectedCategoryId]);
 
-  // NEW (search results across ALL questions)
   const searchResults = useMemo(() => {
     if (!isSearching) return [];
 
@@ -85,7 +88,30 @@ export default function StudentFAQPage({
           </Typography>
         )}
 
-        {/* UI is unchanged in this commit (search bar comes next) */}
+        <TextField
+          fullWidth
+          label="Search FAQs"
+          placeholder='Try: "deadline", "ctclink", "ENGL", "book"'
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{ mb: 3, maxWidth: 980 }}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                {searchTerm.trim().length > 0 && (
+                  <IconButton
+                    aria-label="Clear search"
+                    onClick={() => setSearchTerm("")}
+                    edge="end"
+                  >
+                    <ClearIcon />
+                  </IconButton>
+                )}
+              </InputAdornment>
+            ),
+          }}
+        />
+
         <Typography fontWeight={700} sx={{ mb: 2 }}>
           Browse Categories:
         </Typography>
