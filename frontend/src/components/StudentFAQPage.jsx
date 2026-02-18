@@ -9,9 +9,27 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  TextField,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
+import ClearIcon from "@mui/icons-material/Clear";
 
 import Categories from "./Categories";
+import { matchesQuery, normalize } from "../utils/search";
+
+function answerToText(answer) {
+  if (!answer) return "";
+  const intro = answer.intro ? String(answer.intro) : "";
+  const bullets = Array.isArray(answer.bullets)
+    ? answer.bullets.map((b) => b?.text ?? "").join(" ")
+    : "";
+  return `${intro} ${bullets}`.trim();
+}
+
+function categoryById(categories, id) {
+  return categories.find((c) => c.id === id) || null;
+}
 
 export default function StudentFAQPage({
   title,
@@ -21,13 +39,37 @@ export default function StudentFAQPage({
 }) {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
+  // search state
+  const [searchTerm, setSearchTerm] = useState("");
+  const isSearching = normalize(searchTerm).length > 0;
+
   const selectedCategory = useMemo(() => {
     return categories.find((c) => c.id === selectedCategoryId) || null;
   }, [categories, selectedCategoryId]);
 
   const questionsForCategory = useMemo(() => {
+    if (!selectedCategoryId) return [];
     return questions.filter((q) => q.type === selectedCategoryId);
   }, [questions, selectedCategoryId]);
+
+  const searchResults = useMemo(() => {
+    if (!isSearching) return [];
+
+    return questions.filter((q) => {
+      const cat = categoryById(categories, q.type);
+
+      const blob = [
+        q.question,
+        answerToText(q.answer),
+        cat?.name,
+        cat?.description,
+      ]
+        .filter(Boolean)
+        .join(" | ");
+
+      return matchesQuery(blob, searchTerm);
+    });
+  }, [categories, questions, isSearching, searchTerm]);
 
   const handleSelectCategory = (id) => {
     setSelectedCategoryId((prev) => (prev === id ? null : id));
@@ -45,6 +87,30 @@ export default function StudentFAQPage({
             {description}
           </Typography>
         )}
+
+        <TextField
+          fullWidth
+          label="Search FAQs"
+          placeholder='Try: "deadline", "ctclink", "ENGL", "book"'
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{ mb: 3, maxWidth: 980 }}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                {searchTerm.trim().length > 0 && (
+                  <IconButton
+                    aria-label="Clear search"
+                    onClick={() => setSearchTerm("")}
+                    edge="end"
+                  >
+                    <ClearIcon />
+                  </IconButton>
+                )}
+              </InputAdornment>
+            ),
+          }}
+        />
 
         <Typography fontWeight={700} sx={{ mb: 2 }}>
           Browse Categories:
@@ -133,6 +199,7 @@ export default function StudentFAQPage({
                               )
                             }
                           />
+                        </ListItemText>
                         </ListItem>
                       ))}
                     </List>
