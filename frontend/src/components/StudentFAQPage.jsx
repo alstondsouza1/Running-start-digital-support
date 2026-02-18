@@ -12,6 +12,20 @@ import {
 } from "@mui/material";
 
 import Categories from "./Categories";
+import { matchesQuery, normalize } from "../utils/search";
+
+function answerToText(answer) {
+  if (!answer) return "";
+  const intro = answer.intro ? String(answer.intro) : "";
+  const bullets = Array.isArray(answer.bullets)
+    ? answer.bullets.map((b) => b?.text ?? "").join(" ")
+    : "";
+  return `${intro} ${bullets}`.trim();
+}
+
+function categoryById(categories, id) {
+  return categories.find((c) => c.id === id) || null;
+}
 
 export default function StudentFAQPage({
   title,
@@ -21,13 +35,38 @@ export default function StudentFAQPage({
 }) {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
+  // NEW (search state)
+  const [searchTerm, setSearchTerm] = useState("");
+  const isSearching = normalize(searchTerm).length > 0;
+
   const selectedCategory = useMemo(() => {
     return categories.find((c) => c.id === selectedCategoryId) || null;
   }, [categories, selectedCategoryId]);
 
   const questionsForCategory = useMemo(() => {
+    if (!selectedCategoryId) return [];
     return questions.filter((q) => q.type === selectedCategoryId);
   }, [questions, selectedCategoryId]);
+
+  // NEW (search results across ALL questions)
+  const searchResults = useMemo(() => {
+    if (!isSearching) return [];
+
+    return questions.filter((q) => {
+      const cat = categoryById(categories, q.type);
+
+      const blob = [
+        q.question,
+        answerToText(q.answer),
+        cat?.name,
+        cat?.description,
+      ]
+        .filter(Boolean)
+        .join(" | ");
+
+      return matchesQuery(blob, searchTerm);
+    });
+  }, [categories, questions, isSearching, searchTerm]);
 
   const handleSelectCategory = (id) => {
     setSelectedCategoryId((prev) => (prev === id ? null : id));
@@ -46,6 +85,7 @@ export default function StudentFAQPage({
           </Typography>
         )}
 
+        {/* UI is unchanged in this commit (search bar comes next) */}
         <Typography fontWeight={700} sx={{ mb: 2 }}>
           Browse Categories:
         </Typography>
@@ -133,6 +173,7 @@ export default function StudentFAQPage({
                               )
                             }
                           />
+                        </ListItemText>
                         </ListItem>
                       ))}
                     </List>
