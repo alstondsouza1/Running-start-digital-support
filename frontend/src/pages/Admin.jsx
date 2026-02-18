@@ -20,6 +20,24 @@ function groupByType(questions) {
   }, {});
 }
 
+// partner data (unchanged)
+import { currentStudentsQuestions } from "../data/currentStudent";
+import { prospectiveStudentsQuestions } from "../data/prospectiveStudent";
+
+// category config (unchanged)
+import { categorySets } from "../data/categories.js";
+
+// adapter (your file)
+import { adaptQuestions } from "../data/flexQuestions.js";
+
+function groupByType(questions) {
+  return questions.reduce((acc, q) => {
+    if (!acc[q.type]) acc[q.type] = [];
+    acc[q.type].push(q);
+    return acc;
+  }, {});
+}
+
 export default function Admin() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -68,6 +86,19 @@ export default function Admin() {
   // ADMIN DASHBOARD
   // =========================
   if (isLoggedIn) {
+    const adminCurrentQuestions = adaptQuestions(
+      currentStudentsQuestions,
+      "current"
+    );
+
+    const adminProspectiveQuestions = adaptQuestions(
+      prospectiveStudentsQuestions,
+      "prospective"
+    );
+
+    const groupedCurrent = groupByType(adminCurrentQuestions);
+    const groupedProspective = groupByType(adminProspectiveQuestions);
+
     return (
       <Box sx={{ p: 3 }}>
         <Box
