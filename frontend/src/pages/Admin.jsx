@@ -6,25 +6,6 @@ import { currentStudentsQuestions } from "../data/currentStudent";
 import { prospectiveStudentsQuestions } from "../data/prospectiveStudent";
 
 // category config (unchanged)
-import { categorySets } from "../data/categories";
-
-// adapter (your file)
-import { adaptQuestions } from "../data/flexQuestions";
-
-function groupByType(questions) {
-  return questions.reduce((acc, q) => {
-    const type = q.type;
-    if (!acc[type]) acc[type] = [];
-    acc[type].push(q);
-    return acc;
-  }, {});
-}
-
-// partner data (unchanged)
-import { currentStudentsQuestions } from "../data/currentStudent";
-import { prospectiveStudentsQuestions } from "../data/prospectiveStudent";
-
-// category config (unchanged)
 import { categorySets } from "../data/categories.js";
 
 // adapter (your file)
@@ -43,7 +24,10 @@ export default function Admin() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+  // Persist login across refresh
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    // prevents issues if this ever runs in a non-browser environment (tests)
+    if (typeof window === "undefined") return false;
     return localStorage.getItem("adminLoggedIn") === "true";
   });
 
@@ -53,9 +37,8 @@ export default function Admin() {
     // replace with real auth later
     if (username === "admin" && password === "1234") {
       setIsLoggedIn(true);
-      localStorage.setItem("adminLoggedIn", "true");
+      localStorage.setItem("adminLoggedIn", "true"); // ✅ IMPORTANT (was missing in your version)
       setError("");
-      setPassword(""); // optional: clear after login
     } else {
       setError("Invalid username or password");
     }
@@ -69,6 +52,7 @@ export default function Admin() {
     setError("");
   }
 
+  // Compute grouped questions once per render (only depends on source data)
   const { groupedCurrent, groupedProspective } = useMemo(() => {
     const adminCurrentQuestions = adaptQuestions(currentStudentsQuestions, "current");
     const adminProspectiveQuestions = adaptQuestions(
@@ -86,21 +70,9 @@ export default function Admin() {
   // ADMIN DASHBOARD
   // =========================
   if (isLoggedIn) {
-    const adminCurrentQuestions = adaptQuestions(
-      currentStudentsQuestions,
-      "current"
-    );
-
-    const adminProspectiveQuestions = adaptQuestions(
-      prospectiveStudentsQuestions,
-      "prospective"
-    );
-
-    const groupedCurrent = groupByType(adminCurrentQuestions);
-    const groupedProspective = groupByType(adminProspectiveQuestions);
-
     return (
       <Box sx={{ p: 3 }}>
+        {/* Header row with Logout */}
         <Box
           sx={{
             display: "flex",
