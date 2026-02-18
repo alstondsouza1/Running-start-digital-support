@@ -1,11 +1,24 @@
-import { useState } from "react";
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  Paper,
-} from "@mui/material";
+import { useMemo, useState } from "react";
+import { Box, Button, TextField, Typography, Paper } from "@mui/material";
+
+// partner data (unchanged)
+import { currentStudentsQuestions } from "../data/currentStudent";
+import { prospectiveStudentsQuestions } from "../data/prospectiveStudent";
+
+// category config (unchanged)
+import { categorySets } from "../data/categories";
+
+// adapter (your file)
+import { adaptQuestions } from "../data/flexQuestions";
+
+function groupByType(questions) {
+  return questions.reduce((acc, q) => {
+    const type = q.type;
+    if (!acc[type]) acc[type] = [];
+    acc[type].push(q);
+    return acc;
+  }, {});
+}
 
 // partner data (unchanged)
 import { currentStudentsQuestions } from "../data/currentStudent";
@@ -29,21 +42,45 @@ export default function Admin() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-  return localStorage.getItem("adminLoggedIn") === "true";
-});
 
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return localStorage.getItem("adminLoggedIn") === "true";
+  });
 
   function handleSubmit(e) {
     e.preventDefault();
 
+    // replace with real auth later
     if (username === "admin" && password === "1234") {
       setIsLoggedIn(true);
+      localStorage.setItem("adminLoggedIn", "true");
       setError("");
+      setPassword(""); // optional: clear after login
     } else {
       setError("Invalid username or password");
     }
   }
+
+  function handleLogout() {
+    setIsLoggedIn(false);
+    localStorage.removeItem("adminLoggedIn");
+    setUsername("");
+    setPassword("");
+    setError("");
+  }
+
+  const { groupedCurrent, groupedProspective } = useMemo(() => {
+    const adminCurrentQuestions = adaptQuestions(currentStudentsQuestions, "current");
+    const adminProspectiveQuestions = adaptQuestions(
+      prospectiveStudentsQuestions,
+      "prospective"
+    );
+
+    return {
+      groupedCurrent: groupByType(adminCurrentQuestions),
+      groupedProspective: groupByType(adminProspectiveQuestions),
+    };
+  }, []);
 
   // =========================
   // ADMIN DASHBOARD
@@ -64,9 +101,28 @@ export default function Admin() {
 
     return (
       <Box sx={{ p: 3 }}>
-        <Typography variant="h4" gutterBottom>
-          Admin Dashboard
-        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 2,
+            mb: 2,
+          }}
+        >
+          <Typography variant="h4">Admin Dashboard</Typography>
+
+          <Button
+            variant="contained"
+            onClick={handleLogout}
+            sx={{
+              backgroundColor: "#006225",
+              "&:hover": { backgroundColor: "#D14900" },
+            }}
+          >
+            Logout
+          </Button>
+        </Box>
 
         {/* ================= CURRENT STUDENTS ================= */}
         <Typography variant="h5" sx={{ mt: 3 }}>
@@ -80,10 +136,19 @@ export default function Admin() {
             </Typography>
 
             {(groupedCurrent[cat.id] || []).map((q) => (
-              <Paper key={q.id} sx={{ p: 2, mt: 1 }}>
+              <Paper
+                key={q.id ?? `${cat.id}-${q.question}`}
+                sx={{ p: 2, mt: 1 }}
+              >
                 {q.question}
               </Paper>
             ))}
+
+            {(groupedCurrent[cat.id] || []).length === 0 && (
+              <Typography color="text.secondary" sx={{ mt: 1 }}>
+                No questions mapped to this category yet.
+              </Typography>
+            )}
           </Box>
         ))}
 
@@ -99,10 +164,19 @@ export default function Admin() {
             </Typography>
 
             {(groupedProspective[cat.id] || []).map((q) => (
-              <Paper key={q.id} sx={{ p: 2, mt: 1 }}>
+              <Paper
+                key={q.id ?? `${cat.id}-${q.question}`}
+                sx={{ p: 2, mt: 1 }}
+              >
                 {q.question}
               </Paper>
             ))}
+
+            {(groupedProspective[cat.id] || []).length === 0 && (
+              <Typography color="text.secondary" sx={{ mt: 1 }}>
+                No questions mapped to this category yet.
+              </Typography>
+            )}
           </Box>
         ))}
       </Box>
@@ -165,9 +239,7 @@ export default function Admin() {
             sx={{
               mt: 2,
               backgroundColor: "#006225",
-              "&:hover": {
-                backgroundColor: "#D14900",
-              },
+              "&:hover": { backgroundColor: "#D14900" },
             }}
           >
             Login
