@@ -17,7 +17,7 @@ import {
 import ClearIcon from "@mui/icons-material/Clear";
 
 import Categories from "./Categories";
-import { matchesQuery, normalize } from "../utils/search";
+import { matchesQuery, normalize, scoreText } from "../utils/search";
 
 function answerToText(answer) {
   if (!answer) return "";
@@ -55,7 +55,8 @@ export default function StudentFAQPage({
   const searchResults = useMemo(() => {
     if (!isSearching) return [];
 
-    return questions.filter((q) => {
+      return questions
+    .map((q) => {
       const cat = categoryById(categories, q.type);
 
       const blob = [
@@ -67,9 +68,14 @@ export default function StudentFAQPage({
         .filter(Boolean)
         .join(" | ");
 
-      return matchesQuery(blob, searchTerm);
-    });
-  }, [categories, questions, isSearching, searchTerm]);
+      const score = scoreText(blob, searchTerm);
+
+      return { q, score };
+    })
+    .filter((r) => r.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .map((r) => r.q);
+}, [categories, questions, isSearching, searchTerm]);
 
   const handleSelectCategory = (id) => {
     setSelectedCategoryId((prev) => (prev === id ? null : id));

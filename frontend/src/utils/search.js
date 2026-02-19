@@ -20,4 +20,26 @@ export function normalize(value) {
   
     return tokens.every((t) => haystack.includes(t));
   }
+
+  // 
+  export function scoreText (text, query) {
+    const haystack = normalize(text);
+    const tokens = tokenize(query);
+
+    if(tokens.length === 0){
+      return 0;
+    }
+
+    let score = 0;
+
+    tokens.forEach((t) => {
+      if(haystack.includes(t)){
+        score++;
+      }
+    })
+
+    return score;
+
+
+  }
   
