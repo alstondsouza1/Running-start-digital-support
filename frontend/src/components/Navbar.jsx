@@ -1,6 +1,6 @@
 import { AppBar, Toolbar, Typography, Button } from "@mui/material";
 import { Link } from "react-router-dom";
-import Logo from "../assets/GRC_Logo_WHITE.png";
+import Logo from "../assets/GRC_Logo_White.png";
 
 export default function Navbar() {
   const hoverColor = "#BBD416";
@@ -39,8 +39,8 @@ export default function Navbar() {
           Current Student
         </Button>
 
-        <Button component={Link} to="/new-student" color="inherit" sx={navButtonStyle}>
-          New Student
+        <Button component={Link} to="/prospective-student" color="inherit" sx={navButtonStyle}>
+          Future Student
         </Button>
 
         <Button component={Link} to="/admin" color="inherit" sx={navButtonStyle}>
