@@ -17,7 +17,7 @@ import {
 import ClearIcon from "@mui/icons-material/Clear";
 
 import Categories from "./Categories";
-import { matchesQuery, normalize, scoreText } from "../utils/search";
+import { normalize, scoreText } from "../utils/search";
 
 function answerToText(answer) {
   if (!answer) return "";
