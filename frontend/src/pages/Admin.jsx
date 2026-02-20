@@ -37,7 +37,7 @@ export default function Admin() {
     // replace with real auth later
     if (username === "admin" && password === "1234") {
       setIsLoggedIn(true);
-      localStorage.setItem("adminLoggedIn", "true"); // ✅ IMPORTANT (was missing in your version)
+      localStorage.setItem("adminLoggedIn", "true"); 
       setError("");
     } else {
       setError("Invalid username or password");

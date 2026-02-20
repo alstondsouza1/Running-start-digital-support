@@ -12,6 +12,7 @@ import {
   TextField,
   IconButton,
   InputAdornment,
+  Chip,
 } from "@mui/material";
 import ClearIcon from "@mui/icons-material/Clear";
 
@@ -39,7 +40,6 @@ export default function StudentFAQPage({
 }) {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
-  // search state
   const [searchTerm, setSearchTerm] = useState("");
   const isSearching = normalize(searchTerm).length > 0;
 
@@ -75,6 +75,76 @@ export default function StudentFAQPage({
     setSelectedCategoryId((prev) => (prev === id ? null : id));
   };
 
+  const renderAccordion = (item) => (
+    <Accordion
+      key={`${item.type}-${item.question}`}
+      disableGutters
+      sx={{
+        "&:before": { display: "none" },
+        boxShadow: 0,
+        borderBottom: "1px solid",
+        borderColor: "divider",
+      }}
+    >
+      <AccordionSummary
+        expandIcon={<span aria-hidden="true">▼</span>}
+        sx={{ "& .MuiAccordionSummary-content": { my: 1 } }}
+      >
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
+          <Typography fontWeight={600}>{item.question}</Typography>
+
+          {/* show category label in search mode */}
+          {isSearching && (
+            <Box>
+              <Chip
+                size="small"
+                label={categoryById(categories, item.type)?.name ?? item.type}
+              />
+            </Box>
+          )}
+        </Box>
+      </AccordionSummary>
+
+      <AccordionDetails sx={{ pt: 0 }}>
+        {item.answer?.intro && (
+          <Typography sx={{ mb: 1 }}>{item.answer.intro}</Typography>
+        )}
+
+        {item.answer?.bullets?.length > 0 && (
+          <List dense disablePadding sx={{ pl: 2 }}>
+            {item.answer.bullets.map((bullet, i) => (
+              <ListItem
+                key={`${item.question}-${i}`}
+                component="li"
+                sx={{
+                  display: "list-item",
+                  listStyleType: "disc",
+                  py: 0.25,
+                }}
+              >
+                <ListItemText
+                  primary={
+                    bullet.url ? (
+                      <MuiLink
+                        href={bullet.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {bullet.text}
+                      </MuiLink>
+                    ) : (
+                      bullet.text
+                    )
+                  }
+                />
+              </ListItem>
+            ))}
+          </List>
+        )}
+      </AccordionDetails>
+    </Accordion>
+  );
+
   return (
     <Box sx={{ width: "100%", px: { xs: 2, sm: 3 }, py: { xs: 3, sm: 4 } }}>
       <Box sx={{ width: "100%", maxWidth: 1100, mx: "auto" }}>
@@ -88,6 +158,7 @@ export default function StudentFAQPage({
           </Typography>
         )}
 
+        {/* Search bar ALWAYS visible */}
         <TextField
           fullWidth
           label="Search FAQs"
@@ -112,20 +183,10 @@ export default function StudentFAQPage({
           }}
         />
 
-        <Typography fontWeight={700} sx={{ mb: 2 }}>
-          Browse Categories:
-        </Typography>
-
-        <Categories
-          categories={categories}
-          selectedId={selectedCategoryId}
-          onSelectCategory={handleSelectCategory}
-        />
-
-        {selectedCategory && (
+        {/* SEARCH MODE: only results */}
+        {isSearching ? (
           <Box
             sx={{
-              mt: 4,
               p: 3,
               backgroundColor: "white",
               borderRadius: 2,
@@ -135,79 +196,70 @@ export default function StudentFAQPage({
               mx: "auto",
             }}
           >
-            <Typography variant="h5" sx={{ mb: 0.5 }} fontWeight={700}>
-              {selectedCategory.name}
+            <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+              Search Results ({searchResults.length})
             </Typography>
 
-            <Typography color="text.secondary" sx={{ mb: 2 }}>
-              {selectedCategory.description}
-            </Typography>
-
-            {questionsForCategory.length === 0 && (
+            {searchResults.length === 0 ? (
               <Typography color="text.secondary">
-                No questions in this category yet.
+                No results found. Try different keywords (ex: “deadline”, “book”, “ENGL”, “ctclink”).
               </Typography>
+            ) : (
+              searchResults.map(renderAccordion)
             )}
+          </Box>
+        ) : (
+          <>
+            {/* CATEGORY MODE */}
+            <Typography fontWeight={700} sx={{ mb: 2 }}>
+              Browse Categories:
+            </Typography>
 
-            {questionsForCategory.map((item) => (
-              <Accordion
-                key={`${item.type}-${item.question}`}
-                disableGutters
+            <Categories
+              categories={categories}
+              selectedId={selectedCategoryId}
+              onSelectCategory={handleSelectCategory}
+            />
+
+            {/* Show questions ONLY when category selected */}
+            {selectedCategory ? (
+              <Box
                 sx={{
-                  "&:before": { display: "none" },
-                  boxShadow: 0,
-                  borderBottom: "1px solid",
-                  borderColor: "divider",
+                  mt: 4,
+                  p: 3,
+                  backgroundColor: "white",
+                  borderRadius: 2,
+                  boxShadow: 1,
+                  textAlign: "left",
+                  maxWidth: 980,
+                  mx: "auto",
                 }}
               >
-                <AccordionSummary
-                  expandIcon={<span aria-hidden="true">▼</span>}
-                  sx={{ "& .MuiAccordionSummary-content": { my: 1 } }}
-                >
-                  <Typography fontWeight={600}>{item.question}</Typography>
-                </AccordionSummary>
+                <Typography variant="h5" sx={{ mb: 0.5 }} fontWeight={700}>
+                  {selectedCategory.name}
+                </Typography>
 
-                <AccordionDetails sx={{ pt: 0 }}>
-                  {item.answer?.intro && (
-                    <Typography sx={{ mb: 1 }}>{item.answer.intro}</Typography>
-                  )}
+                <Typography color="text.secondary" sx={{ mb: 2 }}>
+                  {selectedCategory.description}
+                </Typography>
 
-                  {item.answer?.bullets?.length > 0 && (
-                    <List dense disablePadding sx={{ pl: 2 }}>
-                      {item.answer.bullets.map((bullet, i) => (
-                        <ListItem
-                          key={`${item.question}-${i}`}
-                          component="li"
-                          sx={{
-                            display: "list-item",
-                            listStyleType: "disc",
-                            py: 0.25,
-                          }}
-                        >
-                          <ListItemText
-                            primary={
-                              bullet.url ? (
-                                <MuiLink
-                                  href={bullet.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  {bullet.text}
-                                </MuiLink>
-                              ) : (
-                                bullet.text
-                              )
-                            }
-                          />
-                        </ListItemText>
-                        </ListItem>
-                      ))}
-                    </List>
-                  )}
-                </AccordionDetails>
-              </Accordion>
-            ))}
-          </Box>
+                {questionsForCategory.length === 0 ? (
+                  <Typography color="text.secondary">
+                    No questions in this category yet.
+                  </Typography>
+                ) : (
+                  questionsForCategory.map(renderAccordion)
+                )}
+              </Box>
+            ) : (
+              <Typography
+                color="text.secondary"
+                sx={{ mt: 3, textAlign: "center" }}
+              >
+                Select a category to view questions.
+              </Typography>
+            )}
+          </>
         )}
       </Box>
     </Box>
