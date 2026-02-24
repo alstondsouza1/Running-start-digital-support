@@ -1,14 +1,16 @@
 import { useMemo, useState } from "react";
-import { Box, Button, TextField, Typography, Paper } from "@mui/material";
+import { Box, Typography, Paper } from "@mui/material";
+import { useAuth } from "../context/AuthenticateContext";
+import AdminLogin from "../components/admin/AdminLogin"; // login modal
 
-// partner data (unchanged)
+// partner data
 import { currentStudentsQuestions } from "../data/currentStudent";
 import { prospectiveStudentsQuestions } from "../data/prospectiveStudent";
 
-// category config (unchanged)
+// category config
 import { categorySets } from "../data/categories.js";
 
-// adapter (your file)
+// adapter
 import { adaptQuestions } from "../data/flexQuestions.js";
 
 function groupByType(questions) {
@@ -20,36 +22,17 @@ function groupByType(questions) {
 }
 
 export default function Admin() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const { isAdmin } = useAuth();
+  const [openLogin, setOpenLogin] = useState(!isAdmin);
 
-  // Persist login across refresh
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    // prevents issues if this ever runs in a non-browser environment (tests)
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("adminLoggedIn") === "true";
-  });
-
-  function handleSubmit(e) {
-    e.preventDefault();
-
-    // replace with real auth later
-    if (username === "admin" && password === "1234") {
-      setIsLoggedIn(true);
-      localStorage.setItem("adminLoggedIn", "true"); 
-      setError("");
-    } else {
-      setError("Invalid username or password");
-    }
-  }
-
-  function handleLogout() {
-    setIsLoggedIn(false);
-    localStorage.removeItem("adminLoggedIn");
-    setUsername("");
-    setPassword("");
-    setError("");
+  // show login modal if not admin
+  if (!isAdmin) {
+    return (
+      <AdminLogin 
+        open={openLogin} 
+        closeModal={() => setOpenLogin(false)} 
+      />
+    );
   }
 
   // Compute grouped questions once per render (only depends on source data)
@@ -69,155 +52,59 @@ export default function Admin() {
   // =========================
   // ADMIN DASHBOARD
   // =========================
-  if (isLoggedIn) {
-    return (
-      <Box sx={{ p: 3 }}>
-        {/* Header row with Logout */}
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 2,
-            mb: 2,
-          }}
-        >
-          <Typography variant="h4">Admin Dashboard</Typography>
-
-          <Button
-            variant="contained"
-            onClick={handleLogout}
-            sx={{
-              backgroundColor: "#006225",
-              "&:hover": { backgroundColor: "#D14900" },
-            }}
-          >
-            Logout
-          </Button>
-        </Box>
-
-        {/* ================= CURRENT STUDENTS ================= */}
-        <Typography variant="h5" sx={{ mt: 3 }}>
-          Current Students
-        </Typography>
-
-        {categorySets.current.map((cat) => (
-          <Box key={cat.id} sx={{ mt: 2 }}>
-            <Typography variant="subtitle1" fontWeight="bold">
-              {cat.name}
-            </Typography>
-
-            {(groupedCurrent[cat.id] || []).map((q) => (
-              <Paper
-                key={q.id ?? `${cat.id}-${q.question}`}
-                sx={{ p: 2, mt: 1 }}
-              >
-                {q.question}
-              </Paper>
-            ))}
-
-            {(groupedCurrent[cat.id] || []).length === 0 && (
-              <Typography color="text.secondary" sx={{ mt: 1 }}>
-                No questions mapped to this category yet.
-              </Typography>
-            )}
-          </Box>
-        ))}
-
-        {/* ================= PROSPECTIVE STUDENTS ================= */}
-        <Typography variant="h5" sx={{ mt: 5 }}>
-          Prospective Students
-        </Typography>
-
-        {categorySets.prospective.map((cat) => (
-          <Box key={cat.id} sx={{ mt: 2 }}>
-            <Typography variant="subtitle1" fontWeight="bold">
-              {cat.name}
-            </Typography>
-
-            {(groupedProspective[cat.id] || []).map((q) => (
-              <Paper
-                key={q.id ?? `${cat.id}-${q.question}`}
-                sx={{ p: 2, mt: 1 }}
-              >
-                {q.question}
-              </Paper>
-            ))}
-
-            {(groupedProspective[cat.id] || []).length === 0 && (
-              <Typography color="text.secondary" sx={{ mt: 1 }}>
-                No questions mapped to this category yet.
-              </Typography>
-            )}
-          </Box>
-        ))}
-      </Box>
-    );
-  }
-
-  // =========================
-  // LOGIN SCREEN
-  // =========================
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#f1ffe9",
-      }}
-    >
-      <Paper
-        elevation={3}
-        sx={{
-          width: 320,
-          p: 3,
-          borderRadius: 2,
-        }}
-      >
-        <Typography variant="h5" align="center" gutterBottom>
-          Admin Login
-        </Typography>
+    <Box sx={{ p: 3 }}>
+      <Typography variant="h4">Admin Dashboard</Typography>
 
-        <Box component="form" onSubmit={handleSubmit}>
-          <TextField
-            label="Username"
-            fullWidth
-            margin="normal"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
+      {/* ================= CURRENT STUDENTS ================= */}
+      <Typography variant="h5" sx={{ mt: 3 }}>
+        Current Students
+      </Typography>
 
-          <TextField
-            label="Password"
-            type="password"
-            fullWidth
-            margin="normal"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+      {categorySets.current.map((cat) => (
+        <Box key={cat.id} sx={{ mt: 2 }}>
+          <Typography variant="subtitle1" fontWeight="bold">
+            {cat.name}
+          </Typography>
 
-          {error && (
-            <Typography color="error" variant="body2" sx={{ mt: 1 }}>
-              {error}
+          {(groupedCurrent[cat.id] || []).map((q) => (
+            <Paper key={q.id ?? `${cat.id}-${q.question}`} sx={{ p: 2, mt: 1 }}>
+              {q.question}
+            </Paper>
+          ))}
+
+          {(groupedCurrent[cat.id] || []).length === 0 && (
+            <Typography color="text.secondary" sx={{ mt: 1 }}>
+              No questions mapped to this category yet.
             </Typography>
           )}
-
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{
-              mt: 2,
-              backgroundColor: "#006225",
-              "&:hover": { backgroundColor: "#D14900" },
-            }}
-          >
-            Login
-          </Button>
         </Box>
-      </Paper>
+      ))}
+
+      {/* ================= PROSPECTIVE STUDENTS ================= */}
+      <Typography variant="h5" sx={{ mt: 5 }}>
+        Prospective Students
+      </Typography>
+
+      {categorySets.prospective.map((cat) => (
+        <Box key={cat.id} sx={{ mt: 2 }}>
+          <Typography variant="subtitle1" fontWeight="bold">
+            {cat.name}
+          </Typography>
+
+          {(groupedProspective[cat.id] || []).map((q) => (
+            <Paper key={q.id ?? `${cat.id}-${q.question}`} sx={{ p: 2, mt: 1 }}>
+              {q.question}
+            </Paper>
+          ))}
+
+          {(groupedProspective[cat.id] || []).length === 0 && (
+            <Typography color="text.secondary" sx={{ mt: 1 }}>
+              No questions mapped to this category yet.
+            </Typography>
+          )}
+        </Box>
+      ))}
     </Box>
   );
 }
