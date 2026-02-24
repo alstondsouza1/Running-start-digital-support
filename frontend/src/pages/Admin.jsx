@@ -1,7 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Box, Typography, Paper } from "@mui/material";
-import { useAuth } from "../context/AuthenticateContext";
-import AdminLogin from "../components/admin/AdminLogin"; // login modal
 
 // partner data
 import { currentStudentsQuestions } from "../data/currentStudent";
@@ -22,26 +20,9 @@ function groupByType(questions) {
 }
 
 export default function Admin() {
-  const { isAdmin } = useAuth();
-  const [openLogin, setOpenLogin] = useState(!isAdmin);
-
-  // show login modal if not admin
-  if (!isAdmin) {
-    return (
-      <AdminLogin 
-        open={openLogin} 
-        closeModal={() => setOpenLogin(false)} 
-      />
-    );
-  }
-
-  // Compute grouped questions once per render (only depends on source data)
   const { groupedCurrent, groupedProspective } = useMemo(() => {
     const adminCurrentQuestions = adaptQuestions(currentStudentsQuestions, "current");
-    const adminProspectiveQuestions = adaptQuestions(
-      prospectiveStudentsQuestions,
-      "prospective"
-    );
+    const adminProspectiveQuestions = adaptQuestions(prospectiveStudentsQuestions, "prospective");
 
     return {
       groupedCurrent: groupByType(adminCurrentQuestions),
@@ -49,14 +30,10 @@ export default function Admin() {
     };
   }, []);
 
-  // =========================
-  // ADMIN DASHBOARD
-  // =========================
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4">Admin Dashboard</Typography>
 
-      {/* ================= CURRENT STUDENTS ================= */}
       <Typography variant="h5" sx={{ mt: 3 }}>
         Current Students
       </Typography>
@@ -81,7 +58,6 @@ export default function Admin() {
         </Box>
       ))}
 
-      {/* ================= PROSPECTIVE STUDENTS ================= */}
       <Typography variant="h5" sx={{ mt: 5 }}>
         Prospective Students
       </Typography>
