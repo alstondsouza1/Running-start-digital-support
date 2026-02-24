@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import CurrentStudent from "./pages/CurrentStudent";
 import ProspectiveStudent from "./pages/ProspectiveStudent";
 import Admin from "./pages/Admin";
+import AdminLogin from "./components/admin/AdminLogin";
 import NotFound from "./pages/NotFound";
 
 export default function App() {
@@ -24,6 +25,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/current-student" element={<CurrentStudent />} />
             <Route path="/prospective-student" element={<ProspectiveStudent />} />
+            <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
