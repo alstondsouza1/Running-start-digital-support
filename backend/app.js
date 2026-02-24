@@ -2,19 +2,22 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
-import router from "./router/router.js";
 import cors from "cors";
 
-import autheticateRoutes from "./router/authenticateRoutes.js"
+import router from "./router/router.js"; // health or other routes
+import autheticateRoutes from "./router/authenticateRoutes.js";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
-app.use("/api", router);
-app.use("/", autheticateRoutes)
 
+// Mount all API routes under /api
+app.use("/api", router);
+app.use("/api", autheticateRoutes);
+
+// Optional root test route
 app.get("/", (req, res) => {
   res.send("Hello");
 });
