@@ -7,28 +7,29 @@ import autheticateToken from "../middleware/authenticateToken.js";
 const router = express.Router();
 
 router.post("/login", async (req, res) => {
-    const { password } = req.body;
+  const { username, password } = req.body;
 
-    if (!password) {
-        return res.status(400).json({ message: "Password is required." });
-    }
+  if (!username || !password) {
+    return res.status(400).json({ message: "Username and password are required." });
+  }
 
-    const isMatch = await bcrypt.compare(
-        password,
-        process.env.ADMIN_PASSWORD_HASH,
-    );
-    
-    const payload = { roles: "admin"};
+  // Hardcoded admin username for now (can be stored in .env later)
+  const adminUsername = process.env.ADMIN_USERNAME || "admin"; 
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: "2h"
-    });
+  if (username !== adminUsername) {
+    return res.status(401).json({ message: "Invalid username or password" });
+  }
 
-    res.json({ message: "Login successful", token });
+  const isMatch = await bcrypt.compare(password, process.env.ADMIN_PASSWORD_HASH);
+  if (!isMatch) {
+    return res.status(401).json({ message: "Invalid username or password" });
+  }
+
+  const payload = { role: "admin" };
+  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "2h" });
+
+  res.json({ message: "Login successful", token });
 });
 
-router.get("api/check", autheticateToken, (req, res) => {
-    res.json({ message: "You are authenticated as Admin.", user: req.user })
-});
 
 export default router; 
