@@ -11,7 +11,6 @@ import {
   AccordionDetails,
   Chip,
 } from "@mui/material";
-import ClearIcon from "@mui/icons-material/Clear";
 
 import Categories from "./Categories";
 import QuestionSearchBar from "./QuestionSearchBar";
@@ -39,9 +38,6 @@ export default function StudentFAQPage({
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const isSearching = normalize(searchTerm).length > 0;
-
-  const [searchTerm, setSearchTerm] = useState("");
   const isSearching = normalize(searchTerm).length > 0;
 
   const selectedCategory = useMemo(() => {
