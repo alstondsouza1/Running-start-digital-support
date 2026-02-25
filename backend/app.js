@@ -16,7 +16,7 @@ app.use(express.json());
 // Mount all API routes under /api
 app.use("/api", router);
 
-app.use("/api", authenticateRoutes);
+app.use("/api/auth", authenticateRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello");
