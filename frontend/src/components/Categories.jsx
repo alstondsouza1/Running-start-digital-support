@@ -15,28 +15,17 @@ export default function Categories({ categories, onSelectCategory, selectedId })
     }
   };
 
-  // one place to control exact size
-  const CARD_WIDTH = 420;  
-  const CARD_HEIGHT = 140;  
-  const GAP = 24;           
-
   return (
-    <Box
-      sx={{
-        width: "100%",
-        display: "flex",
-        justifyContent: "center", 
-      }}
-    >
+    <Box sx={{ width: "100%", display: "flex", justifyContent: "center" }}>
       <Box
         sx={{
+          width: "100%",
+          maxWidth: 980,
           display: "grid",
-          gap: `${GAP}px`,
-          justifyContent: "center",
-          // 2 columns on desktop, 1 column on mobile
+          gap: { xs: 2, sm: 3 },
           gridTemplateColumns: {
-            xs: "1fr",
-            sm: `${CARD_WIDTH}px ${CARD_WIDTH}px`,
+            xs: "1fr",       // phone
+            sm: "1fr 1fr",   // tablet+
           },
         }}
       >
@@ -53,26 +42,22 @@ export default function Categories({ categories, onSelectCategory, selectedId })
               aria-pressed={clickable ? isSelected : undefined}
               sx={{
                 cursor: clickable ? "pointer" : "default",
-                width: { xs: "100%", sm: `${CARD_WIDTH}px` },
-                height: `${CARD_HEIGHT}px`,
                 borderRadius: 2,
                 border: isSelected
                   ? "2px solid #2c882b"
                   : "1px solid rgba(0,0,0,0.12)",
                 boxShadow: isSelected ? 4 : 1,
                 transition: "transform 0.15s ease, box-shadow 0.15s ease",
+                minHeight: 140,
                 "&:hover": clickable
-                  ? {
-                      transform: "translateY(-2px)",
-                      boxShadow: isSelected ? 6 : 3,
-                    }
+                  ? { transform: "translateY(-2px)", boxShadow: isSelected ? 6 : 3 }
                   : {},
               }}
             >
               <CardContent
                 sx={{
                   height: "100%",
-                  px: 3,
+                  px: { xs: 2, sm: 3 },
                   py: 2.5,
                   display: "flex",
                   flexDirection: "column",
@@ -84,6 +69,7 @@ export default function Categories({ categories, onSelectCategory, selectedId })
                   variant="h6"
                   sx={{
                     lineHeight: 1.2,
+                    fontSize: { xs: "1.05rem", sm: "1.15rem" },
                     display: "-webkit-box",
                     WebkitLineClamp: 2,
                     WebkitBoxOrient: "vertical",
