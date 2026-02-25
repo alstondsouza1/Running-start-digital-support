@@ -38,7 +38,9 @@ export const prospectiveStudentsQuestions = [
             "Are motivated to participate in the college environment and possess the maturity to do so.",
         },
         { text: "Seek academic challenges not available at their high school." },
-        { text: "View Program Benefits and Considerations." },
+        { text: "View Program Benefits and Considerations." ,
+          url: "https://www.greenriver.edu/students/academics/running-start/prospective-running-start-students/benefits-and-considerations.html"
+        },
       ],
     },
   },
@@ -59,6 +61,7 @@ export const prospectiveStudentsQuestions = [
         {
           text:
             "Be eligible for ENGL& 101 (see Course Placement Options for assessment and placement options).",
+            url: "https://www.greenriver.edu/students/academics/placement-testing-center/course-placement-options/index.html",
         },
         {
           text:
@@ -289,6 +292,10 @@ export const prospectiveStudentsQuestions = [
           text:
             "Students should ask the university they plan to transfer to for guidance.",
         },
+        {text:
+          "View universities which have \"direct transfer agreements with Green River\"",
+          url: "https://catalog.greenriver.edu/content.php?catoid=8&navoid=391"
+        }
       ],
     },
   },

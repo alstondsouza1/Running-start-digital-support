@@ -16,6 +16,7 @@ export const currentStudentsQuestions = [
         {
           text:
             "Did I meet Academic Standards last term? If last term's GPA was below a 2.0 you will need to meet with an advisor before enrolling in the next term. Check your GRC email or the Navigate app for messages about your next steps.",
+            url: "https://www.greenriver.edu/students/academics/running-start/current-running-start-students/running-start-academic-standards.html"
         },
         {
           text:
@@ -42,6 +43,10 @@ export const currentStudentsQuestions = [
           text:
             "You are welcome back the following term provided that you meet the next term's deadlines.",
         },
+        {
+          text: "View enrollment deadlines",
+          url: "https://www.greenriver.edu/students/academics/office-of-the-registrar/index.html"
+        }
       ],
     },
   },
