@@ -1,0 +1,5 @@
+CREATE TABLE current_student_faq (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    data JSON NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
