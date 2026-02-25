@@ -9,15 +9,12 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  TextField,
-  IconButton,
-  InputAdornment,
   Chip,
 } from "@mui/material";
-import ClearIcon from "@mui/icons-material/Clear";
 
 import Categories from "./Categories";
-import { matchesQuery, normalize } from "../utils/search";
+import QuestionSearchBar from "./QuestionSearchBar";
+import { normalize, scoreText } from "../utils/search";
 
 function answerToText(answer) {
   if (!answer) return "";
@@ -39,8 +36,8 @@ export default function StudentFAQPage({
   questions = [],
 }) {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
-
   const [searchTerm, setSearchTerm] = useState("");
+
   const isSearching = normalize(searchTerm).length > 0;
 
   const selectedCategory = useMemo(() => {
@@ -52,32 +49,53 @@ export default function StudentFAQPage({
     return questions.filter((q) => q.type === selectedCategoryId);
   }, [questions, selectedCategoryId]);
 
+  // Search results
   const searchResults = useMemo(() => {
     if (!isSearching) return [];
 
-    return questions.filter((q) => {
-      const cat = categoryById(categories, q.type);
+    return questions
+      .map((q, index) => {
+        const cat = categoryById(categories, q.type);
 
-      const blob = [
-        q.question,
-        answerToText(q.answer),
-        cat?.name,
-        cat?.description,
-      ]
-        .filter(Boolean)
-        .join(" | ");
+        // optional: weight question higher than answer/category text
+        const questionBlob = q.question ?? "";
+        const restBlob = [
+          answerToText(q.answer),
+          cat?.name,
+          cat?.description,
+        ]
+          .filter(Boolean)
+          .join(" | ");
 
-      return matchesQuery(blob, searchTerm);
-    });
+        const score =
+          scoreText(questionBlob, searchTerm) * 3 + scoreText(restBlob, searchTerm);
+
+        return { q, score, index };
+      })
+      .filter((r) => r.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .map((r) => r.q);
   }, [categories, questions, isSearching, searchTerm]);
 
+  // when selecting a category, clear search so we go back to category mode
   const handleSelectCategory = (id) => {
+    setSearchTerm(""); // clear search when switching to category browsing
     setSelectedCategoryId((prev) => (prev === id ? null : id));
   };
 
-  const renderAccordion = (item) => (
+  // when typing a search, clear the category selection
+  const handleSearchChange = (value) => {
+    setSelectedCategoryId(null); // clear category when searching
+    setSearchTerm(value);
+  };
+
+  // stable-ish key helper (better than type+question only)
+  const getAccordionKey = (item, fallbackIndex) =>
+    item.id ?? `${item.type}-${normalize(item.question)}-${fallbackIndex}`;
+
+  const renderAccordion = (item, idx) => (
     <Accordion
-      key={`${item.type}-${item.question}`}
+      key={getAccordionKey(item, idx)}
       disableGutters
       sx={{
         "&:before": { display: "none" },
@@ -114,7 +132,7 @@ export default function StudentFAQPage({
           <List dense disablePadding sx={{ pl: 2 }}>
             {item.answer.bullets.map((bullet, i) => (
               <ListItem
-                key={`${item.question}-${i}`}
+                key={`${getAccordionKey(item, idx)}-bullet-${i}`}
                 component="li"
                 sx={{
                   display: "list-item",
@@ -158,32 +176,10 @@ export default function StudentFAQPage({
           </Typography>
         )}
 
-        {/* Search bar ALWAYS visible */}
-        <TextField
-          fullWidth
-          label="Search FAQs"
-          placeholder='Try: "deadline", "ctclink", "ENGL", "book"'
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          sx={{ mb: 3, maxWidth: 980 }}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                {searchTerm.trim().length > 0 && (
-                  <IconButton
-                    aria-label="Clear search"
-                    onClick={() => setSearchTerm("")}
-                    edge="end"
-                  >
-                    <ClearIcon />
-                  </IconButton>
-                )}
-              </InputAdornment>
-            ),
-          }}
-        />
+        {/* search bar ALWAYS visible (reusable component) */}
+        <QuestionSearchBar value={searchTerm} onChange={handleSearchChange} />
 
-        {/* SEARCH MODE: only results */}
+        {/* SEARCH MODE */}
         {isSearching ? (
           <Box
             sx={{
@@ -202,10 +198,11 @@ export default function StudentFAQPage({
 
             {searchResults.length === 0 ? (
               <Typography color="text.secondary">
-                No results found. Try different keywords (ex: “deadline”, “book”, “ENGL”, “ctclink”).
+                No results found. Try different keywords (ex: “deadline”, “book”,
+                “ENGL”, “ctclink”).
               </Typography>
             ) : (
-              searchResults.map(renderAccordion)
+              searchResults.map((item, idx) => renderAccordion(item, idx))
             )}
           </Box>
         ) : (
@@ -248,7 +245,9 @@ export default function StudentFAQPage({
                     No questions in this category yet.
                   </Typography>
                 ) : (
-                  questionsForCategory.map(renderAccordion)
+                  questionsForCategory.map((item, idx) =>
+                    renderAccordion(item, idx)
+                  )
                 )}
               </Box>
             ) : (

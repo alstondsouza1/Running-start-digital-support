@@ -7,8 +7,9 @@ export default function Home() {
   const navigate = useNavigate();
 
   const cardStyles = {
-    width: 260,
-    height: 300,
+    width: "100%",
+    maxWidth: 360,
+    minHeight: 280,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -31,26 +32,33 @@ export default function Home() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 3,
-        px: 3,
+        gap: 2,
+        px: { xs: 2, sm: 3 },
+        py: { xs: 3, sm: 4 },
       }}
     >
-      {/* Header */}
-      <Typography variant="h4" fontWeight={600}>
+      <Typography variant="h4" fontWeight={700} sx={{ textAlign: "center" }}>
         Welcome to Green River College
       </Typography>
 
-      <Typography color="text.secondary">
+      <Typography color="text.secondary" sx={{ textAlign: "center", maxWidth: 700 }}>
         Choose an option below to find answers and resources
       </Typography>
 
-      {/* Cards */}
-      <Box sx={{ display: "flex", gap: 4, mt: 3, flexWrap: "wrap" }}>
-        {/* Current Student */}
+      <Box
+        sx={{
+          width: "100%",
+          display: "flex",
+          gap: { xs: 2, sm: 3 },
+          mt: 2,
+          flexWrap: "wrap",
+          justifyContent: "center",
+        }}
+      >
         <Card sx={cardStyles} onClick={() => navigate("/current-student")}>
-          <CardContent sx={{ textAlign: "center" }}>
+          <CardContent sx={{ textAlign: "center", px: 3 }}>
             <SchoolIcon sx={{ fontSize: 70, color: "#2c882b" }} />
-            <Typography variant="h6" sx={{ mt: 2 }}>
+            <Typography variant="h6" sx={{ mt: 2 }} fontWeight={700}>
               Current Student
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
@@ -59,11 +67,10 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* Prospective / Future Student */}
         <Card sx={cardStyles} onClick={() => navigate("/prospective-student")}>
-          <CardContent sx={{ textAlign: "center" }}>
+          <CardContent sx={{ textAlign: "center", px: 3 }}>
             <PersonAddIcon sx={{ fontSize: 70, color: "#2c882b" }} />
-            <Typography variant="h6" sx={{ mt: 2 }}>
+            <Typography variant="h6" sx={{ mt: 2 }} fontWeight={700}>
               Future Student
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
