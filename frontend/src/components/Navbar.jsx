@@ -30,7 +30,7 @@ export default function Navbar() {
     { label: "Home", to: "/" },
     { label: "Current Student", to: "/current-student" },
     { label: "Future Student", to: "/prospective-student" },
-    { label: "Admin", to: "/admin" },
+    { label: "Login", to: "/admin" },
   ];
 
   const navButtonStyle = {
