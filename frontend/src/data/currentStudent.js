@@ -1,5 +1,83 @@
 export const currentStudentsQuestions = [
   // =====================================================
+  // FEE WAIVER & BOOK LOAN (FWBL)
+  // =====================================================
+
+  {
+    type: "fee-waiver-book-loan",
+    question:
+      "I am in the Fee Waiver and Book Loan Program. Why do I still owe fees?",
+    answer: {
+      bullets: [
+        {
+          text:
+            "Fee Waiver students are still responsible for class fees, including Inclusive Access fees.",
+        },
+        {
+          text:
+            "The Fee Waiver program covers student-voted fees (like matriculation, student center fee, and the technology fee), not class-specific fees.",
+        },
+      ],
+    },
+  },
+
+  {
+    type: "fee-waiver-book-loan",
+    question:
+      "Can I get ebooks, supplies, or access codes through Fee Waiver/Book Loan?",
+    answer: {
+      bullets: [
+        {
+          text:
+            "No. One-time use items (like access codes) are not provided for Fee Waiver students.",
+        },
+        {
+          text:
+            "The Book Loan Program provides physical books that can be returned.",
+        },
+      ],
+    },
+  },
+
+  {
+    type: "fee-waiver-book-loan",
+    question: "I'm being charged an Inclusive Access fee. Can this be waived?",
+    answer: {
+      bullets: [
+        {
+          text:
+            "Inclusive Access is a course materials fee and is often cheaper than buying the book elsewhere.",
+        },
+        {
+          text: "Course materials are required to complete the course.",
+        },
+        {
+          text:
+            "Inclusive Access is considered a one-time use item and cannot be covered by the Fee Waiver program or waived.",
+        },
+      ],
+    },
+  },
+
+  {
+    type: "fee-waiver-book-loan",
+    question:
+      "I submitted the Fee Waiver application after the 10th day. Can it still apply to this term?",
+    answer: {
+      bullets: [
+        {
+          text:
+            "No. Applications submitted after the 10th day are processed for the next term.",
+        },
+        {
+          text:
+            "We cannot go back and apply Fee Waiver forms to the current quarter after the 10th day.",
+        },
+      ],
+    },
+  },
+
+  // =====================================================
   // DATES & DEADLINES (Enrollment)
   // =====================================================
 
@@ -48,6 +126,26 @@ export const currentStudentsQuestions = [
 
   {
     type: "dates-deadlines",
+    question: "Where can I find my enrollment date?",
+    answer: {
+      bullets: [
+        {
+          text: 'In My Green River, go to "Enrollment" → "Enrollment Dates".',
+        },
+        {
+          text:
+            "Your enrollment date (appointment) is when you can begin enrolling in classes for the upcoming term.",
+        },
+        {
+          text:
+            "All Running Start students must be enrolled in at least one class by the third day of the term.",
+        },
+      ],
+    },
+  },
+
+  {
+    type: "dates-deadlines",
     question: "What if I need to change my schedule after the term begins?",
     answer: {
       intro:
@@ -70,7 +168,8 @@ export const currentStudentsQuestions = [
             "Please note: only you as the student can initiate and complete adding/dropping classes. An instructor, parent, or advisor cannot complete this process on behalf of students.",
         },
         {
-          text: "Always save a receipt of your enrollment transactions for your records.",
+          text:
+            "Always save a receipt of your enrollment transactions for your records.",
         },
       ],
     },
@@ -123,16 +222,74 @@ export const currentStudentsQuestions = [
       intro:
         "Yes. Running Start students enroll in regular college classes. Online (eLearning) courses can be flexible, but they can be challenging. Before enrolling, ask yourself how well these statements describe you:",
       bullets: [
-        { text: "I feel comfortable using reading and writing as my primary means of communication and learning." },
-        { text: "I feel I can learn in an environment where oral lectures are not the primary mode of learning." },
+        {
+          text:
+            "I feel comfortable using reading and writing as my primary means of communication and learning.",
+        },
+        {
+          text:
+            "I feel I can learn in an environment where oral lectures are not the primary mode of learning.",
+        },
         { text: "I am self-motivated and can work independently." },
-        { text: "I have no problem communicating with my instructor and classmates through email and discussion boards." },
-        { text: "I have no problem asking questions when I don't understand something or need clarification." },
-        { text: "I have or will have access to a computer with internet access on a regular basis." },
+        {
+          text:
+            "I have no problem communicating with my instructor and classmates through email and discussion boards.",
+        },
+        {
+          text:
+            "I have no problem asking questions when I don't understand something or need clarification.",
+        },
+        {
+          text:
+            "I have or will have access to a computer with internet access on a regular basis.",
+        },
         { text: "I feel comfortable in my keyboarding abilities." },
-        { text: "I feel comfortable with basic computer skills such as email, creating/saving files, and downloading files." },
-        { text: "I can dedicate approximately three hours of work per credit hour to my eLearning class." },
-        { text: "Being successful as an online student often requires the abilities listed above." },
+        {
+          text:
+            "I feel comfortable with basic computer skills such as email, creating/saving files, and downloading files.",
+        },
+        {
+          text:
+            "I can dedicate approximately three hours of work per credit hour to my eLearning class.",
+        },
+        {
+          text:
+            "Being successful as an online student often requires the abilities listed above.",
+        },
+      ],
+    },
+  },
+
+  {
+    type: "how-to-plan-classes",
+    question: "Can I meet with any advisor if my advisor isn't available?",
+    answer: {
+      bullets: [
+        {
+          text:
+            "If your advisor doesn't have any appointment availability, we recommend seeing them during drop-ins to get quick questions answered (drop-ins are limited to 15–20 minutes).",
+        },
+        {
+          text:
+            "An appointment is required to develop a full academic plan.",
+        },
+      ],
+    },
+  },
+
+  {
+    type: "how-to-plan-classes",
+    question: "Can I meet with my advisor during drop-ins for academic standards?",
+    answer: {
+      bullets: [
+        {
+          text:
+            "No. Students must schedule an appointment for academic standards because these conversations typically take one hour.",
+        },
+        {
+          text:
+            "Drop-ins are limited to 15–20 minutes.",
+        },
       ],
     },
   },
@@ -183,7 +340,8 @@ export const currentStudentsQuestions = [
 
   {
     type: "how-to-plan-classes",
-    question: "Should students stay at Green River to finish the AA degree before transferring?",
+    question:
+      "Should students stay at Green River to finish the AA degree before transferring?",
     answer: {
       bullets: [
         {
@@ -246,10 +404,7 @@ export const currentStudentsQuestions = [
     question: "What if my family moves or change school districts?",
     answer: {
       bullets: [
-        {
-          text:
-            "Please let our department know immediately.",
-        },
+        { text: "Please let our department know immediately." },
         {
           text:
             "Have the counselor at your new school fill out a new Enrollment Verification Form and turn it in to our office.",
