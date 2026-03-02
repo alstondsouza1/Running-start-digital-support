@@ -16,6 +16,42 @@ import Categories from "./Categories";
 import QuestionSearchBar from "./QuestionSearchBar";
 import { normalize, scoreText } from "../utils/search";
 
+// ----------------------
+// Highlight helpers
+// ----------------------
+function escapeRegExp(str = "") {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function Highlight({ text = "", query = "" }) {
+  const q = (query || "").trim();
+  if (!q) return <>{text}</>;
+
+  const safe = escapeRegExp(q);
+  const parts = String(text).split(new RegExp(`(${safe})`, "gi"));
+
+  return (
+    <>
+      {parts.map((part, i) => {
+        const isMatch = part.toLowerCase() === q.toLowerCase();
+        return isMatch ? (
+          <mark
+            key={i}
+            style={{
+              padding: "0 2px",
+              borderRadius: "4px",
+            }}
+          >
+            {part}
+          </mark>
+        ) : (
+          <span key={i}>{part}</span>
+        );
+      })}
+    </>
+  );
+}
+
 function answerToText(answer) {
   if (!answer) return "";
   const intro = answer.intro ? String(answer.intro) : "";
@@ -54,23 +90,20 @@ export default function StudentFAQPage({
     if (!isSearching) return [];
 
     return questions
-      .map((q, index) => {
+      .map((q) => {
         const cat = categoryById(categories, q.type);
 
         // optional: weight question higher than answer/category text
         const questionBlob = q.question ?? "";
-        const restBlob = [
-          answerToText(q.answer),
-          cat?.name,
-          cat?.description,
-        ]
+        const restBlob = [answerToText(q.answer), cat?.name, cat?.description]
           .filter(Boolean)
           .join(" | ");
 
         const score =
-          scoreText(questionBlob, searchTerm) * 3 + scoreText(restBlob, searchTerm);
+          scoreText(questionBlob, searchTerm) * 3 +
+          scoreText(restBlob, searchTerm);
 
-        return { q, score, index };
+        return { q, score };
       })
       .filter((r) => r.score > 0)
       .sort((a, b) => b.score - a.score)
@@ -109,14 +142,29 @@ export default function StudentFAQPage({
         sx={{ "& .MuiAccordionSummary-content": { my: 1 } }}
       >
         <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
-          <Typography fontWeight={600}>{item.question}</Typography>
+          <Typography fontWeight={600}>
+            {isSearching ? (
+              <Highlight text={item.question} query={searchTerm} />
+            ) : (
+              item.question
+            )}
+          </Typography>
 
           {/* show category label in search mode */}
           {isSearching && (
             <Box>
               <Chip
                 size="small"
-                label={categoryById(categories, item.type)?.name ?? item.type}
+                label={
+                  categoryById(categories, item.type)?.name ? (
+                    <Highlight
+                      text={categoryById(categories, item.type)?.name}
+                      query={searchTerm}
+                    />
+                  ) : (
+                    item.type
+                  )
+                }
               />
             </Box>
           )}
@@ -125,7 +173,13 @@ export default function StudentFAQPage({
 
       <AccordionDetails sx={{ pt: 0 }}>
         {item.answer?.intro && (
-          <Typography sx={{ mb: 1 }}>{item.answer.intro}</Typography>
+          <Typography sx={{ mb: 1 }}>
+            {isSearching ? (
+              <Highlight text={item.answer.intro} query={searchTerm} />
+            ) : (
+              item.answer.intro
+            )}
+          </Typography>
         )}
 
         {item.answer?.bullets?.length > 0 && (
@@ -148,8 +202,14 @@ export default function StudentFAQPage({
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        {bullet.text}
+                        {isSearching ? (
+                          <Highlight text={bullet.text} query={searchTerm} />
+                        ) : (
+                          bullet.text
+                        )}
                       </MuiLink>
+                    ) : isSearching ? (
+                      <Highlight text={bullet.text} query={searchTerm} />
                     ) : (
                       bullet.text
                     )
@@ -176,7 +236,7 @@ export default function StudentFAQPage({
           </Typography>
         )}
 
-        {/* search bar ALWAYS visible (reusable component) */}
+        {/* search bar ALWAYS visible */}
         <QuestionSearchBar value={searchTerm} onChange={handleSearchChange} />
 
         {/* SEARCH MODE */}
