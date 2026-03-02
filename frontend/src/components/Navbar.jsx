@@ -43,7 +43,12 @@ export default function Navbar() {
     <Box sx={{ width: 280 }} role="presentation" onClick={() => toggleDrawer(false)}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, p: 2 }}>
         <img src={Logo} alt="Logo" style={{ height: 40 }} />
-        <Typography fontWeight={700}>Running Start Digital</Typography>
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+          <Typography fontWeight={700}>Running Start Digital</Typography>
+          <Typography sx={{ fontSize: "0.75rem", opacity: 0.8 }}>
+            Student Capstone Project
+          </Typography>
+        </Box>
       </Box>
 
       <Divider />
@@ -109,20 +114,29 @@ export default function Navbar() {
           />
         </Link>
 
-        {/* Title (shrinks on mobile) */}
-        <Typography
-          variant="h6"
-          sx={{
-            flexGrow: 1,
-            fontWeight: 700,
-            fontSize: { xs: "1rem", sm: "1.1rem" },
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
-        >
-          Running Start Digital
-        </Typography>
+        {/* Title + badge */}
+        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 700,
+              fontSize: { xs: "1rem", sm: "1.1rem" },
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              lineHeight: 1.1,
+            }}
+          >
+            Running Start Digital
+          </Typography>
+
+          {/* Badge (desktop + tablet) */}
+          {!isMobile && (
+            <Typography sx={{ fontSize: "0.75rem", opacity: 0.8, lineHeight: 1.1 }}>
+              Student Capstone Project
+            </Typography>
+          )}
+        </Box>
 
         {/* Desktop nav buttons */}
         {!isMobile && (
