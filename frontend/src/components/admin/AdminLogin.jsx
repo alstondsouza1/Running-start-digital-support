@@ -41,6 +41,7 @@ export default function AdminLogin() {
   };
 
   return (
+    // Login box -----------------------------------------------------------------
     <Box
       sx={{
         minHeight: "100vh",
@@ -61,7 +62,7 @@ export default function AdminLogin() {
           backgroundColor: "white",
         }}
       >
-        <Typography variant="h5" gutterBottom>
+        <Typography variant="h5" align="center" gutterBottom>
           Admin Login
         </Typography>
 
@@ -85,7 +86,18 @@ export default function AdminLogin() {
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        <Button type="submit" fullWidth variant="contained" sx={{ mt: 2 }}>
+        <Button
+          type="submit"
+          fullWidth
+          variant="contained"
+          sx={{
+            mt: 2,
+            backgroundColor: "#006225",
+            "&:hover": {
+              backgroundColor: "#D14900",
+            },
+          }}
+        >
           Login
         </Button>
       </Box>
