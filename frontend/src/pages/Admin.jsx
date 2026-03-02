@@ -1,4 +1,16 @@
-import { useMemo, useState } from "react";
+import { useState, useEffect } from "react";
+
+import { DndContext, closestCenter } from "@dnd-kit/core";
+
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+  useSortable
+} from "@dnd-kit/sortable";
+
+import { CSS } from "@dnd-kit/utilities";
+
 import {
   Box,
   Typography,
@@ -30,31 +42,78 @@ function groupByType(questions) {
   }, {});
 }
 
+function SortableRow({ question }) {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: question.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    cursor: "grab"
+  };
+
+  return (
+    <TableRow ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <TableCell>{question.question}</TableCell>
+      <TableCell align="center">{question.type}</TableCell>
+    </TableRow>
+  );
+}
 export default function Admin() {
   const [activeTab, setActiveTab] = useState(0);
 
-  const { groupedCurrent, groupedProspective } = useMemo(() => {
-    const adminCurrentQuestions = adaptQuestions(
-      currentStudentsQuestions,
-      "current"
-    );
+  const [groupedCurrent, setGroupedCurrent] = useState({});
+  const [groupedProspective, setGroupedProspective] = useState({});
 
-    const adminProspectiveQuestions = adaptQuestions(
-      prospectiveStudentsQuestions,
-      "prospective"
-    );
+  useEffect(() => {
+  const adminCurrentQuestions = adaptQuestions(
+    currentStudentsQuestions,
+    "current"
+  );
 
-    return {
-      groupedCurrent: groupByType(adminCurrentQuestions),
-      groupedProspective: groupByType(adminProspectiveQuestions),
-    };
-  }, []);
+  const adminProspectiveQuestions = adaptQuestions(
+    prospectiveStudentsQuestions,
+    "prospective"
+  );
+
+  setGroupedCurrent(groupByType(adminCurrentQuestions));
+  setGroupedProspective(groupByType(adminProspectiveQuestions));
+}, []);
 
   const activeGrouped =
     activeTab === 0 ? groupedCurrent : groupedProspective;
 
   const activeCategories =
     activeTab === 0 ? categorySets.current : categorySets.prospective;
+
+  function handleDragEnd(event, catId) {
+  const { active, over } = event;
+
+  if (!over || active.id === over.id) return;
+
+  const setter =
+    activeTab === 0 ? setGroupedCurrent : setGroupedProspective;
+
+  setter((prev) => {
+    const updated = { ...prev };
+
+    const oldIndex = updated[catId].findIndex(
+      (q) => q.id === active.id
+    );
+
+    const newIndex = updated[catId].findIndex(
+      (q) => q.id === over.id
+    );
+
+    updated[catId] = arrayMove(
+      updated[catId],
+      oldIndex,
+      newIndex
+    );
+
+    return updated;
+  });
+}
 
   return (
     <Box sx={{ p: 3 }}>
@@ -90,24 +149,31 @@ export default function Admin() {
                   </TableRow>
                 </TableHead>
 
-                <TableBody>
-                  {questions.length > 0 ? (
-                    questions.map((q) => (
-                      <TableRow key={q.id ?? `${cat.id}-${q.question}`}>
-                        <TableCell>{q.question}</TableCell>
-                        <TableCell align="center">{q.type}</TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={2}>
-                        <Typography color="text.secondary">
-                          No questions mapped to this category yet.
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
+               <DndContext
+                    collisionDetection={closestCenter}
+                    onDragEnd={(event) => handleDragEnd(event, cat.id)}
+                  >
+                    <SortableContext
+                      items={questions.map((q) => q.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <TableBody>
+                        {questions.length > 0 ? (
+                          questions.map((q) => (
+                            <SortableRow key={q.id} question={q} />
+                          ))
+                        ) : (
+                          <TableRow>
+                            <TableCell colSpan={2}>
+                              <Typography color="text.secondary">
+                                No questions mapped to this category yet.
+                              </Typography>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </SortableContext>
+                </DndContext>
               </Table>
             </Paper>
           </Box>
