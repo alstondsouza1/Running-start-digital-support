@@ -1,8 +1,7 @@
-import { Router } from "express";
+import express from "express";
 
-const router = Router();
+const router = express.Router();
 
-// Basic health route
 router.get("/health", (req, res) => {
   res.json({ ok: true, message: "API is running" });
 });
