@@ -301,19 +301,28 @@ export const currentStudentsQuestions = [
 
 async function seedCurrentStudentFaqs() {
   try {
+    console.log(process.env.DB_NAME)
 
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS current_student_faq (
-        id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-        data JSON NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      CREATE TABLE IF NOT EXISTS faq (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    audience VARCHAR(50) NOT NULL,
+    type VARCHAR(100) NOT NULL,
+    data JSON NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX (audience),
+    INDEX (type)
       )
     `);
 
 
     for (const faq of currentStudentsQuestions) {
-      const jsonData = JSON.stringify(faq);
-      await pool.query("INSERT INTO current_student_faq (data) VALUES (?)", [jsonData]);
+      const { type, question, answer } = faq;
+      const content = { question, answer }
+      await pool.query(
+        "INSERT INTO faq (audience, type, data) VALUES (?, ?, ?)",
+        ["current", type, JSON.stringify(content)]
+      );
     }
 
     console.log(`Seeded ${currentStudentsQuestions.length} FAQ entries successfully!`);
