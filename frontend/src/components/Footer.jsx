@@ -32,8 +32,8 @@ export default function Footer() {
           wordBreak: "break-word",
         }}
       >
-        253-288-3380 • runningstart@greenriver.edu • (Do not include ID# or file attachments) •
-        Student Affairs & Success Center – SA 135
+        253-288-3380 • runningstart@greenriver.edu • (Do not include ID# or file
+        attachments) • Student Affairs & Success Center – SA 135
       </Typography>
 
       {/* Link to Green River */}
@@ -50,6 +50,7 @@ export default function Footer() {
           rel="noopener noreferrer"
           underline="always"
           color="inherit"
+          aria-label="Visit Green River College website"
         >
           Visit Green River College
         </Link>
@@ -65,11 +66,13 @@ export default function Footer() {
         }}
       >
         <Typography variant="body2">
-          This website was created by students as part of a course project. Content does not represent official Green River College positions.
+          This website was created by students as part of a course project.
+          Content does not represent official Green River College positions.
         </Typography>
 
         <Typography variant="body2" sx={{ mt: 0.5 }}>
-          This is a student capstone project and is not an official Green River College website.
+          This is a student capstone project and is not an official Green River
+          College website.
         </Typography>
       </Box>
     </Box>

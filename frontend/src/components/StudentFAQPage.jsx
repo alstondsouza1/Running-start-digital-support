@@ -20,35 +20,36 @@ import { normalize, scoreText } from "../utils/search";
 // Highlight helpers
 // ----------------------
 function escapeRegExp(str = "") {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return String(str).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function Highlight({ text = "", query = "" }) {
+function highlightText(text, query) {
   const q = (query || "").trim();
-  if (!q) return <>{text}</>;
+  if (!q) return text;
 
-  const safe = escapeRegExp(q);
-  const parts = String(text).split(new RegExp(`(${safe})`, "gi"));
+  // support multi-word queries
+  const parts = q.split(/\s+/).filter(Boolean).map(escapeRegExp);
+  if (parts.length === 0) return text;
 
-  return (
-    <>
-      {parts.map((part, i) => {
-        const isMatch = part.toLowerCase() === q.toLowerCase();
-        return isMatch ? (
-          <mark
-            key={i}
-            style={{
-              padding: "0 2px",
-              borderRadius: "4px",
-            }}
-          >
-            {part}
-          </mark>
-        ) : (
-          <span key={i}>{part}</span>
-        );
-      })}
-    </>
+  const regex = new RegExp(`(${parts.join("|")})`, "gi");
+  const chunks = String(text ?? "").split(regex);
+
+  return chunks.map((chunk, i) =>
+    regex.test(chunk) ? (
+      <Box
+        key={i}
+        component="mark"
+        sx={{
+          backgroundColor: "rgba(187, 212, 22, 0.35)",
+          px: 0.3,
+          borderRadius: 0.5,
+        }}
+      >
+        {chunk}
+      </Box>
+    ) : (
+      <span key={i}>{chunk}</span>
+    )
   );
 }
 
@@ -90,7 +91,7 @@ export default function StudentFAQPage({
     if (!isSearching) return [];
 
     return questions
-      .map((q) => {
+      .map((q, index) => {
         const cat = categoryById(categories, q.type);
 
         // optional: weight question higher than answer/category text
@@ -100,10 +101,9 @@ export default function StudentFAQPage({
           .join(" | ");
 
         const score =
-          scoreText(questionBlob, searchTerm) * 3 +
-          scoreText(restBlob, searchTerm);
+          scoreText(questionBlob, searchTerm) * 3 + scoreText(restBlob, searchTerm);
 
-        return { q, score };
+        return { q, score, index };
       })
       .filter((r) => r.score > 0)
       .sort((a, b) => b.score - a.score)
@@ -122,7 +122,7 @@ export default function StudentFAQPage({
     setSearchTerm(value);
   };
 
-  // stable-ish key helper (better than type+question only)
+  // stable-ish key helper
   const getAccordionKey = (item, fallbackIndex) =>
     item.id ?? `${item.type}-${normalize(item.question)}-${fallbackIndex}`;
 
@@ -143,11 +143,7 @@ export default function StudentFAQPage({
       >
         <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
           <Typography fontWeight={600}>
-            {isSearching ? (
-              <Highlight text={item.question} query={searchTerm} />
-            ) : (
-              item.question
-            )}
+            {isSearching ? highlightText(item.question, searchTerm) : item.question}
           </Typography>
 
           {/* show category label in search mode */}
@@ -155,16 +151,7 @@ export default function StudentFAQPage({
             <Box>
               <Chip
                 size="small"
-                label={
-                  categoryById(categories, item.type)?.name ? (
-                    <Highlight
-                      text={categoryById(categories, item.type)?.name}
-                      query={searchTerm}
-                    />
-                  ) : (
-                    item.type
-                  )
-                }
+                label={categoryById(categories, item.type)?.name ?? item.type}
               />
             </Box>
           )}
@@ -174,11 +161,9 @@ export default function StudentFAQPage({
       <AccordionDetails sx={{ pt: 0 }}>
         {item.answer?.intro && (
           <Typography sx={{ mb: 1 }}>
-            {isSearching ? (
-              <Highlight text={item.answer.intro} query={searchTerm} />
-            ) : (
-              item.answer.intro
-            )}
+            {isSearching
+              ? highlightText(item.answer.intro, searchTerm)
+              : item.answer.intro}
           </Typography>
         )}
 
@@ -202,14 +187,12 @@ export default function StudentFAQPage({
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        {isSearching ? (
-                          <Highlight text={bullet.text} query={searchTerm} />
-                        ) : (
-                          bullet.text
-                        )}
+                        {isSearching
+                          ? highlightText(bullet.text, searchTerm)
+                          : bullet.text}
                       </MuiLink>
                     ) : isSearching ? (
-                      <Highlight text={bullet.text} query={searchTerm} />
+                      highlightText(bullet.text, searchTerm)
                     ) : (
                       bullet.text
                     )

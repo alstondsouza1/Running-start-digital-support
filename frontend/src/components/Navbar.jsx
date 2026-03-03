@@ -21,7 +21,7 @@ import Logo from "../assets/GRC_Logo_White.png";
 export default function Navbar() {
   const hoverColor = "#BBD416";
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md")); // md and smaller => drawer
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [open, setOpen] = useState(false);
 
   const location = useLocation();
@@ -130,9 +130,9 @@ export default function Navbar() {
             Running Start Digital
           </Typography>
 
-          {/* Badge (desktop + tablet) */}
+          {/* Badge shown on desktop/tablet */}
           {!isMobile && (
-            <Typography sx={{ fontSize: "0.75rem", opacity: 0.8, lineHeight: 1.1 }}>
+            <Typography sx={{ fontSize: "0.75rem", opacity: 0.85, lineHeight: 1 }}>
               Student Capstone Project
             </Typography>
           )}
