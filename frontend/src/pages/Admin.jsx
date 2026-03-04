@@ -1,17 +1,11 @@
-import { useMemo, useState } from "react";
-import { Box, Button, TextField, Typography, Paper } from "@mui/material";
+import { useEffect, useState } from "react";
+import { Box, Button, TextField, Typography, Paper, CircularProgress } from "@mui/material";
 
-// partner data (unchanged)
-import { currentStudentsQuestions } from "../data/currentStudent";
-import { prospectiveStudentsQuestions } from "../data/prospectiveStudent";
-
-// category config (unchanged)
 import { categorySets } from "../data/categories.js";
-
-// adapter (your file)
-import { adaptQuestions } from "../data/flexQuestions.js";
-
 import AddFaqForm from "../components/admin/addFAQ.jsx";
+
+// TODO: Replace in a env file with production 
+const API_BASE = "http://localhost:5000/api";
 
 function groupByType(questions) {
   return questions.reduce((acc, q) => {
@@ -27,12 +21,51 @@ export default function Admin() {
   const [error, setError] = useState("");
   const [view, setView] = useState("dashboard");
 
-  // Persist login across refresh
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    // prevents issues if this ever runs in a non-browser environment (tests)
     if (typeof window === "undefined") return false;
     return localStorage.getItem("adminLoggedIn") === "true";
   });
+
+  const [groupedCurrent, setGroupedCurrent] = useState({});
+  const [groupedProspective, setGroupedProspective] = useState({});
+  const [loadingFaqs, setLoadingFaqs] = useState(false);
+  const [fetchError, setFetchError] = useState("");
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    async function loadFaqs() {
+      setLoadingFaqs(true);
+      setFetchError("");
+      try {
+        const [currentRes, futureRes] = await Promise.all([
+          fetch(`${API_BASE}/getFAQS?audience=current`),
+          fetch(`${API_BASE}/getFAQS?audience=future`),
+        ]);
+
+        if (!currentRes.ok || !futureRes.ok) {
+          throw new Error("Failed to load FAQs from server");
+        }
+
+        const [currentData, futureData] = await Promise.all([
+          currentRes.json(),
+          futureRes.json(),
+        ]);
+
+        setGroupedCurrent(groupByType(currentData));
+        setGroupedProspective(groupByType(futureData));
+        console.log(groupedCurrent);
+        console.log(groupedProspective);
+      } catch (err) {
+        setFetchError(err.message);
+      } finally {
+        setLoadingFaqs(false);
+      }
+    }
+
+    loadFaqs();
+    // may need to add groupedCurrent and groupPerspective to depenency array
+  }, [isLoggedIn]);
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -54,20 +87,6 @@ export default function Admin() {
     setPassword("");
     setError("");
   }
-
-  // Compute grouped questions once per render (only depends on source data)
-  const { groupedCurrent, groupedProspective } = useMemo(() => {
-    const adminCurrentQuestions = adaptQuestions(currentStudentsQuestions, "current");
-    const adminProspectiveQuestions = adaptQuestions(
-      prospectiveStudentsQuestions,
-      "prospective"
-    );
-
-    return {
-      groupedCurrent: groupByType(adminCurrentQuestions),
-      groupedProspective: groupByType(adminProspectiveQuestions),
-    };
-  }, []);
 
   // =========================
   // ADMIN DASHBOARD
@@ -128,62 +147,80 @@ export default function Admin() {
           </Box>
         </Box>
 
-        {/* ================= CURRENT STUDENTS ================= */}
-        <Typography variant="h5" sx={{ mt: 3 }}>
-          Current Students
-        </Typography>
+        {/* Loading */}
+        {loadingFaqs && (
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+            <CircularProgress sx={{ color: "#006225" }} />
+          </Box>
+        )}
 
-        {categorySets.current.map((cat) => (
-          <Box key={cat.id} sx={{ mt: 2 }}>
-            <Typography variant="subtitle1" fontWeight="bold">
-              {cat.name}
+        {/* Error */}
+        {fetchError && (
+          <Typography color="error" sx={{ mt: 2 }}>
+            {fetchError}
+          </Typography>
+        )}
+
+        {/* FAQ Lists */}
+        {!loadingFaqs && !fetchError && (
+          <>
+            {/* Current Students */}
+            <Typography variant="h5" sx={{ mt: 3 }}>
+              Current Students
             </Typography>
 
-            {(groupedCurrent[cat.id] || []).map((q) => (
-              <Paper
-                key={q.id ?? `${cat.id}-${q.question}`}
-                sx={{ p: 2, mt: 1 }}
-              >
-                {q.question}
-              </Paper>
+            {categorySets.current.map((cat) => (
+              <Box key={cat.id} sx={{ mt: 2 }}>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  {cat.name}
+                </Typography>
+
+                {(groupedCurrent[cat.id] || []).map((q) => (
+                  <Paper
+                    key={q.id ?? `${cat.id}-${q.question}`}
+                    sx={{ p: 2, mt: 1 }}
+                  >
+                    {q.question}
+                  </Paper>
+                ))}
+
+                {(groupedCurrent[cat.id] || []).length === 0 && (
+                  <Typography color="text.secondary" sx={{ mt: 1 }}>
+                    No questions mapped to this category yet.
+                  </Typography>
+                )}
+              </Box>
             ))}
 
-            {(groupedCurrent[cat.id] || []).length === 0 && (
-              <Typography color="text.secondary" sx={{ mt: 1 }}>
-                No questions mapped to this category yet.
-              </Typography>
-            )}
-          </Box>
-        ))}
-
-        {/* ================= PROSPECTIVE STUDENTS ================= */}
-        <Typography variant="h5" sx={{ mt: 5 }}>
-          Prospective Students
-        </Typography>
-
-        {categorySets.prospective.map((cat) => (
-          <Box key={cat.id} sx={{ mt: 2 }}>
-            <Typography variant="subtitle1" fontWeight="bold">
-              {cat.name}
+            {/* ===== PROSPECTIVE STUDENTS ===== */}
+            <Typography variant="h5" sx={{ mt: 5 }}>
+              Prospective Students
             </Typography>
 
-            {(groupedProspective[cat.id] || []).map((q) => (
-              <Paper
-                key={q.id ?? `${cat.id}-${q.question}`}
-                sx={{ p: 2, mt: 1 }}
-              >
-                {q.question}
-              </Paper>
+            {categorySets.prospective.map((cat) => (
+              <Box key={cat.id} sx={{ mt: 2 }}>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  {cat.name}
+                </Typography>
+
+                {(groupedProspective[cat.id] || []).map((q) => (
+                  <Paper
+                    key={q.id ?? `${cat.id}-${q.question}`}
+                    sx={{ p: 2, mt: 1 }}
+                  >
+                    {q.question}
+                  </Paper>
+                ))}
+
+                {(groupedProspective[cat.id] || []).length === 0 && (
+                  <Typography color="text.secondary" sx={{ mt: 1 }}>
+                    No questions mapped to this category yet.
+                  </Typography>
+                )}
+              </Box>
             ))}
-
-            {(groupedProspective[cat.id] || []).length === 0 && (
-              <Typography color="text.secondary" sx={{ mt: 1 }}>
-                No questions mapped to this category yet.
-              </Typography>
-            )}
-          </Box>
-        ))}
-
+          </>
+        )}
       </Box>
     );
   }
