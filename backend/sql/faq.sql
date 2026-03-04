@@ -1,0 +1,9 @@
+CREATE TABLE faq (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    audience VARCHAR(50) NOT NULL,
+    type VARCHAR(100) NOT NULL,
+    data JSON NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX (audience),
+    INDEX (type)
+);
