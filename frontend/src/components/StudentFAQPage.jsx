@@ -16,6 +16,43 @@ import Categories from "./Categories";
 import QuestionSearchBar from "./QuestionSearchBar";
 import { normalize, scoreText } from "../utils/search";
 
+// ----------------------
+// Highlight helpers
+// ----------------------
+function escapeRegExp(str = "") {
+  return String(str).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function highlightText(text, query) {
+  const q = (query || "").trim();
+  if (!q) return text;
+
+  // support multi-word queries
+  const parts = q.split(/\s+/).filter(Boolean).map(escapeRegExp);
+  if (parts.length === 0) return text;
+
+  const regex = new RegExp(`(${parts.join("|")})`, "gi");
+  const chunks = String(text ?? "").split(regex);
+
+  return chunks.map((chunk, i) =>
+    regex.test(chunk) ? (
+      <Box
+        key={i}
+        component="mark"
+        sx={{
+          backgroundColor: "rgba(187, 212, 22, 0.35)",
+          px: 0.3,
+          borderRadius: 0.5,
+        }}
+      >
+        {chunk}
+      </Box>
+    ) : (
+      <span key={i}>{chunk}</span>
+    )
+  );
+}
+
 function answerToText(answer) {
   if (!answer) return "";
   const intro = answer.intro ? String(answer.intro) : "";
@@ -59,11 +96,7 @@ export default function StudentFAQPage({
 
         // optional: weight question higher than answer/category text
         const questionBlob = q.question ?? "";
-        const restBlob = [
-          answerToText(q.answer),
-          cat?.name,
-          cat?.description,
-        ]
+        const restBlob = [answerToText(q.answer), cat?.name, cat?.description]
           .filter(Boolean)
           .join(" | ");
 
@@ -89,7 +122,7 @@ export default function StudentFAQPage({
     setSearchTerm(value);
   };
 
-  // stable-ish key helper (better than type+question only)
+  // stable-ish key helper
   const getAccordionKey = (item, fallbackIndex) =>
     item.id ?? `${item.type}-${normalize(item.question)}-${fallbackIndex}`;
 
@@ -109,7 +142,9 @@ export default function StudentFAQPage({
         sx={{ "& .MuiAccordionSummary-content": { my: 1 } }}
       >
         <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
-          <Typography fontWeight={600}>{item.question}</Typography>
+          <Typography fontWeight={600}>
+            {isSearching ? highlightText(item.question, searchTerm) : item.question}
+          </Typography>
 
           {/* show category label in search mode */}
           {isSearching && (
@@ -125,7 +160,11 @@ export default function StudentFAQPage({
 
       <AccordionDetails sx={{ pt: 0 }}>
         {item.answer?.intro && (
-          <Typography sx={{ mb: 1 }}>{item.answer.intro}</Typography>
+          <Typography sx={{ mb: 1 }}>
+            {isSearching
+              ? highlightText(item.answer.intro, searchTerm)
+              : item.answer.intro}
+          </Typography>
         )}
 
         {item.answer?.bullets?.length > 0 && (
@@ -148,8 +187,12 @@ export default function StudentFAQPage({
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        {bullet.text}
+                        {isSearching
+                          ? highlightText(bullet.text, searchTerm)
+                          : bullet.text}
                       </MuiLink>
+                    ) : isSearching ? (
+                      highlightText(bullet.text, searchTerm)
                     ) : (
                       bullet.text
                     )
@@ -176,7 +219,7 @@ export default function StudentFAQPage({
           </Typography>
         )}
 
-        {/* search bar ALWAYS visible (reusable component) */}
+        {/* search bar ALWAYS visible */}
         <QuestionSearchBar value={searchTerm} onChange={handleSearchChange} />
 
         {/* SEARCH MODE */}

@@ -61,7 +61,12 @@ export default function Navbar() {
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, p: 2 }}>
         <img src={Logo} alt="Logo" style={{ height: 40 }} />
-        <Typography fontWeight={700}>Running Start Digital</Typography>
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+          <Typography fontWeight={700}>Running Start Digital</Typography>
+          <Typography sx={{ fontSize: "0.75rem", opacity: 0.8 }}>
+            Student Capstone Project
+          </Typography>
+        </Box>
       </Box>
 
       <Divider />
@@ -136,6 +141,7 @@ export default function Navbar() {
           />
         </Link>
 
+<<<<<<< feature-admin
         <Typography
           variant="h6"
           sx={{
@@ -149,6 +155,31 @@ export default function Navbar() {
         >
           Running Start Digital
         </Typography>
+=======
+        {/* Title + badge */}
+        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 700,
+              fontSize: { xs: "1rem", sm: "1.1rem" },
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              lineHeight: 1.1,
+            }}
+          >
+            Running Start Digital
+          </Typography>
+
+          {/* Badge shown on desktop/tablet */}
+          {!isMobile && (
+            <Typography sx={{ fontSize: "0.75rem", opacity: 0.85, lineHeight: 1 }}>
+              Student Capstone Project
+            </Typography>
+          )}
+        </Box>
+>>>>>>> dev
 
         {!isMobile && (
           <Box sx={{ display: "flex", gap: 0.5 }}>
