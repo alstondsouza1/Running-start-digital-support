@@ -11,6 +11,8 @@ import { categorySets } from "../data/categories.js";
 // adapter (your file)
 import { adaptQuestions } from "../data/flexQuestions.js";
 
+import AddFaqForm from "../components/admin/addFAQ.jsx";
+
 function groupByType(questions) {
   return questions.reduce((acc, q) => {
     if (!acc[q.type]) acc[q.type] = [];
@@ -23,6 +25,7 @@ export default function Admin() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [view, setView] = useState("dashboard");
 
   // Persist login across refresh
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
@@ -69,6 +72,23 @@ export default function Admin() {
   // =========================
   // ADMIN DASHBOARD
   // =========================
+  if (isLoggedIn && view === "addFaq") {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Button
+          variant="text"
+          onClick={() => setView("dashboard")}
+          sx={{ mb: 2, color: "#006225" }}
+        >
+          Back to Dashboard
+        </Button>
+        <Paper sx={{ p: 3 }}>
+          <AddFaqForm />
+        </Paper>
+      </Box>
+    );
+  }
+
   if (isLoggedIn) {
     return (
       <Box sx={{ p: 3 }}>
@@ -84,16 +104,28 @@ export default function Admin() {
         >
           <Typography variant="h4">Admin Dashboard</Typography>
 
-          <Button
-            variant="contained"
-            onClick={handleLogout}
-            sx={{
-              backgroundColor: "#006225",
-              "&:hover": { backgroundColor: "#D14900" },
-            }}
-          >
-            Logout
-          </Button>
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Button
+              variant="contained"
+              onClick={() => setView("addFaq")}
+              sx={{
+                backgroundColor: "#006225",
+                "&:hover": { backgroundColor: "#004d1a" },
+              }}
+            >
+              + Add FAQ
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleLogout}
+              sx={{
+                backgroundColor: "#888",
+                "&:hover": { backgroundColor: "#D14900" },
+              }}
+            >
+              Logout
+            </Button>
+          </Box>
         </Box>
 
         {/* ================= CURRENT STUDENTS ================= */}
@@ -151,6 +183,7 @@ export default function Admin() {
             )}
           </Box>
         ))}
+
       </Box>
     );
   }
