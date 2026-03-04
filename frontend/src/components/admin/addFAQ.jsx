@@ -70,7 +70,7 @@ export default function AddFaqForm() {
 
         try {
             // TODO: change to production API URL
-            const response = await fetch("http://localhost:5000/api/addFAQ", {
+            const response = await fetch("http://localhost:5001/api/addFAQ", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
