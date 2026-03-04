@@ -13,34 +13,52 @@ import {
   Divider,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import Logo from "../assets/GRC_Logo_White.png";
+import { useAuth } from "../context/AuthenticateContext";
 
 export default function Navbar() {
+  const { adminInfo, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
   const hoverColor = "#BBD416";
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [open, setOpen] = useState(false);
-
   const location = useLocation();
 
   const links = [
     { label: "Home", to: "/" },
     { label: "Current Student", to: "/current-student" },
     { label: "Future Student", to: "/prospective-student" },
-    { label: "Admin", to: "/admin" },
+    ...(adminInfo
+      ? [
+          { label: "Admin", to: "/admin" },
+          { label: "Logout", action: handleLogout },
+        ]
+      : [{ label: "Login", to: "/admin-login" }]),
   ];
 
   const navButtonStyle = {
+    color: "white",
     "&:hover": { color: hoverColor },
   };
 
   const toggleDrawer = (value) => setOpen(value);
 
   const DrawerContent = (
-    <Box sx={{ width: 280 }} role="presentation" onClick={() => toggleDrawer(false)}>
+    <Box
+      sx={{ width: 280 }}
+      role="presentation"
+      onClick={() => toggleDrawer(false)}
+    >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, p: 2 }}>
         <img src={Logo} alt="Logo" style={{ height: 40 }} />
         <Box sx={{ display: "flex", flexDirection: "column" }}>
@@ -54,16 +72,27 @@ export default function Navbar() {
       <Divider />
 
       <List sx={{ py: 1 }}>
-        {links.map((item) => {
+        {links.map((item, index) => {
           const active = location.pathname === item.to;
+          const isLogin = item.label === "Login";
+          
           return (
             <ListItemButton
-              key={item.to}
-              component={Link}
+              key={index}
+              component={item.to ? Link : "button"}
               to={item.to}
+              onClick={item.action}
               selected={active}
               sx={{
                 px: 2,
+                ...(isLogin && {
+                  backgroundColor: "green",
+                  color: "white",
+                  "&:hover": {
+                    backgroundColor: "#d14900",
+                    color: "white",
+                  },
+                }),
                 "&.Mui-selected": {
                   backgroundColor: "rgba(44,136,43,0.12)",
                 },
@@ -83,7 +112,6 @@ export default function Navbar() {
   return (
     <AppBar position="fixed" sx={{ backgroundColor: "green" }}>
       <Toolbar sx={{ gap: 1.5 }}>
-        {/* Mobile menu icon */}
         {isMobile && (
           <IconButton
             color="inherit"
@@ -95,7 +123,6 @@ export default function Navbar() {
           </IconButton>
         )}
 
-        {/* Logo */}
         <Link to="/" style={{ display: "flex", alignItems: "center" }}>
           <img
             src={Logo}
@@ -114,6 +141,21 @@ export default function Navbar() {
           />
         </Link>
 
+<<<<<<< feature-admin
+        <Typography
+          variant="h6"
+          sx={{
+            flexGrow: 1,
+            fontWeight: 700,
+            fontSize: { xs: "1rem", sm: "1.1rem" },
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          Running Start Digital
+        </Typography>
+=======
         {/* Title + badge */}
         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
           <Typography
@@ -137,26 +179,53 @@ export default function Navbar() {
             </Typography>
           )}
         </Box>
+>>>>>>> dev
 
-        {/* Desktop nav buttons */}
         {!isMobile && (
           <Box sx={{ display: "flex", gap: 0.5 }}>
-            {links.map((item) => (
-              <Button
-                key={item.to}
-                component={Link}
-                to={item.to}
-                color="inherit"
-                sx={navButtonStyle}
-              >
-                {item.label}
-              </Button>
-            ))}
+            {links.map((item, index) => {
+              const isLogin = item.label === "Login";
+
+              return item.to ? (
+                <Button
+                  key={index}
+                  component={Link}
+                  to={item.to}
+                  variant={isLogin ? "contained" : "text"}
+                  sx={
+                    isLogin
+                      ? {
+                          backgroundColor: "green",
+                          color: "white",
+                          "&:hover": {
+                            color: "white",
+                            backgroundColor: "#d14900",
+                          },
+                        }
+                      : navButtonStyle
+                  }
+                >
+                  {item.label}
+                </Button>
+              ) : (
+                <Button
+                  key={index}
+                  onClick={item.action}
+                  color="inherit"
+                  sx={navButtonStyle}
+                >
+                  {item.label}
+                </Button>
+              );
+            })}
           </Box>
         )}
 
-        {/* Drawer */}
-        <Drawer anchor="left" open={open} onClose={() => toggleDrawer(false)}>
+        <Drawer
+          anchor="left"
+          open={open}
+          onClose={() => toggleDrawer(false)}
+        >
           {DrawerContent}
         </Drawer>
       </Toolbar>
