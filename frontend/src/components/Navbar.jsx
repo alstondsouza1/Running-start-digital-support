@@ -22,17 +22,15 @@ import { useAuth } from "../context/AuthenticateContext";
 export default function Navbar() {
   const { adminInfo, logout } = useAuth();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [open, setOpen] = useState(false);
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
     navigate("/");
   };
-
-  const hoverColor = "#BBD416";
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const [open, setOpen] = useState(false);
-  const location = useLocation();
 
   const links = [
     { label: "Home", to: "/" },
@@ -48,17 +46,13 @@ export default function Navbar() {
 
   const navButtonStyle = {
     color: "white",
-    "&:hover": { color: hoverColor },
+    "&:hover": { color: "#BBD416" },
   };
 
   const toggleDrawer = (value) => setOpen(value);
 
   const DrawerContent = (
-    <Box
-      sx={{ width: 280 }}
-      role="presentation"
-      onClick={() => toggleDrawer(false)}
-    >
+    <Box sx={{ width: 280 }} role="presentation" onClick={() => toggleDrawer(false)}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, p: 2 }}>
         <img src={Logo} alt="Logo" style={{ height: 40 }} />
         <Box sx={{ display: "flex", flexDirection: "column" }}>
@@ -73,9 +67,9 @@ export default function Navbar() {
 
       <List sx={{ py: 1 }}>
         {links.map((item, index) => {
-          const active = location.pathname === item.to;
+          const active = item.to ? location.pathname === item.to : false;
           const isLogin = item.label === "Login";
-          
+
           return (
             <ListItemButton
               key={index}
@@ -88,17 +82,10 @@ export default function Navbar() {
                 ...(isLogin && {
                   backgroundColor: "green",
                   color: "white",
-                  "&:hover": {
-                    backgroundColor: "#d14900",
-                    color: "white",
-                  },
+                  "&:hover": { backgroundColor: "#d14900", color: "white" },
                 }),
-                "&.Mui-selected": {
-                  backgroundColor: "rgba(44,136,43,0.12)",
-                },
-                "&.Mui-selected:hover": {
-                  backgroundColor: "rgba(44,136,43,0.18)",
-                },
+                "&.Mui-selected": { backgroundColor: "rgba(44,136,43,0.12)" },
+                "&.Mui-selected:hover": { backgroundColor: "rgba(44,136,43,0.18)" },
               }}
             >
               <ListItemText primary={item.label} />
@@ -141,21 +128,6 @@ export default function Navbar() {
           />
         </Link>
 
-<<<<<<< feature-admin
-        <Typography
-          variant="h6"
-          sx={{
-            flexGrow: 1,
-            fontWeight: 700,
-            fontSize: { xs: "1rem", sm: "1.1rem" },
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
-        >
-          Running Start Digital
-        </Typography>
-=======
         {/* Title + badge */}
         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
           <Typography
@@ -172,14 +144,12 @@ export default function Navbar() {
             Running Start Digital
           </Typography>
 
-          {/* Badge shown on desktop/tablet */}
           {!isMobile && (
             <Typography sx={{ fontSize: "0.75rem", opacity: 0.85, lineHeight: 1 }}>
               Student Capstone Project
             </Typography>
           )}
         </Box>
->>>>>>> dev
 
         {!isMobile && (
           <Box sx={{ display: "flex", gap: 0.5 }}>
@@ -197,10 +167,7 @@ export default function Navbar() {
                       ? {
                           backgroundColor: "green",
                           color: "white",
-                          "&:hover": {
-                            color: "white",
-                            backgroundColor: "#d14900",
-                          },
+                          "&:hover": { color: "white", backgroundColor: "#d14900" },
                         }
                       : navButtonStyle
                   }
@@ -208,12 +175,7 @@ export default function Navbar() {
                   {item.label}
                 </Button>
               ) : (
-                <Button
-                  key={index}
-                  onClick={item.action}
-                  color="inherit"
-                  sx={navButtonStyle}
-                >
+                <Button key={index} onClick={item.action} color="inherit" sx={navButtonStyle}>
                   {item.label}
                 </Button>
               );
@@ -221,11 +183,7 @@ export default function Navbar() {
           </Box>
         )}
 
-        <Drawer
-          anchor="left"
-          open={open}
-          onClose={() => toggleDrawer(false)}
-        >
+        <Drawer anchor="left" open={open} onClose={() => toggleDrawer(false)}>
           {DrawerContent}
         </Drawer>
       </Toolbar>
