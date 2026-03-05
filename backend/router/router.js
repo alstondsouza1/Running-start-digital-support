@@ -8,8 +8,11 @@ router.get("/health", (req, res) => {
   res.json({ ok: true, message: "API is running" });
 });
 
+// public read
 router.get("/getFAQS", adminController.getFaqs);
 
+// admin write
 router.post("/addFAQ", requireAdmin, adminController.addFaq);
+router.put("/faq/order", requireAdmin, adminController.updateFaqOrder);
 
 export default router;

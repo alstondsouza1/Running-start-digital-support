@@ -1,174 +1,186 @@
 import { useState } from "react";
+import { Box, Button, TextField, Typography, MenuItem } from "@mui/material";
+import { useAuth } from "../../context/AuthenticateContext";
+
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001/api";
 
 export default function AddFaqForm() {
-    const [formData, setFormData] = useState({
+  const { adminInfo } = useAuth();
+  const token = localStorage.getItem("token"); // simplest for now
+
+  const [formData, setFormData] = useState({
+    audience: "",
+    type: "",
+    question: "",
+    answer: {
+      intro: "",
+      bullets: [{ text: "", url: "" }],
+    },
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    if (name === "intro") {
+      setFormData((prev) => ({
+        ...prev,
+        answer: { ...prev.answer, intro: value },
+      }));
+      return;
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleBulletChange = (index, field, value) => {
+    setFormData((prev) => {
+      const bullets = [...prev.answer.bullets];
+      bullets[index] = { ...bullets[index], [field]: value };
+      return { ...prev, answer: { ...prev.answer, bullets } };
+    });
+  };
+
+  const addBullet = () => {
+    setFormData((prev) => ({
+      ...prev,
+      answer: { ...prev.answer, bullets: [...prev.answer.bullets, { text: "", url: "" }] },
+    }));
+  };
+
+  const removeBullet = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      answer: {
+        ...prev.answer,
+        bullets: prev.answer.bullets.filter((_, i) => i !== index),
+      },
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!token) {
+      alert("You are not logged in. Please login as admin first.");
+      return;
+    }
+
+    // clean bullets (remove empty url fields)
+    const payload = {
+      ...formData,
+      answer: {
+        ...formData.answer,
+        bullets: formData.answer.bullets
+          .filter((b) => b.text.trim().length > 0)
+          .map((b) => ({
+            text: b.text.trim(),
+            ...(b.url?.trim() ? { url: b.url.trim() } : {}),
+          })),
+        ...(formData.answer.intro?.trim() ? { intro: formData.answer.intro.trim() } : {}),
+      },
+    };
+
+    try {
+      const response = await fetch(`${API_BASE}/addFAQ`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // ✅ REQUIRED
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message || "Failed to add FAQ");
+      }
+
+      alert("FAQ added successfully!");
+
+      setFormData({
         audience: "",
         type: "",
         question: "",
-        answer: {
-            text: "",
-            bullets: [""]
-        }
-    });
+        answer: { intro: "", bullets: [{ text: "", url: "" }] },
+      });
+    } catch (error) {
+      console.error("Error:", error);
+      alert(error.message);
+    }
+  };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
+  return (
+    <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <Typography variant="h5">Add FAQ</Typography>
 
-        if (name === "text") {
-            setFormData({
-                ...formData,
-                answer: {
-                    ...formData.answer,
-                    text: value
-                }
-            });
-        } else {
-            setFormData({
-                ...formData,
-                [name]: value
-            });
-        }
-    };
+      <TextField
+        select
+        name="audience"
+        label="Audience"
+        value={formData.audience}
+        onChange={handleChange}
+        required
+      >
+        <MenuItem value="">Select Audience</MenuItem>
+        <MenuItem value="current">Current</MenuItem>
+        <MenuItem value="future">Future</MenuItem>
+      </TextField>
 
-    const handleBulletChange = (index, value) => {
-        const updatedBullets = [...formData.answer.bullets];
-        updatedBullets[index] = value;
+      <TextField
+        name="type"
+        label="Type (must match category id)"
+        placeholder='Example: "dates-deadlines" or "general"'
+        value={formData.type}
+        onChange={handleChange}
+        required
+      />
 
-        setFormData({
-            ...formData,
-            answer: {
-                ...formData.answer,
-                bullets: updatedBullets
-            }
-        });
-    };
+      <TextField
+        name="question"
+        label="Question"
+        value={formData.question}
+        onChange={handleChange}
+        required
+      />
 
-    const addBullet = () => {
-        setFormData({
-            ...formData,
-            answer: {
-                ...formData.answer,
-                bullets: [...formData.answer.bullets, ""]
-            }
-        });
-    };
+      <TextField
+        name="intro"
+        label="Intro (optional)"
+        value={formData.answer.intro}
+        onChange={handleChange}
+        multiline
+        minRows={2}
+      />
 
-    const removeBullet = (index) => {
-        const updatedBullets = formData.answer.bullets.filter((_, i) => i !== index);
+      <Typography variant="h6">Bullet Points</Typography>
 
-        setFormData({
-            ...formData,
-            answer: {
-                ...formData.answer,
-                bullets: updatedBullets
-            }
-        });
-    };
+      {formData.answer.bullets.map((bullet, index) => (
+        <Box key={index} sx={{ display: "grid", gridTemplateColumns: "2fr 2fr auto", gap: 1 }}>
+          <TextField
+            label={`Bullet ${index + 1} text`}
+            value={bullet.text}
+            onChange={(e) => handleBulletChange(index, "text", e.target.value)}
+            required
+          />
+          <TextField
+            label="URL (optional)"
+            value={bullet.url}
+            onChange={(e) => handleBulletChange(index, "url", e.target.value)}
+          />
+          <Button type="button" onClick={() => removeBullet(index)} disabled={formData.answer.bullets.length === 1}>
+            Remove
+          </Button>
+        </Box>
+      ))}
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+      <Button type="button" onClick={addBullet}>
+        Add Bullet
+      </Button>
 
-        try {
-            // TODO: change to production API URL
-            const response = await fetch("http://localhost:5001/api/addFAQ", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(formData)
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || "Failed to add FAQ");
-            }
-
-            alert("FAQ added successfully!");
-
-            // Reset form data
-            setFormData({
-                audience: "",
-                type: "",
-                question: "",
-                answer: {
-                    text: "",
-                    bullets: [""]
-                }
-            });
-
-        } catch (error) {
-            console.error("Error:", error);
-            alert(error.message);
-        }
-    };
-
-    return (
-        <form onSubmit={handleSubmit}>
-            <h2>Add FAQ</h2>
-
-            <select
-                name="audience"
-                value={formData.audience}
-                onChange={handleChange}
-                required
-            >
-                <option value="">Select Audience</option>
-                <option value="future">Future</option>
-                <option value="current">Current</option>
-            </select>
-
-            <input
-                type="text"
-                name="type"
-                placeholder="Type"
-                value={formData.type}
-                onChange={handleChange}
-                required
-            />
-
-            <input
-                type="text"
-                name="question"
-                placeholder="Question"
-                value={formData.question}
-                onChange={handleChange}
-                required
-            />
-
-            <textarea
-                name="text"
-                placeholder="Answer text"
-                value={formData.answer.text}
-                onChange={handleChange}
-                required
-            />
-
-            <h4>Bullet Points</h4>
-            {formData.answer.bullets.map((bullet, index) => (
-                <div key={index}>
-                    <input
-                        type="text"
-                        value={bullet}
-                        placeholder={`Bullet ${index + 1}`}
-                        onChange={(e) => handleBulletChange(index, e.target.value)}
-                        required
-                    />
-                    <button type="button" onClick={() => removeBullet(index)}>
-                        Remove
-                    </button>
-                </div>
-            ))}
-
-            <button type="button" onClick={addBullet}>
-                Add Bullet
-            </button>
-
-            <br /><br />
-
-            <button type="submit">
-                Submit FAQ
-            </button>
-        </form>
-    );
+      <Button type="submit" variant="contained" sx={{ backgroundColor: "#006225", "&:hover": { backgroundColor: "#004d1a" } }}>
+        Submit FAQ
+      </Button>
+    </Box>
+  );
 }
