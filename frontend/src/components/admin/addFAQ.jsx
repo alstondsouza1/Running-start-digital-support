@@ -1,6 +1,12 @@
 import { useState } from "react";
+import { categorySets } from "../../data/categories.js";
 
-export default function AddFaqForm() {
+const typeOptions = {
+    current: categorySets.current,
+    future: categorySets.prospective,
+};
+
+export default function AddFaqForm({ onSuccess }) {
     const [formData, setFormData] = useState({
         audience: "",
         type: "",
@@ -15,18 +21,11 @@ export default function AddFaqForm() {
         const { name, value } = e.target;
 
         if (name === "text") {
-            setFormData({
-                ...formData,
-                answer: {
-                    ...formData.answer,
-                    text: value
-                }
-            });
+            setFormData({ ...formData, answer: { ...formData.answer, text: value } });
+        } else if (name === "audience") {
+            setFormData({ ...formData, audience: value, type: "" });
         } else {
-            setFormData({
-                ...formData,
-                [name]: value
-            });
+            setFormData({ ...formData, [name]: value });
         }
     };
 
@@ -88,7 +87,6 @@ export default function AddFaqForm() {
 
             alert("FAQ added successfully!");
 
-            // Reset form data
             setFormData({
                 audience: "",
                 type: "",
@@ -98,6 +96,8 @@ export default function AddFaqForm() {
                     bullets: [""]
                 }
             });
+
+            if (onSuccess) onSuccess();
 
         } catch (error) {
             console.error("Error:", error);
@@ -120,14 +120,20 @@ export default function AddFaqForm() {
                 <option value="current">Current</option>
             </select>
 
-            <input
-                type="text"
+            <select
                 name="type"
-                placeholder="Type"
                 value={formData.type}
                 onChange={handleChange}
                 required
-            />
+                disabled={!formData.audience}
+            >
+                <option value="">Select Category</option>
+                {(typeOptions[formData.audience] || []).map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                    </option>
+                ))}
+            </select>
 
             <input
                 type="text"

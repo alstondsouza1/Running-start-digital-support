@@ -253,7 +253,7 @@ export default function Admin() {
         </Box>
 
         <Paper sx={{ p: 3 }}>
-          <AddFaqForm />
+          <AddFaqForm onSuccess={() => { setView("dashboard"); loadFaqs(); }} />
         </Paper>
       </Box>
     );
