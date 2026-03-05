@@ -38,9 +38,9 @@ export default function Navbar() {
     { label: "Future Student", to: "/prospective-student" },
     ...(adminInfo
       ? [
-          { label: "Admin", to: "/admin" },
-          { label: "Logout", action: handleLogout },
-        ]
+        { label: "Admin", to: "/admin" },
+        { label: "Logout", action: handleLogout },
+      ]
       : [{ label: "Login", to: "/admin-login" }]),
   ];
 
@@ -121,8 +121,8 @@ export default function Navbar() {
               cursor: "pointer",
             }}
             onMouseEnter={(e) =>
-              (e.currentTarget.style.filter =
-                "brightness(0) saturate(100%) invert(31%) sepia(84%) saturate(5931%) hue-rotate(3deg) brightness(95%) contrast(100%)")
+            (e.currentTarget.style.filter =
+              "brightness(0) saturate(100%) invert(31%) sepia(84%) saturate(5931%) hue-rotate(3deg) brightness(95%) contrast(100%)")
             }
             onMouseLeave={(e) => (e.currentTarget.style.filter = "none")}
           />
@@ -130,6 +130,7 @@ export default function Navbar() {
 
         {/* Title + badge */}
         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+        <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
           <Typography
             variant="h6"
             sx={{
@@ -141,8 +142,9 @@ export default function Navbar() {
               lineHeight: 1.1,
             }}
           >
-            Running Start Digital
+            Running Start Digital Portal
           </Typography>
+          </Link>
 
           {!isMobile && (
             <Typography sx={{ fontSize: "0.75rem", opacity: 0.85, lineHeight: 1 }}>
@@ -165,10 +167,10 @@ export default function Navbar() {
                   sx={
                     isLogin
                       ? {
-                          backgroundColor: "green",
-                          color: "white",
-                          "&:hover": { color: "white", backgroundColor: "#d14900" },
-                        }
+                        backgroundColor: "green",
+                        color: "white",
+                        "&:hover": { color: "white", backgroundColor: "#d14900" },
+                      }
                       : navButtonStyle
                   }
                 >
