@@ -30,7 +30,6 @@ router.post("/login", async (req, res) => {
   if (!process.env.JWT_SECRET) {
     return res.status(500).json({ message: "Missing JWT_SECRET in server env" });
   }
-
   const payload = { role: "admin" };
   const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "2h" });
 
