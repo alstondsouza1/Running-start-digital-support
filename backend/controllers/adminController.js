@@ -9,7 +9,7 @@ export const getFaqs = async (req, res) => {
     }
 
     const [rows] = await pool.query(
-      "SELECT * FROM faqs WHERE audience = ? ORDER BY type, created_at",
+      "SELECT * FROM faq WHERE audience = ? ORDER BY type, created_at",
       [audience]
     );
 
