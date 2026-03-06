@@ -4,6 +4,86 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const currentStudentsQuestions = [
+  // =====================================================
+  // FEE WAIVER & BOOK LOAN (FWBL)
+  // =====================================================
+  {
+    type: "fee-waiver-book-loan",
+    question:
+      "I am in the Fee Waiver and Book Loan Program. Why do I still owe fees?",
+    answer: {
+      bullets: [
+        {
+          text:
+            "Fee Waiver students are still responsible for class fees, including Inclusive Access fees.",
+        },
+        {
+          text:
+            "The Fee Waiver program covers student-voted fees (like matriculation, student center fee, and the technology fee), not class-specific fees.",
+        },
+      ],
+    },
+  },
+
+  {
+    type: "fee-waiver-book-loan",
+    question:
+      "Can I get ebooks, supplies, or access codes through Fee Waiver/Book Loan?",
+    answer: {
+      bullets: [
+        {
+          text:
+            "No. One-time use items (like access codes) are not provided for Fee Waiver students.",
+        },
+        {
+          text:
+            "The Book Loan Program provides physical books that can be returned.",
+        },
+      ],
+    },
+  },
+
+  {
+    type: "fee-waiver-book-loan",
+    question: "I'm being charged an Inclusive Access fee. Can this be waived?",
+    answer: {
+      bullets: [
+        {
+          text:
+            "Inclusive Access is a course materials fee and is often cheaper than buying the book elsewhere.",
+        },
+        {
+          text: "Course materials are required to complete the course.",
+        },
+        {
+          text:
+            "Inclusive Access is considered a one-time use item and cannot be covered by the Fee Waiver program or waived.",
+        },
+      ],
+    },
+  },
+
+  {
+    type: "fee-waiver-book-loan",
+    question:
+      "I submitted the Fee Waiver application after the 10th day. Can it still apply to this term?",
+    answer: {
+      bullets: [
+        {
+          text:
+            "No. Applications submitted after the 10th day are processed for the next term.",
+        },
+        {
+          text:
+            "We cannot go back and apply Fee Waiver forms to the current quarter after the 10th day.",
+        },
+      ],
+    },
+  },
+
+  // =====================================================
+  // DATES & DEADLINES
+  // =====================================================
   {
     type: "dates-deadlines",
     question: "What if my records are blocked when I try to enroll in classes?",
@@ -11,17 +91,21 @@ export const currentStudentsQuestions = [
       intro: "Ask yourself the following questions:",
       bullets: [
         {
-          text: "Have I submitted my Enrollment Verification form? Enrollment Verification forms are required for each term. You must get a new form from your counselor each term and turn in a signed copy via the Secure Document Upload Tool.",
+          text:
+            "Have I submitted my Enrollment Verification form? Enrollment Verification forms are required for each term. You must get a new form from your counselor each term and turn in a signed copy via the Secure Document Upload Tool.",
         },
         {
-          text: "Did I meet Academic Standards last term? If last term's GPA was below a 2.0 you will need to meet with an advisor before enrolling in the next term. Check your GRC email or the Navigate app for messages about your next steps.",
+          text:
+            "Did I meet Academic Standards last term? If last term's GPA was below a 2.0 you will need to meet with an advisor before enrolling in the next term. Check your GRC email or the Navigate app for messages about your next steps.",
           url: "https://www.greenriver.edu/students/academics/running-start/current-running-start-students/running-start-academic-standards.html",
         },
         {
-          text: "Do I have any outstanding fines or parking tickets? Outstanding fines or parking tickets must be paid prior to registration.",
+          text:
+            "Do I have any outstanding fines or parking tickets? Outstanding fines or parking tickets must be paid prior to registration.",
         },
         {
-          text: "You can view which office placed the hold via ctcLink. Holds can only be removed by the office that placed the hold—our office cannot remove holds placed by other offices.",
+          text:
+            "You can view which office placed the hold via ctcLink. Holds can only be removed by the office that placed the hold—our office cannot remove holds placed by other offices.",
         },
       ],
     },
@@ -33,14 +117,36 @@ export const currentStudentsQuestions = [
     answer: {
       bullets: [
         {
-          text: "You will not be able to participate in the Running Start program for the term. You must be enrolled in classes by the third day of the term to participate in Running Start for that term.",
+          text:
+            "You will not be able to participate in the Running Start program for the term. You must be enrolled in classes by the third day of the term to participate in Running Start for that term.",
         },
         {
-          text: "You are welcome back the following term provided that you meet the next term's deadlines.",
+          text:
+            "You are welcome back the following term provided that you meet the next term's deadlines.",
         },
         {
           text: "View enrollment deadlines",
           url: "https://www.greenriver.edu/students/academics/office-of-the-registrar/index.html",
+        },
+      ],
+    },
+  },
+
+  {
+    type: "dates-deadlines",
+    question: "Where can I find my enrollment date?",
+    answer: {
+      bullets: [
+        {
+          text: 'In My Green River, go to "Enrollment" → "Enrollment Dates".',
+        },
+        {
+          text:
+            "Your enrollment date (appointment) is when you can begin enrolling in classes for the upcoming term.",
+        },
+        {
+          text:
+            "All Running Start students must be enrolled in at least one class by the third day of the term.",
         },
       ],
     },
@@ -54,19 +160,24 @@ export const currentStudentsQuestions = [
         "If you need to add or withdraw (“drop”) from a class once the term has begun, there are specific timeframes you need to follow:",
       bullets: [
         {
-          text: "You may add or drop classes on your schedule using online services through the third day of the term. After the third day of the term you will need instructor permission to add classes to your schedule.",
+          text:
+            "You may add or drop classes on your schedule using online services through the third day of the term. After the third day of the term you will need instructor permission to add classes to your schedule.",
         },
         {
-          text: "Be mindful of the deadlines to withdraw from classes each term. There are always two windows of opportunity to withdraw: the first deadline allows you to withdraw without showing on your transcript (typically the 10th day of the term). The second deadline allows you to withdraw but it will show on your transcript (typically during the eighth week of the term).",
+          text:
+            "Be mindful of the deadlines to withdraw from classes each term. There are always two windows of opportunity to withdraw: the first deadline allows you to withdraw without showing on your transcript (typically the 10th day of the term). The second deadline allows you to withdraw but it will show on your transcript (typically during the eighth week of the term).",
         },
         {
-          text: "Consult with your high school counselor to determine how schedule changes will impact your high school transcript.",
+          text:
+            "Consult with your high school counselor to determine how schedule changes will impact your high school transcript.",
         },
         {
-          text: "Please note: only you as the student can initiate and complete adding/dropping classes. An instructor, parent, or advisor cannot complete this process on behalf of students.",
+          text:
+            "Please note: only you as the student can initiate and complete adding/dropping classes. An instructor, parent, or advisor cannot complete this process on behalf of students.",
         },
         {
-          text: "Always save a receipt of your enrollment transactions for your records.",
+          text:
+            "Always save a receipt of your enrollment transactions for your records.",
         },
       ],
     },
@@ -78,18 +189,24 @@ export const currentStudentsQuestions = [
     answer: {
       bullets: [
         {
-          text: "Running Start students are strongly encouraged to continue with math courses—even if they have met their high school's math diploma requirement. Stopping out of a math sequence can make it difficult later on to get back into the groove of taking math.",
+          text:
+            "Running Start students are strongly encouraged to continue with math courses—even if they have met their high school's math diploma requirement. Stopping out of a math sequence can make it difficult later on to get back into the groove of taking math.",
         },
         {
-          text: "Students may complete math at the high school or decide to take math at Green River—either way, it's a good idea to do so.",
+          text:
+            "Students may complete math at the high school or decide to take math at Green River—either way, it's a good idea to do so.",
         },
         {
-          text: "Please visit the Placement website for information on placement. There are a few ways students are placed into math at Green River. Most Running Start students are placed with their high school transcript or by taking the WAMAP placement test.",
+          text:
+            "Please visit the Placement website for information on placement. There are a few ways students are placed into math at Green River. Most Running Start students are placed with their high school transcript or by taking the WAMAP placement test.",
         },
       ],
     },
   },
 
+  // =====================================================
+  // HOW TO PLAN CLASSES
+  // =====================================================
   {
     type: "how-to-plan-classes",
     question: "What classes am I not allowed to take?",
@@ -112,36 +229,39 @@ export const currentStudentsQuestions = [
       intro:
         "Yes. Running Start students enroll in regular college classes. Online (eLearning) courses can be flexible, but they can be challenging. Before enrolling, ask yourself how well these statements describe you:",
       bullets: [
-        { text: "I feel comfortable using reading and writing as my primary means of communication and learning." },
-        { text: "I feel I can learn in an environment where oral lectures are not the primary mode of learning." },
+        {
+          text:
+            "I feel comfortable using reading and writing as my primary means of communication and learning.",
+        },
+        {
+          text:
+            "I feel I can learn in an environment where oral lectures are not the primary mode of learning.",
+        },
         { text: "I am self-motivated and can work independently." },
-        { text: "I have no problem communicating with my instructor and classmates through email and discussion boards." },
-        { text: "I have no problem asking questions when I don't understand something or need clarification." },
-        { text: "I have or will have access to a computer with internet access on a regular basis." },
+        {
+          text:
+            "I have no problem communicating with my instructor and classmates through email and discussion boards.",
+        },
+        {
+          text:
+            "I have no problem asking questions when I don't understand something or need clarification.",
+        },
+        {
+          text:
+            "I have or will have access to a computer with internet access on a regular basis.",
+        },
         { text: "I feel comfortable in my keyboarding abilities." },
-        { text: "I feel comfortable with basic computer skills such as email, creating/saving files, and downloading files." },
-        { text: "I can dedicate approximately three hours of work per credit hour to my eLearning class." },
-        { text: "Being successful as an online student often requires the abilities listed above." },
-      ],
-    },
-  },
-
-  {
-    type: "how-to-plan-classes",
-    question: "How do I know which classes at Green River apply toward my high school graduation requirements?",
-    answer: {
-      bullets: [
         {
-          text: "Each district accepts different courses from Green River to meet specific graduation requirements. This means the course required to complete U.S. History or Senior English will vary from district to district.",
+          text:
+            "I feel comfortable with basic computer skills such as email, creating/saving files, and downloading files.",
         },
         {
-          text: "Students must work with their high school counselor to identify remaining high school graduation requirements prior to enrollment.",
+          text:
+            "I can dedicate approximately three hours of work per credit hour to my eLearning class.",
         },
         {
-          text: "High school graduation requirements are often listed on the term-based Enrollment Verification Form.",
-        },
-        {
-          text: "Our department maintains a list of current equivalency guides on our website (District Equivalency Guide). Advisors use your enrollment info to help plan graduation requirements.",
+          text:
+            "Being successful as an online student often requires the abilities listed above.",
         },
       ],
     },
@@ -149,14 +269,15 @@ export const currentStudentsQuestions = [
 
   {
     type: "how-to-plan-classes",
-    question: "Can students receive a degree from Green River at the same time they get their high school diploma?",
+    question: "Can I meet with any advisor if my advisor isn't available?",
     answer: {
       bullets: [
         {
-          text: "Yes—this is possible but requires careful planning. Ask a Running Start advisor for help planning an AA degree.",
+          text:
+            "If your advisor doesn't have any appointment availability, we recommend seeing them during drop-ins to get quick questions answered (drop-ins are limited to 15–20 minutes).",
         },
         {
-          text: "Students that do not plan to graduate from a public high school can ask the college to issue a State of Washington high school diploma upon completion of an associate degree.",
+          text: "An appointment is required to develop a full academic plan.",
         },
       ],
     },
@@ -164,14 +285,77 @@ export const currentStudentsQuestions = [
 
   {
     type: "how-to-plan-classes",
-    question: "Should students stay at Green River to finish the AA degree before transferring?",
+    question: "Can I meet with my advisor during drop-ins for academic standards?",
     answer: {
       bullets: [
         {
-          text: "There are advantages to finishing an AA degree before transferring to a 4-year university in Washington and some out-of-state institutions (direct transfer agreements listed in the College Catalog).",
+          text:
+            "No. Students must schedule an appointment for academic standards because these conversations typically take one hour.",
         },
         {
-          text: "At some universities in Washington, it may be difficult to transfer with an assortment of credits if you do not complete an AA degree. This is a good question to ask the university you plan to transfer to.",
+          text: "Drop-ins are limited to 15–20 minutes.",
+        },
+      ],
+    },
+  },
+
+  {
+    type: "how-to-plan-classes",
+    question:
+      "How do I know which classes at Green River apply toward my high school graduation requirements?",
+    answer: {
+      bullets: [
+        {
+          text:
+            "Each district accepts different courses from Green River to meet specific graduation requirements. This means the course required to complete U.S. History or Senior English will vary from district to district.",
+        },
+        {
+          text:
+            "Students must work with their high school counselor to identify remaining high school graduation requirements prior to enrollment.",
+        },
+        {
+          text:
+            "High school graduation requirements are often listed on the term-based Enrollment Verification Form.",
+        },
+        {
+          text:
+            "Our department maintains a list of current equivalency guides on our website (District Equivalency Guide). Advisors use your enrollment info to help plan graduation requirements.",
+        },
+      ],
+    },
+  },
+
+  {
+    type: "how-to-plan-classes",
+    question:
+      "Can students receive a degree from Green River at the same time they get their high school diploma?",
+    answer: {
+      bullets: [
+        {
+          text:
+            "Yes—this is possible but requires careful planning. Ask a Running Start advisor for help planning an AA degree.",
+        },
+        {
+          text:
+            "Students that do not plan to graduate from a public high school can ask the college to issue a State of Washington high school diploma upon completion of an associate degree.",
+        },
+      ],
+    },
+  },
+
+  {
+    type: "how-to-plan-classes",
+    question:
+      "Should students stay at Green River to finish the AA degree before transferring?",
+    answer: {
+      bullets: [
+        {
+          text:
+            "There are advantages to finishing an AA degree before transferring to a 4-year university in Washington and some out-of-state institutions (direct transfer agreements listed in the College Catalog).",
+        },
+        {
+          text:
+            "At some universities in Washington, it may be difficult to transfer with an assortment of credits if you do not complete an AA degree. This is a good question to ask the university you plan to transfer to.",
         },
       ],
     },
@@ -183,10 +367,12 @@ export const currentStudentsQuestions = [
     answer: {
       bullets: [
         {
-          text: "College credits are transferable to Washington State public colleges and universities, and to most private colleges in the state.",
+          text:
+            "College credits are transferable to Washington State public colleges and universities, and to most private colleges in the state.",
         },
         {
-          text: "It is important to consult with college admissions representatives and departmental advisors early. For out-of-state colleges, contact them directly for their policies on accepting Running Start credits.",
+          text:
+            "It is important to consult with college admissions representatives and departmental advisors early. For out-of-state colleges, contact them directly for their policies on accepting Running Start credits.",
         },
       ],
     },
@@ -194,22 +380,29 @@ export const currentStudentsQuestions = [
 
   {
     type: "how-to-plan-classes",
-    question: "What if a student doesn't graduate from high school with their class? Can they still do Running Start?",
+    question:
+      "What if a student doesn't graduate from high school with their class? Can they still do Running Start?",
     answer: {
       bullets: [
         {
-          text: "They are still eligible to participate in Running Start. However, they can take only those classes required to earn the diploma through the high school.",
+          text:
+            "They are still eligible to participate in Running Start. However, they can take only those classes required to earn the diploma through the high school.",
         },
         {
-          text: "Students will be responsible for tuition and fees for any non-graduation requirement courses.",
+          text:
+            "Students will be responsible for tuition and fees for any non-graduation requirement courses.",
         },
         {
-          text: "Students are not eligible for federal financial aid until they have a high school diploma or GED®, which may mean paying out-of-pocket.",
+          text:
+            "Students are not eligible for federal financial aid until they have a high school diploma or GED®, which may mean paying out-of-pocket.",
         },
       ],
     },
   },
 
+  // =====================================================
+  // CAMPUS RESOURCES
+  // =====================================================
   {
     type: "campus-resources",
     question: "What if my family moves or change school districts?",
@@ -217,10 +410,12 @@ export const currentStudentsQuestions = [
       bullets: [
         { text: "Please let our department know immediately." },
         {
-          text: "Have the counselor at your new school fill out a new Enrollment Verification Form and turn it in to our office.",
+          text:
+            "Have the counselor at your new school fill out a new Enrollment Verification Form and turn it in to our office.",
         },
         {
-          text: "Changing school districts could impact high school graduation requirements. Please contact your advisor and let them know that you’ve changed districts.",
+          text:
+            "Changing school districts could impact high school graduation requirements. Please contact your advisor and let them know that you’ve changed districts.",
         },
       ],
     },
@@ -228,20 +423,25 @@ export const currentStudentsQuestions = [
 
   {
     type: "campus-resources",
-    question: "Can parents receive information about their student's academic progress or grades? Why or why not?",
+    question:
+      "Can parents receive information about their student's academic progress or grades? Why or why not?",
     answer: {
       bullets: [
         {
-          text: "Running Start students have the same rights and responsibilities as any other college student.",
+          text:
+            "Running Start students have the same rights and responsibilities as any other college student.",
         },
         {
-          text: "All student educational records are maintained according to FERPA (Family Educational Rights and Privacy Act of 1974), which governs disclosure of information in a student’s permanent record.",
+          text:
+            "All student educational records are maintained according to FERPA (Family Educational Rights and Privacy Act of 1974), which governs disclosure of information in a student’s permanent record.",
         },
         {
-          text: "Only a student's name, dates of enrollment, and degrees earned can be released without authorization.",
+          text:
+            "Only a student's name, dates of enrollment, and degrees earned can be released without authorization.",
         },
         {
-          text: "Students can authorize access to their records, and they can authorize or rescind that permission at any time.",
+          text:
+            "Students can authorize access to their records, and they can authorize or rescind that permission at any time.",
         },
       ],
     },
@@ -269,7 +469,9 @@ async function seedCurrentStudentFaqs() {
       sortOrderByType[type]++;
     }
 
-    console.log(`Seeded ${currentStudentsQuestions.length} current student FAQ entries successfully!`);
+    console.log(
+      `Seeded ${currentStudentsQuestions.length} current student FAQ entries successfully!`
+    );
     process.exit(0);
   } catch (err) {
     console.error("Seeding failed:", err);
