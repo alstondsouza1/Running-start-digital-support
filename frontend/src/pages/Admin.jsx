@@ -22,7 +22,7 @@ import { categorySets } from "../data/categories.js";
 import AddFaqForm from "../components/admin/addFAQ.jsx";
 import { useAuth } from "../context/AuthenticateContext";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001/api";
+const API_BASE = import.meta.env.VITE_API_BASE || "https://runningstart-backend.onrender.com/api";
 
 function groupByType(questions) {
   return questions.reduce((acc, q) => {

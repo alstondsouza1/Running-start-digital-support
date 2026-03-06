@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Box, Button, TextField, Typography, MenuItem } from "@mui/material";
 import { useAuth } from "../../context/AuthenticateContext";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001/api";
+const API_BASE = import.meta.env.VITE_API_BASE || "https://runningstart-backend.onrender.com/api";
 
 export default function AddFaqForm() {
   const { adminInfo } = useAuth();

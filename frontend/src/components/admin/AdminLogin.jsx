@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Box, TextField, Button, Typography, Alert } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthenticateContext";
+const API_BASE = import.meta.env.VITE_API_BASE || "https://runningstart-backend.onrender.com/api";
 
 export default function AdminLogin() {
   const [username, setUsername] = useState("");
@@ -18,7 +19,7 @@ export default function AdminLogin() {
     setMessage("");
 
     try {
-      const response = await fetch("http://localhost:5001/api/auth/login", {
+      const response = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
