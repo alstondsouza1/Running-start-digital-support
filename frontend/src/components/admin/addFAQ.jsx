@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { Box, Button, TextField, Typography, MenuItem } from "@mui/material";
 
-const API_BASE =
-  import.meta.env.VITE_API_BASE;
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 export default function AddFaqForm({
   initialData = null,
@@ -128,7 +127,7 @@ export default function AddFaqForm({
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
         throw new Error(data.error || data.message || "Request failed");
@@ -193,7 +192,14 @@ export default function AddFaqForm({
       <Typography variant="h6">Bullet Points</Typography>
 
       {formData.answer.bullets.map((bullet, index) => (
-        <Box key={index} sx={{ display: "grid", gridTemplateColumns: "2fr 2fr auto", gap: 1 }}>
+        <Box
+          key={index}
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "2fr 2fr auto" },
+            gap: 1,
+          }}
+        >
           <TextField
             label={`Bullet ${index + 1} text`}
             value={bullet.text}

@@ -22,8 +22,7 @@ import { categorySets } from "../data/categories.js";
 import AddFaqForm from "../components/admin/addFAQ.jsx";
 import { useAuth } from "../context/AuthenticateContext";
 
-const API_BASE =
-  import.meta.env.VITE_API_BASE;
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 function groupByType(questions) {
   return questions.reduce((acc, q) => {
@@ -34,9 +33,10 @@ function groupByType(questions) {
 }
 
 function SortableCard({ question, onEdit, onDelete }) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
-    id: question.id,
-  });
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({
+      id: question.id,
+    });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -88,8 +88,8 @@ function SortableCard({ question, onEdit, onDelete }) {
 export default function Admin() {
   const { isAdmin, login, logout } = useAuth();
 
-  const [view, setView] = useState("dashboard"); // dashboard | addFaq
-  const [activeTab, setActiveTab] = useState(0); // 0=current, 1=future
+  const [view, setView] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState(0);
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -221,22 +221,75 @@ export default function Admin() {
     }
   }
 
-  function handleDragEnd(event, catId) {
+  async function saveOrderToBackend(type, reorderedList) {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Please login again.");
+      return false;
+    }
+
+    try {
+      const audience = activeTab === 0 ? "current" : "future";
+      const orderedIds = reorderedList.map((item) => item.id);
+
+      const res = await fetch(`${API_BASE}/faq/order`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          audience,
+          type,
+          orderedIds,
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data?.error || data?.message || "Failed to save order");
+      }
+
+      return true;
+    } catch (err) {
+      alert(err.message || "Failed to save order");
+      return false;
+    }
+  }
+
+  async function handleDragEnd(event, catId) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const setter = activeTab === 0 ? setGroupedCurrent : setGroupedFuture;
+    const currentGroups = activeTab === 0 ? groupedCurrent : groupedFuture;
+    const list = currentGroups[catId] || [];
 
-    setter((prev) => {
-      const updated = { ...prev };
-      const list = updated[catId] || [];
-      const oldIndex = list.findIndex((q) => String(q.id) === String(active.id));
-      const newIndex = list.findIndex((q) => String(q.id) === String(over.id));
-      if (oldIndex < 0 || newIndex < 0) return prev;
+    const oldIndex = list.findIndex((q) => String(q.id) === String(active.id));
+    const newIndex = list.findIndex((q) => String(q.id) === String(over.id));
 
-      updated[catId] = arrayMove(list, oldIndex, newIndex);
-      return updated;
-    });
+    if (oldIndex < 0 || newIndex < 0) return;
+
+    const reordered = arrayMove(list, oldIndex, newIndex);
+
+    if (activeTab === 0) {
+      setGroupedCurrent((prev) => ({
+        ...prev,
+        [catId]: reordered,
+      }));
+    } else {
+      setGroupedFuture((prev) => ({
+        ...prev,
+        [catId]: reordered,
+      }));
+    }
+
+    const success = await saveOrderToBackend(catId, reordered);
+
+    if (!success) {
+      loadFaqs();
+    }
   }
 
   if (!isAdmin) {
