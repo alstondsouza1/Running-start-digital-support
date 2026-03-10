@@ -1,14 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, Button, TextField, Typography, MenuItem } from "@mui/material";
-import { useAuth } from "../../context/AuthenticateContext";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "https://runningstart-backend.onrender.com/api";
+const API_BASE =
+  import.meta.env.VITE_API_BASE || "https://runningstart-backend.onrender.com/api";
 
-export default function AddFaqForm() {
-  const { adminInfo } = useAuth();
-  const token = localStorage.getItem("token"); // simplest for now
+export default function AddFaqForm({
+  initialData = null,
+  mode = "add",
+  onSuccess,
+  onCancel,
+}) {
+  const token = localStorage.getItem("token");
 
-  const [formData, setFormData] = useState({
+  const emptyForm = {
     audience: "",
     type: "",
     question: "",
@@ -16,7 +20,31 @@ export default function AddFaqForm() {
       intro: "",
       bullets: [{ text: "", url: "" }],
     },
-  });
+  };
+
+  const [formData, setFormData] = useState(emptyForm);
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        audience: initialData.audience || "",
+        type: initialData.type || "",
+        question: initialData.question || "",
+        answer: {
+          intro: initialData.answer?.intro || "",
+          bullets:
+            initialData.answer?.bullets?.length > 0
+              ? initialData.answer.bullets.map((b) => ({
+                  text: b.text || "",
+                  url: b.url || "",
+                }))
+              : [{ text: "", url: "" }],
+        },
+      });
+    } else {
+      setFormData(emptyForm);
+    }
+  }, [initialData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -43,7 +71,10 @@ export default function AddFaqForm() {
   const addBullet = () => {
     setFormData((prev) => ({
       ...prev,
-      answer: { ...prev.answer, bullets: [...prev.answer.bullets, { text: "", url: "" }] },
+      answer: {
+        ...prev.answer,
+        bullets: [...prev.answer.bullets, { text: "", url: "" }],
+      },
     }));
   };
 
@@ -65,27 +96,34 @@ export default function AddFaqForm() {
       return;
     }
 
-    // clean bullets (remove empty url fields)
     const payload = {
       ...formData,
       answer: {
-        ...formData.answer,
+        ...(formData.answer.intro?.trim()
+          ? { intro: formData.answer.intro.trim() }
+          : {}),
         bullets: formData.answer.bullets
           .filter((b) => b.text.trim().length > 0)
           .map((b) => ({
             text: b.text.trim(),
             ...(b.url?.trim() ? { url: b.url.trim() } : {}),
           })),
-        ...(formData.answer.intro?.trim() ? { intro: formData.answer.intro.trim() } : {}),
       },
     };
 
     try {
-      const response = await fetch(`${API_BASE}/addFAQ`, {
-        method: "POST",
+      const url =
+        mode === "edit" && initialData?.id
+          ? `${API_BASE}/faq/${initialData.id}`
+          : `${API_BASE}/addFAQ`;
+
+      const method = mode === "edit" ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // ✅ REQUIRED
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
@@ -93,17 +131,16 @@ export default function AddFaqForm() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || "Failed to add FAQ");
+        throw new Error(data.error || data.message || "Request failed");
       }
 
-      alert("FAQ added successfully!");
+      alert(mode === "edit" ? "FAQ updated successfully!" : "FAQ added successfully!");
 
-      setFormData({
-        audience: "",
-        type: "",
-        question: "",
-        answer: { intro: "", bullets: [{ text: "", url: "" }] },
-      });
+      if (!initialData) {
+        setFormData(emptyForm);
+      }
+
+      if (onSuccess) onSuccess();
     } catch (error) {
       console.error("Error:", error);
       alert(error.message);
@@ -112,7 +149,7 @@ export default function AddFaqForm() {
 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      <Typography variant="h5">Add FAQ</Typography>
+      <Typography variant="h5">{mode === "edit" ? "Edit FAQ" : "Add FAQ"}</Typography>
 
       <TextField
         select
@@ -129,7 +166,7 @@ export default function AddFaqForm() {
 
       <TextField
         name="type"
-        label="Type (must match category id)"
+        label="Type"
         placeholder='Example: "dates-deadlines" or "general"'
         value={formData.type}
         onChange={handleChange}
@@ -168,7 +205,11 @@ export default function AddFaqForm() {
             value={bullet.url}
             onChange={(e) => handleBulletChange(index, "url", e.target.value)}
           />
-          <Button type="button" onClick={() => removeBullet(index)} disabled={formData.answer.bullets.length === 1}>
+          <Button
+            type="button"
+            onClick={() => removeBullet(index)}
+            disabled={formData.answer.bullets.length === 1}
+          >
             Remove
           </Button>
         </Box>
@@ -178,9 +219,21 @@ export default function AddFaqForm() {
         Add Bullet
       </Button>
 
-      <Button type="submit" variant="contained" sx={{ backgroundColor: "#006225", "&:hover": { backgroundColor: "#004d1a" } }}>
-        Submit FAQ
-      </Button>
+      <Box sx={{ display: "flex", gap: 2 }}>
+        <Button
+          type="submit"
+          variant="contained"
+          sx={{ backgroundColor: "#006225", "&:hover": { backgroundColor: "#004d1a" } }}
+        >
+          {mode === "edit" ? "Update FAQ" : "Submit FAQ"}
+        </Button>
+
+        {onCancel && (
+          <Button type="button" variant="outlined" onClick={onCancel}>
+            Cancel
+          </Button>
+        )}
+      </Box>
     </Box>
   );
 }

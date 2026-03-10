@@ -16,7 +16,6 @@ export const getFaqs = async (req, res) => {
       [audience]
     );
 
-    // If mysql2 returns JSON as string sometimes, normalize it
     const formatted = rows.map((row) => {
       const answer = typeof row.answer === "string" ? JSON.parse(row.answer) : row.answer;
 
@@ -27,7 +26,7 @@ export const getFaqs = async (req, res) => {
         sort_order: row.sort_order,
         created_at: row.created_at,
         question: row.question,
-        answer, // { intro?, bullets: [...] }
+        answer,
       };
     });
 
@@ -48,7 +47,6 @@ export const addFaq = async (req, res) => {
       });
     }
 
-    // Your UI + StudentFAQPage expects: answer = { intro?, bullets: [{text, url?}, ...] }
     if (!Array.isArray(answer.bullets)) {
       return res.status(400).json({ error: "answer.bullets must be an array" });
     }
@@ -66,7 +64,6 @@ export const addFaq = async (req, res) => {
       }
     }
 
-    // put new item at the end of its category
     const [maxRows] = await pool.query(
       "SELECT COALESCE(MAX(sort_order), 0) AS maxSort FROM faq WHERE audience = ? AND type = ?",
       [audience, type]
@@ -89,7 +86,95 @@ export const addFaq = async (req, res) => {
   }
 };
 
-// Persist DnD ordering from admin dashboard
+export const updateFaq = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { audience, type, question, answer } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ error: "FAQ id is required" });
+    }
+
+    if (!audience || !type || !question || !answer) {
+      return res.status(400).json({
+        error: "audience, type, question, and answer are required",
+      });
+    }
+
+    if (!Array.isArray(answer.bullets)) {
+      return res.status(400).json({ error: "answer.bullets must be an array" });
+    }
+
+    for (const b of answer.bullets) {
+      if (!b || typeof b.text !== "string") {
+        return res.status(400).json({
+          error: "Each bullet must be an object like { text: string, url?: string }",
+        });
+      }
+      if (b.url && typeof b.url !== "string") {
+        return res.status(400).json({
+          error: "If provided, bullet.url must be a string",
+        });
+      }
+    }
+
+    const [existingRows] = await pool.query(
+      "SELECT id, audience, type, sort_order FROM faq WHERE id = ?",
+      [id]
+    );
+
+    if (existingRows.length === 0) {
+      return res.status(404).json({ error: "FAQ not found" });
+    }
+
+    const existing = existingRows[0];
+
+    let sortOrder = existing.sort_order;
+
+    if (existing.audience !== audience || existing.type !== type) {
+      const [maxRows] = await pool.query(
+        "SELECT COALESCE(MAX(sort_order), 0) AS maxSort FROM faq WHERE audience = ? AND type = ?",
+        [audience, type]
+      );
+      sortOrder = (maxRows?.[0]?.maxSort ?? 0) + 1;
+    }
+
+    await pool.query(
+      `UPDATE faq
+       SET audience = ?, type = ?, question = ?, answer = ?, sort_order = ?
+       WHERE id = ?`,
+      [audience, type, question, JSON.stringify(answer), sortOrder, id]
+    );
+
+    return res.json({ message: "FAQ updated successfully" });
+  } catch (err) {
+    console.error("Update FAQ error:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const deleteFaq = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const [existingRows] = await pool.query(
+      "SELECT id FROM faq WHERE id = ?",
+      [id]
+    );
+
+    if (existingRows.length === 0) {
+      return res.status(404).json({ error: "FAQ not found" });
+    }
+
+    await pool.query("DELETE FROM faq WHERE id = ?", [id]);
+
+    return res.json({ message: "FAQ deleted successfully" });
+  } catch (err) {
+    console.error("Delete FAQ error:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
 export const updateFaqOrder = async (req, res) => {
   try {
     const { audience, type, orderedIds } = req.body;
@@ -123,4 +208,10 @@ export const updateFaqOrder = async (req, res) => {
   }
 };
 
-export default { addFaq, getFaqs, updateFaqOrder };
+export default {
+  addFaq,
+  getFaqs,
+  updateFaq,
+  deleteFaq,
+  updateFaqOrder,
+};

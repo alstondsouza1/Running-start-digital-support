@@ -11,8 +11,10 @@ router.get("/health", (req, res) => {
 // public read
 router.get("/getFAQS", adminController.getFaqs);
 
-// admin write
+// admin CRUD
 router.post("/addFAQ", requireAdmin, adminController.addFaq);
+router.put("/faq/:id", requireAdmin, adminController.updateFaq);
+router.delete("/faq/:id", requireAdmin, adminController.deleteFaq);
 router.put("/faq/order", requireAdmin, adminController.updateFaqOrder);
 
 export default router;

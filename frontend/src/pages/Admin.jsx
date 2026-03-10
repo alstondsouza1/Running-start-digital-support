@@ -22,7 +22,8 @@ import { categorySets } from "../data/categories.js";
 import AddFaqForm from "../components/admin/addFAQ.jsx";
 import { useAuth } from "../context/AuthenticateContext";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "https://runningstart-backend.onrender.com/api";
+const API_BASE =
+  import.meta.env.VITE_API_BASE || "https://runningstart-backend.onrender.com/api";
 
 function groupByType(questions) {
   return questions.reduce((acc, q) => {
@@ -32,7 +33,7 @@ function groupByType(questions) {
   }, {});
 }
 
-function SortableCard({ question }) {
+function SortableCard({ question, onEdit, onDelete }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: question.id,
   });
@@ -46,8 +47,6 @@ function SortableCard({ question }) {
   return (
     <Paper
       ref={setNodeRef}
-      {...attributes}
-      {...listeners}
       sx={{
         p: 1,
         borderRadius: 1,
@@ -57,13 +56,31 @@ function SortableCard({ question }) {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
+        gap: 2,
         ...style,
       }}
     >
-      <Typography sx={{ flex: 1 }}>{question.question}</Typography>
-      <Typography color="text.secondary" sx={{ ml: 2, whiteSpace: "nowrap" }}>
+      <Box {...attributes} {...listeners} sx={{ flex: 1, cursor: "grab" }}>
+        <Typography>{question.question}</Typography>
+      </Box>
+
+      <Typography color="text.secondary" sx={{ whiteSpace: "nowrap" }}>
         {question.type}
       </Typography>
+
+      <Box sx={{ display: "flex", gap: 1 }}>
+        <Button size="small" variant="outlined" onClick={() => onEdit(question)}>
+          Edit
+        </Button>
+        <Button
+          size="small"
+          color="error"
+          variant="outlined"
+          onClick={() => onDelete(question.id)}
+        >
+          Delete
+        </Button>
+      </Box>
     </Paper>
   );
 }
@@ -82,6 +99,7 @@ export default function Admin() {
   const [groupedFuture, setGroupedFuture] = useState({});
   const [loadingFaqs, setLoadingFaqs] = useState(false);
   const [fetchError, setFetchError] = useState("");
+  const [editingFaq, setEditingFaq] = useState(null);
 
   const activeCategories = useMemo(
     () => (activeTab === 0 ? categorySets.current : categorySets.prospective),
@@ -112,7 +130,6 @@ export default function Admin() {
         futureRes.json(),
       ]);
 
-      // Ensure every item has a stable id for DnD
       const currentWithIds = currentData.map((q) => ({
         ...q,
         id: q.id ?? `current-${q.type}-${q.question}`,
@@ -135,7 +152,6 @@ export default function Admin() {
   useEffect(() => {
     if (!isAdmin) return;
     loadFaqs();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin]);
 
   async function handleLogin(e) {
@@ -170,6 +186,39 @@ export default function Admin() {
   function handleLogout() {
     logout();
     setView("dashboard");
+    setEditingFaq(null);
+  }
+
+  async function handleDelete(id) {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Please login again.");
+      return;
+    }
+
+    const confirmed = window.confirm("Are you sure you want to delete this FAQ?");
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/faq/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data?.error || data?.message || "Delete failed");
+      }
+
+      alert("FAQ deleted successfully");
+      loadFaqs();
+    } catch (err) {
+      alert(err.message || "Delete failed");
+    }
   }
 
   function handleDragEnd(event, catId) {
@@ -190,9 +239,6 @@ export default function Admin() {
     });
   }
 
-  // -------------------------
-  // Not logged in -> Login UI
-  // -------------------------
   if (!isAdmin) {
     return (
       <Box sx={{ p: 3, maxWidth: 520, mx: "auto" }}>
@@ -201,7 +247,11 @@ export default function Admin() {
         </Typography>
 
         <Paper sx={{ p: 3 }}>
-          <Box component="form" onSubmit={handleLogin} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Box
+            component="form"
+            onSubmit={handleLogin}
+            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+          >
             <TextField
               label="Username"
               value={username}
@@ -233,16 +283,23 @@ export default function Admin() {
     );
   }
 
-  // -------------------------
-  // Logged in -> Add FAQ view
-  // -------------------------
   if (view === "addFaq") {
     return (
       <Box sx={{ p: 3 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-          <Button variant="text" onClick={() => setView("dashboard")} sx={{ color: "#006225" }}>
+        <Box
+          sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}
+        >
+          <Button
+            variant="text"
+            onClick={() => {
+              setView("dashboard");
+              setEditingFaq(null);
+            }}
+            sx={{ color: "#006225" }}
+          >
             Back to Dashboard
           </Button>
+
           <Button
             variant="contained"
             onClick={handleLogout}
@@ -253,24 +310,38 @@ export default function Admin() {
         </Box>
 
         <Paper sx={{ p: 3 }}>
-          <AddFaqForm />
+          <AddFaqForm
+            initialData={editingFaq}
+            mode={editingFaq ? "edit" : "add"}
+            onSuccess={() => {
+              setEditingFaq(null);
+              setView("dashboard");
+              loadFaqs();
+            }}
+            onCancel={() => {
+              setEditingFaq(null);
+              setView("dashboard");
+            }}
+          />
         </Paper>
       </Box>
     );
   }
 
-  // -------------------------
-  // Logged in -> Dashboard
-  // -------------------------
   return (
     <Box sx={{ p: 3 }}>
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2, mb: 2 }}>
+      <Box
+        sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2, mb: 2 }}
+      >
         <Typography variant="h4">Admin Dashboard</Typography>
 
         <Box sx={{ display: "flex", gap: 2 }}>
           <Button
             variant="contained"
-            onClick={() => setView("addFaq")}
+            onClick={() => {
+              setEditingFaq(null);
+              setView("addFaq");
+            }}
             sx={{ backgroundColor: "#006225", "&:hover": { backgroundColor: "#004d1a" } }}
           >
             + Add FAQ
@@ -296,7 +367,11 @@ export default function Admin() {
         </Box>
       )}
 
-      {fetchError && <Typography color="error" sx={{ mt: 2 }}>{fetchError}</Typography>}
+      {fetchError && (
+        <Typography color="error" sx={{ mt: 2 }}>
+          {fetchError}
+        </Typography>
+      )}
 
       {!loadingFaqs &&
         !fetchError &&
@@ -328,13 +403,28 @@ export default function Admin() {
               </Box>
 
               <Paper sx={{ p: 2, mt: 1 }}>
-                <DndContext collisionDetection={closestCenter} onDragEnd={(evt) => handleDragEnd(evt, cat.id)}>
+                <DndContext
+                  collisionDetection={closestCenter}
+                  onDragEnd={(evt) => handleDragEnd(evt, cat.id)}
+                >
                   <SortableContext items={ids} strategy={verticalListSortingStrategy}>
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                       {questions.length > 0 ? (
-                        questions.map((q) => <SortableCard key={q.id} question={q} />)
+                        questions.map((q) => (
+                          <SortableCard
+                            key={q.id}
+                            question={q}
+                            onEdit={(faq) => {
+                              setEditingFaq(faq);
+                              setView("addFaq");
+                            }}
+                            onDelete={handleDelete}
+                          />
+                        ))
                       ) : (
-                        <Typography color="text.secondary">No questions mapped to this category yet.</Typography>
+                        <Typography color="text.secondary">
+                          No questions mapped to this category yet.
+                        </Typography>
                       )}
                     </Box>
                   </SortableContext>
