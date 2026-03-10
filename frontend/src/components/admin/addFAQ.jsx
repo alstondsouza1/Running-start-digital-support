@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Box, Button, TextField, Typography, MenuItem } from "@mui/material";
 
 const API_BASE =
-  import.meta.env.VITE_API_BASE || "https://runningstart-backend.onrender.com/api";
+  import.meta.env.VITE_API_BASE;
 
 export default function AddFaqForm({
   initialData = null,

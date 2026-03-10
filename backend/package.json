@@ -25,7 +25,10 @@
   "contributors": [],
   "scripts": {
     "dev": "nodemon app.js",
-    "start": "node app.js"
+    "start": "node app.js",
+    "seed:current": "node scripts/seedCurrenFAQ.js",
+    "seed:future": "node scripts/seedFutureFAQ.js",
+    "seed:all": "npm run seed:current && npm run seed:future"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

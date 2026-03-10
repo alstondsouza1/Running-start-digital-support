@@ -467,6 +467,9 @@ async function seedFutureStudentFAQs() {
   try {
     console.log("Using DB:", process.env.DB_NAME);
 
+    // delete only future student FAQs first
+    await pool.query("DELETE FROM faq WHERE audience = ?", ["future"]);
+
     let sortOrderByType = {};
 
     for (const faq of prospectiveStudentsQuestions) {

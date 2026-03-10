@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Box, TextField, Button, Typography, Alert } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthenticateContext";
-const API_BASE = import.meta.env.VITE_API_BASE || "https://runningstart-backend.onrender.com/api";
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 export default function AdminLogin() {
   const [username, setUsername] = useState("");

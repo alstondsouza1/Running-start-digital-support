@@ -3,7 +3,7 @@ import StudentFAQPage from "../components/StudentFAQPage";
 import { categorySets } from "../data/categories";
 
 const API_BASE =
-  import.meta.env.VITE_API_BASE || "https://runningstart-backend.onrender.com/api";
+  import.meta.env.VITE_API_BASE;
 
 export default function CurrentStudent() {
   const [questions, setQuestions] = useState([]);
