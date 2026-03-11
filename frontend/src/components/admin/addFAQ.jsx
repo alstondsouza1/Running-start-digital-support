@@ -22,12 +22,30 @@ export default function AddFaqForm({
   };
 
   const [formData, setFormData] = useState(emptyForm);
+  const [allCategories, setAllCategories] = useState({});
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/categories`);
+        const data = await res.json();
+        console.log("Fetched categories:", data);
+        setAllCategories(data);
+      } catch (err) {
+        console.error("Failed to fetch categories:", err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     if (initialData) {
+      const audience = initialData.audience || "";
+      const type = initialData.type || "";
       setFormData({
-        audience: initialData.audience || "",
-        type: initialData.type || "",
+        audience,
+        type,
         question: initialData.question || "",
         answer: {
           intro: initialData.answer?.intro || "",
@@ -45,6 +63,10 @@ export default function AddFaqForm({
     }
   }, [initialData]);
 
+  const categoriesForAudience = formData.audience
+    ? allCategories[formData.audience] ?? []
+    : [];
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -53,6 +75,11 @@ export default function AddFaqForm({
         ...prev,
         answer: { ...prev.answer, intro: value },
       }));
+      return;
+    }
+
+    if (name === "audience") {
+      setFormData((prev) => ({ ...prev, audience: value, type: "" }));
       return;
     }
 
@@ -164,13 +191,22 @@ export default function AddFaqForm({
       </TextField>
 
       <TextField
+        select
         name="type"
-        label="Type"
-        placeholder='Example: "dates-deadlines" or "general"'
+        label="Category (Type)"
         value={formData.type}
         onChange={handleChange}
         required
-      />
+        disabled={!formData.audience}
+        helperText={!formData.audience ? "Select an audience first" : undefined}
+      >
+        <MenuItem value="">Select a category</MenuItem>
+        {categoriesForAudience.map((cat) => (
+          <MenuItem key={cat} value={cat}>
+            {cat}
+          </MenuItem>
+        ))}
+      </TextField>
 
       <TextField
         name="question"
