@@ -418,7 +418,13 @@ export default function Admin() {
           const ids = questions.map((q) => q.id);
 
           return (
-            <Box key={cat.id} sx={{ mt: 4 }}>
+            <Box key={cat.id} 
+                sx={{ 
+                  mt: 4, 
+                  maxWidth: "1500px",
+                  marginLeft: "auto",
+                  marginRight: "auto"
+                }}>
               <Typography variant="h6" gutterBottom>
                 {cat.name}
               </Typography>
@@ -434,6 +440,9 @@ export default function Admin() {
                   borderBottom: 1,
                   borderColor: "divider",
                   mt: 2,
+                  maxWidth: "1500px",
+                  marginLeft: "auto",
+                  marginRight: "auto"
                 }}
               >
                 <Typography>Question</Typography>
