@@ -23,6 +23,8 @@ function escapeRegExp(str = "") {
   return String(str).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+import normalizeUrl from "../utils/normalizeURL.js";
+
 function highlightText(text, query) {
   const q = (query || "").trim();
   if (!q) return text;
@@ -183,7 +185,7 @@ export default function StudentFAQPage({
                   primary={
                     bullet.url ? (
                       <MuiLink
-                        href={bullet.url}
+                        href={normalizeUrl(bullet.url)}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
