@@ -102,7 +102,7 @@ export default function Admin() {
   const [editingFaq, setEditingFaq] = useState(null);
 
   const activeCategories = useMemo(
-    () => (activeTab === 0 ? categorySets.current : categorySets.prospective),
+    () => (activeTab === 0 ? categorySets.current : categorySets.future),
     [activeTab]
   );
 

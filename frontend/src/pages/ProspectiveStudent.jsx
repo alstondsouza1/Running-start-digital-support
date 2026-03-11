@@ -31,7 +31,7 @@ export default function ProspectiveStudent() {
     <StudentFAQPage
       title="Future Running Start Students"
       description="Explore general program information, enrollment steps, class options, and important policies for Running Start students."
-      categories={categorySets.prospective}
+      categories={categorySets.future}
       questions={questions}
     />
   );

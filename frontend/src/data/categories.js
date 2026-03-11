@@ -22,7 +22,7 @@ export const categorySets = {
     },
   ],
 
-  prospective: [
+  future: [
     {
       id: "general",
       name: "General Questions",
