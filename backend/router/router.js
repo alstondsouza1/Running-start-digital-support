@@ -10,6 +10,7 @@ router.get("/health", (req, res) => {
 
 // public read
 router.get("/getFAQS", adminController.getFaqs);
+router.get("/categories", adminController.getFaqCategories);
 
 // admin CRUD
 router.post("/addFAQ", requireAdmin, adminController.addFaq);

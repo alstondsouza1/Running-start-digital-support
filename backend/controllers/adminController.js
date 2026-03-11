@@ -175,6 +175,27 @@ export const deleteFaq = async (req, res) => {
   }
 };
 
+export const getFaqCategories = async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT DISTINCT audience, type
+       FROM faq
+       ORDER BY audience, type`
+    );
+
+    const categories = rows.reduce((acc, { audience, type }) => {
+      if (!acc[audience]) acc[audience] = [];
+      acc[audience].push(type);
+      return acc;
+    }, {});
+
+    res.json(categories);
+  } catch (err) {
+    console.error("Get FAQ categories error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 export const updateFaqOrder = async (req, res) => {
   try {
     const { audience, type, orderedIds } = req.body;
@@ -211,6 +232,7 @@ export const updateFaqOrder = async (req, res) => {
 export default {
   addFaq,
   getFaqs,
+  getFaqCategories,
   updateFaq,
   deleteFaq,
   updateFaqOrder,
