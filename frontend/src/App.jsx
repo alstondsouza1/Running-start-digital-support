@@ -25,7 +25,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/current-student" element={<CurrentStudent />} />
-            <Route path="/prospective-student" element={<ProspectiveStudent />} />
+            <Route path="/future-student" element={<ProspectiveStudent />} />
 
             <Route path="/admin-login" element={<AdminLogin />} />
 
