@@ -110,7 +110,8 @@ export default function Navbar() {
           </IconButton>
         )}
 
-        <Link to="/" style={{ display: "flex", alignItems: "center" }}>
+        <Link to="https://www.greenriver.edu/students/academics/running-start/index.html" target="_blank" 
+          style={{ display: "flex", alignItems: "center" }}>
           <img
             src={Logo}
             alt="Logo"
@@ -131,17 +132,22 @@ export default function Navbar() {
         {/* Title + badge */}
         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
           <Typography
+            component="a"
+            href="/"
             variant="h6"
             sx={{
+              textDecoration: "none",
               fontWeight: 700,
               fontSize: { xs: "1rem", sm: "1.1rem" },
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
               lineHeight: 1.1,
+              color: "white",
+                  "&:hover": { color: "#d14900" }
             }}
           >
-            Running Start Digital
+            Running Start Digital Portal
           </Typography>
 
           {!isMobile && (
