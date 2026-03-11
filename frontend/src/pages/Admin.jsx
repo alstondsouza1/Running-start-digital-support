@@ -352,14 +352,6 @@ export default function Admin() {
           >
             Back to Dashboard
           </Button>
-
-          <Button
-            variant="contained"
-            onClick={handleLogout}
-            sx={{ backgroundColor: "#888", "&:hover": { backgroundColor: "#D14900" } }}
-          >
-            Logout
-          </Button>
         </Box>
 
         <Paper sx={{ p: 3 }}>
@@ -398,13 +390,6 @@ export default function Admin() {
             sx={{ backgroundColor: "#006225", "&:hover": { backgroundColor: "#004d1a" } }}
           >
             + Add FAQ
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleLogout}
-            sx={{ backgroundColor: "#888", "&:hover": { backgroundColor: "#D14900" } }}
-          >
-            Logout
           </Button>
         </Box>
       </Box>
