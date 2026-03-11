@@ -29,7 +29,6 @@ export default function AddFaqForm({
       try {
         const res = await fetch(`${API_BASE}/categories`);
         const data = await res.json();
-        console.log("Fetched categories:", data);
         setAllCategories(data);
       } catch (err) {
         console.error("Failed to fetch categories:", err);
