@@ -352,14 +352,6 @@ export default function Admin() {
           >
             Back to Dashboard
           </Button>
-
-          <Button
-            variant="contained"
-            onClick={handleLogout}
-            sx={{ backgroundColor: "#888", "&:hover": { backgroundColor: "#D14900" } }}
-          >
-            Logout
-          </Button>
         </Box>
 
         <Paper sx={{ p: 3 }}>
@@ -399,13 +391,6 @@ export default function Admin() {
           >
             + Add FAQ
           </Button>
-          <Button
-            variant="contained"
-            onClick={handleLogout}
-            sx={{ backgroundColor: "#888", "&:hover": { backgroundColor: "#D14900" } }}
-          >
-            Logout
-          </Button>
         </Box>
       </Box>
 
@@ -433,7 +418,13 @@ export default function Admin() {
           const ids = questions.map((q) => q.id);
 
           return (
-            <Box key={cat.id} sx={{ mt: 4 }}>
+            <Box key={cat.id} 
+                sx={{ 
+                  mt: 4, 
+                  maxWidth: "1500px",
+                  marginLeft: "auto",
+                  marginRight: "auto"
+                }}>
               <Typography variant="h6" gutterBottom>
                 {cat.name}
               </Typography>
@@ -449,6 +440,9 @@ export default function Admin() {
                   borderBottom: 1,
                   borderColor: "divider",
                   mt: 2,
+                  maxWidth: "1500px",
+                  marginLeft: "auto",
+                  marginRight: "auto"
                 }}
               >
                 <Typography>Question</Typography>
