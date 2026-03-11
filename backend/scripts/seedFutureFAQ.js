@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-export const prospectiveStudentsQuestions = [
+export const futureStudentsQuestions = [
   // =========================
   // GENERAL
   // =========================
@@ -472,7 +472,7 @@ async function seedFutureStudentFAQs() {
 
     let sortOrderByType = {};
 
-    for (const faq of prospectiveStudentsQuestions) {
+    for (const faq of futureStudentsQuestions) {
       const { type, question, answer } = faq;
 
       if (!sortOrderByType[type]) {
@@ -488,7 +488,7 @@ async function seedFutureStudentFAQs() {
     }
 
     console.log(
-      `Seeded ${prospectiveStudentsQuestions.length} future student FAQ entries successfully!`
+      `Seeded ${futureStudentsQuestions.length} future student FAQ entries successfully!`
     );
     process.exit(0);
   } catch (err) {

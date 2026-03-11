@@ -411,7 +411,7 @@ export default function Admin() {
 
       <Tabs value={activeTab} onChange={(e, v) => setActiveTab(v)} centered sx={{ mt: 1 }}>
         <Tab label="Current Students" />
-        <Tab label="Prospective Students" />
+        <Tab label="Future Students" />
       </Tabs>
 
       {loadingFaqs && (

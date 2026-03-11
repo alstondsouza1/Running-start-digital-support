@@ -46,7 +46,7 @@ export const categorySets = {
   ],  
 };
 
-// lookup by id for code that needs categorySets.prospective.[id]
-export const prospectiveByKey = Object.fromEntries(
-  categorySets.prospective.map((c) => [c.id, c])
+// lookup by id for code that needs categorySets.future.[id]
+export const futureByKey = Object.fromEntries(
+  categorySets.future.map((c) => [c.id, c])
 );

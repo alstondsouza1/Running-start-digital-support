@@ -35,7 +35,7 @@ export default function Navbar() {
   const links = [
     { label: "Home", to: "/" },
     { label: "Current Student", to: "/current-student" },
-    { label: "Future Student", to: "/prospective-student" },
+    { label: "Future Student", to: "/future-student" },
     ...(adminInfo
       ? [
           { label: "Admin", to: "/admin" },
