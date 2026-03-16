@@ -47,6 +47,10 @@ export default function Navbar() {
   const navButtonStyle = {
     color: "white",
     "&:hover": { color: "#BBD416" },
+    "&:focus-visible": {
+      outline: "3px solid #ffffff",
+      outlineOffset: "2px",
+    },
   };
 
   const toggleDrawer = (value) => setOpen(value);
@@ -54,9 +58,9 @@ export default function Navbar() {
   const DrawerContent = (
     <Box sx={{ width: 280 }} role="presentation" onClick={() => toggleDrawer(false)}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, p: 2 }}>
-        <img src={Logo} alt="Logo" style={{ height: 40 }} />
+        <img src={Logo} alt="Green River College logo" style={{ height: 40 }} />
         <Box sx={{ display: "flex", flexDirection: "column" }}>
-          <Typography fontWeight={700}>Running Start Digital</Typography>
+          <Typography fontWeight={700}>Running Start Digital Portal</Typography>
           <Typography sx={{ fontSize: "0.75rem", opacity: 0.8 }}>
             Student Capstone Project
           </Typography>
@@ -97,43 +101,41 @@ export default function Navbar() {
   );
 
   return (
-    <AppBar position="fixed" sx={{ backgroundColor: "green" }}>
+    <AppBar component="header" position="fixed" sx={{ backgroundColor: "green" }}>
       <Toolbar sx={{ gap: 1.5 }}>
         {isMobile && (
           <IconButton
             color="inherit"
             edge="start"
-            aria-label="Open menu"
+            aria-label="Open navigation menu"
             onClick={() => toggleDrawer(true)}
           >
             <MenuIcon />
           </IconButton>
         )}
 
-        <Link to="https://www.greenriver.edu/students/academics/running-start/index.html" target="_blank" 
-          style={{ display: "flex", alignItems: "center" }}>
+        <a
+          href="https://www.greenriver.edu/students/academics/running-start/index.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ display: "flex", alignItems: "center" }}
+        >
           <img
             src={Logo}
-            alt="Logo"
+            alt="Green River College Running Start"
             style={{
               height: 46,
               marginRight: 12,
               transition: "filter 0.3s",
               cursor: "pointer",
             }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.filter =
-                "brightness(0) saturate(100%) invert(31%) sepia(84%) saturate(5931%) hue-rotate(3deg) brightness(95%) contrast(100%)")
-            }
-            onMouseLeave={(e) => (e.currentTarget.style.filter = "none")}
           />
-        </Link>
+        </a>
 
-        {/* Title + badge */}
         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
           <Typography
-            component="a"
-            href="/"
+            component={Link}
+            to="/"
             variant="h6"
             sx={{
               textDecoration: "none",
@@ -144,7 +146,7 @@ export default function Navbar() {
               textOverflow: "ellipsis",
               lineHeight: 1.1,
               color: "white",
-                  "&:hover": { color: "#d14900" }
+              "&:hover": { color: "#d14900" },
             }}
           >
             Running Start Digital Portal
@@ -159,21 +161,22 @@ export default function Navbar() {
 
         {!isMobile && (
           <Box sx={{ display: "flex", gap: 0.5 }}>
-            {links.map((item, index) => {
-              const isLogin = item.label === "Login";
-
-              return item.to ? (
+            {links.map((item, index) =>
+              item.to ? (
                 <Button
                   key={index}
                   component={Link}
                   to={item.to}
-                  variant={isLogin ? "contained" : "text"}
+                  variant={item.label === "Login" ? "contained" : "text"}
                   sx={
-                    isLogin
+                    item.label === "Login"
                       ? {
                           backgroundColor: "green",
                           color: "white",
-                          "&:hover": { color: "white", backgroundColor: "#d14900" },
+                          "&:hover": {
+                            color: "white",
+                            backgroundColor: "#d14900",
+                          },
                         }
                       : navButtonStyle
                   }
@@ -184,8 +187,8 @@ export default function Navbar() {
                 <Button key={index} onClick={item.action} color="inherit" sx={navButtonStyle}>
                   {item.label}
                 </Button>
-              );
-            })}
+              )
+            )}
           </Box>
         )}
 
