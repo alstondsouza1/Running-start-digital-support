@@ -16,6 +16,9 @@ export default function QuestionSearchBar({
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       sx={{ mb: 3, maxWidth: 980 }}
+      inputProps={{
+        "aria-describedby": "faq-search-help",
+      }}
       InputProps={{
         endAdornment: (
           <InputAdornment position="end">
@@ -30,6 +33,10 @@ export default function QuestionSearchBar({
             )}
           </InputAdornment>
         ),
+      }}
+      helperText="Search by keywords like deadline, class, fee waiver, or enrollment."
+      FormHelperTextProps={{
+        id: "faq-search-help",
       }}
     />
   );
