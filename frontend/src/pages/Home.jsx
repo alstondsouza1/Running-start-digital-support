@@ -22,6 +22,10 @@ export default function Home() {
       boxShadow: 6,
       transform: "translateY(-4px)",
     },
+    "&:focus-visible": {
+      outline: "3px solid #d14900",
+      outlineOffset: "3px",
+    },
   };
 
   return (
@@ -55,26 +59,50 @@ export default function Home() {
           justifyContent: "center",
         }}
       >
-        <Card sx={cardStyles} onClick={() => navigate("/current-student")}>
+        <Card
+          sx={cardStyles}
+          onClick={() => navigate("/current-student")}
+          tabIndex={0}
+          role="button"
+          aria-label="Open Current Student FAQs"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              navigate("/current-student");
+            }
+          }}
+        >
           <CardContent sx={{ textAlign: "center", px: 3 }}>
             <SchoolIcon sx={{ fontSize: 70, color: "#2c882b" }} />
             <Typography variant="h6" sx={{ mt: 2 }} fontWeight={700}>
               Current Student
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Fee waivers & book loans, class planning, dates & deadlines, and campus resources
+              Fee waivers, class planning, dates and deadlines, and campus resources
             </Typography>
           </CardContent>
         </Card>
 
-        <Card sx={cardStyles} onClick={() => navigate("/prospective-student")}>
+        <Card
+          sx={cardStyles}
+          onClick={() => navigate("/future-student")}
+          tabIndex={0}
+          role="button"
+          aria-label="Open Future Student FAQs"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              navigate("/future-student");
+            }
+          }}
+        >
           <CardContent sx={{ textAlign: "center", px: 3 }}>
             <PersonAddIcon sx={{ fontSize: 70, color: "#2c882b" }} />
             <Typography variant="h6" sx={{ mt: 2 }} fontWeight={700}>
               Future Student
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              General questions, enrollment, classes, and other (FERPA + moving districts)
+              General questions, enrollment, classes, and other important policies
             </Typography>
           </CardContent>
         </Card>
