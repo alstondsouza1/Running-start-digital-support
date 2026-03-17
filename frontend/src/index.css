@@ -8,6 +8,10 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -21,8 +25,12 @@ body {
 }
 
 a {
-  font-weight: 500;
-  text-decoration: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
 }
 
 a:focus-visible,

@@ -8,14 +8,15 @@ export default function Home() {
 
   const cardStyles = {
     width: "100%",
-    maxWidth: 360,
-    minHeight: 280,
+    maxWidth: 380,
+    minHeight: { xs: 240, sm: 280 },
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     cursor: "pointer",
-    borderRadius: 2,
-    border: "2px solid transparent",
+    borderRadius: 3,
+    border: "1px solid rgba(0,0,0,0.12)",
+    boxShadow: 2,
     transition: "all 0.25s ease",
     "&:hover": {
       borderColor: "#2c882b",
@@ -46,7 +47,8 @@ export default function Home() {
       </Typography>
 
       <Typography color="text.secondary" sx={{ textAlign: "center", maxWidth: 700 }}>
-        Choose an option below to find answers and resources
+      Choose whether you are a current or future Running Start student to quickly
+      find FAQs, support information, and important next steps.
       </Typography>
 
       <Box

@@ -48,27 +48,43 @@ function SortableCard({ question, onEdit, onDelete }) {
     <Paper
       ref={setNodeRef}
       sx={{
-        p: 1,
+        p: { xs: 1.25, sm: 1.5 },
         borderRadius: 1,
         border: 1,
         borderColor: "divider",
         backgroundColor: "background.paper",
         display: "flex",
+        flexDirection: { xs: "column", md: "row" },
         justifyContent: "space-between",
-        alignItems: "center",
-        gap: 2,
+        alignItems: { xs: "stretch", md: "center" },
+        gap: 1.5,
+        overflow: "hidden",
         ...style,
       }}
     >
-      <Box {...attributes} {...listeners} sx={{ flex: 1, cursor: "grab" }}>
-        <Typography>{question.question}</Typography>
+      <Box {...attributes} {...listeners} sx={{ flex: 1, cursor: "grab", minWidth: 0 }}>
+        <Typography sx={{ wordBreak: "break-word" }}>{question.question}</Typography>
       </Box>
 
-      <Typography color="text.secondary" sx={{ whiteSpace: "nowrap" }}>
+      <Typography
+        color="text.secondary"
+        sx={{
+          whiteSpace: { xs: "normal", md: "nowrap" },
+          wordBreak: "break-word",
+          fontSize: { xs: "0.9rem", sm: "1rem" },
+        }}
+      >
         {question.type}
       </Typography>
 
-      <Box sx={{ display: "flex", gap: 1 }}>
+      <Box
+        sx={{
+          display: "flex",
+          gap: 1,
+          flexWrap: "wrap",
+          justifyContent: { xs: "flex-start", md: "flex-end" },
+        }}
+      >
         <Button size="small" variant="outlined" onClick={() => onEdit(question)}>
           Edit
         </Button>
@@ -294,7 +310,7 @@ export default function Admin() {
 
   if (!isAdmin) {
     return (
-      <Box sx={{ p: 3, maxWidth: 520, mx: "auto" }}>
+      <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 520, mx: "auto" }}>
         <Typography variant="h4" sx={{ mb: 2 }}>
           Admin Login
         </Typography>
@@ -338,7 +354,7 @@ export default function Admin() {
 
   if (view === "addFaq") {
     return (
-      <Box sx={{ p: 3 }}>
+      <Box sx={{ p: { xs: 2, sm: 3 } }}>
         <Box
           sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}
         >
@@ -354,7 +370,7 @@ export default function Admin() {
           </Button>
         </Box>
 
-        <Paper sx={{ p: 3 }}>
+        <Paper sx={{ p: { xs: 2, sm: 3 } }}>
           <AddFaqForm
             initialData={editingFaq}
             mode={editingFaq ? "edit" : "add"}
@@ -374,13 +390,20 @@ export default function Admin() {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: { xs: 2, sm: 3 } }}>
       <Box
-        sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2, mb: 2 }}
+        sx={{
+          display: "flex",
+          alignItems: { xs: "flex-start", sm: "center" },
+          flexDirection: { xs: "column", sm: "row" },
+          justifyContent: "space-between",
+          gap: 2,
+          mb: 2,
+        }}
       >
         <Typography variant="h4">Admin Dashboard</Typography>
 
-        <Box sx={{ display: "flex", gap: 2 }}>
+        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
           <Button
             variant="contained"
             onClick={() => {
@@ -391,10 +414,21 @@ export default function Admin() {
           >
             + Add FAQ
           </Button>
+
+          <Button variant="outlined" color="error" onClick={handleLogout}>
+            Logout
+          </Button>
         </Box>
       </Box>
 
-      <Tabs value={activeTab} onChange={(e, v) => setActiveTab(v)} centered sx={{ mt: 1 }}>
+      <Tabs
+        value={activeTab}
+        onChange={(e, v) => setActiveTab(v)}
+        centered
+        variant="scrollable"
+        scrollButtons="auto"
+        sx={{ mt: 1 }}
+      >
         <Tab label="Current Students" />
         <Tab label="Future Students" />
       </Tabs>
@@ -418,20 +452,22 @@ export default function Admin() {
           const ids = questions.map((q) => q.id);
 
           return (
-            <Box key={cat.id} 
-                sx={{ 
-                  mt: 4, 
-                  maxWidth: "1500px",
-                  marginLeft: "auto",
-                  marginRight: "auto"
-                }}>
+            <Box
+              key={cat.id}
+              sx={{
+                mt: 4,
+                maxWidth: "1500px",
+                marginLeft: "auto",
+                marginRight: "auto",
+              }}
+            >
               <Typography variant="h6" gutterBottom>
                 {cat.name}
               </Typography>
 
               <Box
                 sx={{
-                  display: "flex",
+                  display: { xs: "none", sm: "flex" },
                   justifyContent: "space-between",
                   alignItems: "center",
                   px: 2,
@@ -440,16 +476,13 @@ export default function Admin() {
                   borderBottom: 1,
                   borderColor: "divider",
                   mt: 2,
-                  maxWidth: "1500px",
-                  marginLeft: "auto",
-                  marginRight: "auto"
                 }}
               >
                 <Typography>Question</Typography>
                 <Typography>Type</Typography>
               </Box>
 
-              <Paper sx={{ p: 2, mt: 1 }}>
+              <Paper sx={{ p: { xs: 1.25, sm: 2 }, mt: 1, overflow: "hidden" }}>
                 <DndContext
                   collisionDetection={closestCenter}
                   onDragEnd={(evt) => handleDragEnd(evt, cat.id)}
