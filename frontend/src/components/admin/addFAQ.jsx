@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Box, Button, TextField, Typography, MenuItem } from "@mui/material";
+import fetchCategories from "../../utils/fetchCategories.js";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -23,19 +24,13 @@ export default function AddFaqForm({
 
   const [formData, setFormData] = useState(emptyForm);
   const [allCategories, setAllCategories] = useState({});
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
+  const [customCategory, setCustomCategory] = useState("");
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/categories`);
-        const data = await res.json();
-        setAllCategories(data);
-      } catch (err) {
-        console.error("Failed to fetch categories:", err);
-      }
-    };
 
-    fetchCategories();
+    const data = fetchCategories(API_BASE);
+    setAllCategories(data);
   }, []);
 
   useEffect(() => {
@@ -79,6 +74,20 @@ export default function AddFaqForm({
 
     if (name === "audience") {
       setFormData((prev) => ({ ...prev, audience: value, type: "" }));
+      setIsCustomCategory(false);
+      setCustomCategory("");
+      return;
+    }
+
+    if (name === "type") {
+      if (value === "_new") {
+        setIsCustomCategory(true);
+        setFormData((prev) => ({ ...prev, type: "" }));
+      } else {
+        setIsCustomCategory(false);
+        setCustomCategory("");
+        setFormData((prev) => ({ ...prev, type: value }));
+      }
       return;
     }
 
@@ -121,8 +130,11 @@ export default function AddFaqForm({
       return;
     }
 
+    const finalType = isCustomCategory ? customCategory.trim() : formData.type;
+
     const payload = {
       ...formData,
+      type: finalType,
       answer: {
         ...(formData.answer.intro?.trim()
           ? { intro: formData.answer.intro.trim() }
@@ -193,7 +205,7 @@ export default function AddFaqForm({
         select
         name="type"
         label="Category (Type)"
-        value={formData.type}
+        value={isCustomCategory ? "_new" : formData.type}
         onChange={handleChange}
         required
         disabled={!formData.audience}
@@ -205,7 +217,20 @@ export default function AddFaqForm({
             {cat}
           </MenuItem>
         ))}
+        <MenuItem value="_new" disabled={!formData.audience}>
+          Create new category
+        </MenuItem>
       </TextField>
+
+      {isCustomCategory && (
+        <TextField
+          name="customCategory"
+          label="New category name"
+          value={customCategory}
+          onChange={(e) => setCustomCategory(e.target.value)}
+          required
+        />
+      )}
 
       <TextField
         name="question"

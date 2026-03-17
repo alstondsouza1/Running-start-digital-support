@@ -18,7 +18,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-import { categorySets } from "../data/categories.js";
+import fetchCategories from "../utils/fetchCategories.js";
 import AddFaqForm from "../components/admin/addFAQ.jsx";
 import { useAuth } from "../context/AuthenticateContext";
 
@@ -101,9 +101,11 @@ export default function Admin() {
   const [fetchError, setFetchError] = useState("");
   const [editingFaq, setEditingFaq] = useState(null);
 
+  const [categories, setCategories] = useState({ current: [], future: [] });
+
   const activeCategories = useMemo(
-    () => (activeTab === 0 ? categorySets.current : categorySets.future),
-    [activeTab]
+    () => (activeTab === 0 ? categories.current : categories.future),
+    [activeTab, categories]
   );
 
   const activeGrouped = useMemo(
@@ -114,6 +116,9 @@ export default function Admin() {
   async function loadFaqs() {
     setLoadingFaqs(true);
     setFetchError("");
+
+    const data = await fetchCategories(API_BASE);
+    setCategories(data)
 
     try {
       const [currentRes, futureRes] = await Promise.all([
@@ -151,6 +156,16 @@ export default function Admin() {
 
   useEffect(() => {
     if (!isAdmin) return;
+
+    const loadCategories = async () => {
+      try {
+        const data = await fetchCategories(API_BASE);
+        setCategories(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    loadCategories();
     loadFaqs();
   }, [isAdmin]);
 
@@ -413,12 +428,12 @@ export default function Admin() {
 
       {!loadingFaqs &&
         !fetchError &&
-        activeCategories.map((cat) => {
-          const questions = activeGrouped[cat.id] || [];
+        activeCategories.map((catKey) => {
+          const questions = activeGrouped[catKey] || [];
           const ids = questions.map((q) => q.id);
 
           return (
-            <Box key={cat.id} 
+            <Box key={catKey}
                 sx={{ 
                   mt: 4, 
                   maxWidth: "1500px",
@@ -426,7 +441,7 @@ export default function Admin() {
                   marginRight: "auto"
                 }}>
               <Typography variant="h6" gutterBottom>
-                {cat.name}
+                {catKey}
               </Typography>
 
               <Box
@@ -452,7 +467,7 @@ export default function Admin() {
               <Paper sx={{ p: 2, mt: 1 }}>
                 <DndContext
                   collisionDetection={closestCenter}
-                  onDragEnd={(evt) => handleDragEnd(evt, cat.id)}
+                  onDragEnd={(evt) => handleDragEnd(evt, catKey)}
                 >
                   <SortableContext items={ids} strategy={verticalListSortingStrategy}>
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
