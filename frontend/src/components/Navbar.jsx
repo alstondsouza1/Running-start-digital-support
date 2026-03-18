@@ -22,10 +22,12 @@ import { useAuth } from "../context/AuthenticateContext";
 export default function Navbar() {
   const { adminInfo, logout } = useAuth();
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const [open, setOpen] = useState(false);
   const location = useLocation();
+  const theme = useTheme();
+
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const canHover = useMediaQuery("(hover: hover) and (pointer: fine)");
+  const [open, setOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -46,17 +48,27 @@ export default function Navbar() {
 
   const navButtonStyle = {
     color: "white",
-    "&:hover": { color: "#BBD416" },
+    "@media (hover: hover) and (pointer: fine)": {
+      "&:hover": { color: "#BBD416" },
+    },
+    "&:focus-visible": {
+      outline: "3px solid #ffffff",
+      outlineOffset: "2px",
+    },
   };
 
   const toggleDrawer = (value) => setOpen(value);
 
   const DrawerContent = (
-    <Box sx={{ width: 280 }} role="presentation" onClick={() => toggleDrawer(false)}>
+    <Box
+      sx={{ width: 280 }}
+      role="presentation"
+      onClick={() => toggleDrawer(false)}
+    >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, p: 2 }}>
-        <img src={Logo} alt="Logo" style={{ height: 40 }} />
+        <img src={Logo} alt="Green River College logo" style={{ height: 40 }} />
         <Box sx={{ display: "flex", flexDirection: "column" }}>
-          <Typography fontWeight={700}>Running Start Digital</Typography>
+          <Typography fontWeight={700}>Running Start Digital Portal</Typography>
           <Typography sx={{ fontSize: "0.75rem", opacity: 0.8 }}>
             Student Capstone Project
           </Typography>
@@ -82,10 +94,19 @@ export default function Navbar() {
                 ...(isLogin && {
                   backgroundColor: "green",
                   color: "white",
-                  "&:hover": { backgroundColor: "#d14900", color: "white" },
+                  "@media (hover: hover) and (pointer: fine)": {
+                    "&:hover": {
+                      backgroundColor: "#d14900",
+                      color: "white",
+                    },
+                  },
                 }),
-                "&.Mui-selected": { backgroundColor: "rgba(44,136,43,0.12)" },
-                "&.Mui-selected:hover": { backgroundColor: "rgba(44,136,43,0.18)" },
+                "&.Mui-selected": {
+                  backgroundColor: "rgba(44,136,43,0.12)",
+                },
+                "&.Mui-selected:hover": {
+                  backgroundColor: "rgba(44,136,43,0.18)",
+                },
               }}
             >
               <ListItemText primary={item.label} />
@@ -97,54 +118,69 @@ export default function Navbar() {
   );
 
   return (
-    <AppBar position="fixed" sx={{ backgroundColor: "green" }}>
-      <Toolbar sx={{ gap: 1.5 }}>
+    <AppBar component="header" position="fixed" sx={{ backgroundColor: "green" }}>
+      <Toolbar
+        sx={{
+          gap: { xs: 1, sm: 1.5 },
+          minHeight: { xs: 72, sm: 80 },
+          px: { xs: 1.5, sm: 2 },
+        }}
+      >
         {isMobile && (
           <IconButton
             color="inherit"
             edge="start"
-            aria-label="Open menu"
+            aria-label="Open navigation menu"
             onClick={() => toggleDrawer(true)}
           >
             <MenuIcon />
           </IconButton>
         )}
 
-        <Link to="https://www.greenriver.edu/students/academics/running-start/index.html" target="_blank" 
-          style={{ display: "flex", alignItems: "center" }}>
+        <a
+          href="https://www.greenriver.edu/students/academics/running-start/index.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ display: "flex", alignItems: "center", flexShrink: 0 }}
+        >
           <img
             src={Logo}
-            alt="Logo"
+            alt="Green River College Running Start"
             style={{
-              height: 46,
-              marginRight: 12,
-              transition: "filter 0.3s",
+              height: isMobile ? 34 : 46,
+              marginRight: isMobile ? 8 : 12,
+              transition: "filter 0.3s ease",
               cursor: "pointer",
             }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.filter =
-                "brightness(0) saturate(100%) invert(31%) sepia(84%) saturate(5931%) hue-rotate(3deg) brightness(95%) contrast(100%)")
-            }
-            onMouseLeave={(e) => (e.currentTarget.style.filter = "none")}
+            onMouseEnter={(e) => {
+              if (!canHover) return;
+              e.currentTarget.style.filter =
+                "brightness(0) saturate(100%) invert(31%) sepia(84%) saturate(5931%) hue-rotate(3deg) brightness(95%) contrast(100%)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.filter = "none";
+            }}
           />
-        </Link>
+        </a>
 
-        {/* Title + badge */}
         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
           <Typography
-            component="a"
-            href="/"
+            component={Link}
+            to="/"
             variant="h6"
             sx={{
               textDecoration: "none",
               fontWeight: 700,
-              fontSize: { xs: "1rem", sm: "1.1rem" },
+              fontSize: { xs: "0.9rem", sm: "1.1rem" },
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
               lineHeight: 1.1,
               color: "white",
-                  "&:hover": { color: "#d14900" }
+              display: "inline-block",
+              "@media (hover: hover) and (pointer: fine)": {
+                "&:hover": { color: "#d14900" },
+              },
             }}
           >
             Running Start Digital Portal
@@ -161,6 +197,7 @@ export default function Navbar() {
           <Box sx={{ display: "flex", gap: 0.5 }}>
             {links.map((item, index) => {
               const isLogin = item.label === "Login";
+              const isActive = item.to ? location.pathname === item.to : false;
 
               return item.to ? (
                 <Button
@@ -173,15 +210,31 @@ export default function Navbar() {
                       ? {
                           backgroundColor: "green",
                           color: "white",
-                          "&:hover": { color: "white", backgroundColor: "#d14900" },
+                          "@media (hover: hover) and (pointer: fine)": {
+                            "&:hover": {
+                              color: "white",
+                              backgroundColor: "#d14900",
+                            },
+                          },
                         }
-                      : navButtonStyle
+                      : {
+                          ...navButtonStyle,
+                          ...(isActive && {
+                            border: "2px solid white",
+                            borderRadius: "12px",
+                          }),
+                        }
                   }
                 >
                   {item.label}
                 </Button>
               ) : (
-                <Button key={index} onClick={item.action} color="inherit" sx={navButtonStyle}>
+                <Button
+                  key={index}
+                  onClick={item.action}
+                  color="inherit"
+                  sx={navButtonStyle}
+                >
                   {item.label}
                 </Button>
               );
