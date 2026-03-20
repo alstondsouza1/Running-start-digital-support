@@ -10,9 +10,23 @@ import authenticateRoutes from "./router/authenticateRoutes.js";
 const app = express();
 const PORT = process.env.PORT || 5001;
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://running-start-digital-support-zfnb.vercel.app",
+  "https://running-start-digital-support-zfnb-gxwujlbph.vercel.app",
+];
+
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin(origin, callback) {
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: false,
   })
 );
