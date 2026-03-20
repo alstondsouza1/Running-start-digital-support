@@ -12,8 +12,7 @@ const PORT = process.env.PORT || 5001;
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://running-start-digital-support-zfnb.vercel.app",
-  "https://running-start-digital-support-zfnb-gxwujlbph.vercel.app",
+  "https://running-start-portal.vercel.app"
 ];
 
 app.use(
