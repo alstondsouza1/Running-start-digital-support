@@ -1,4 +1,9 @@
-export const prospectiveStudentsQuestions = [
+import pool from "../db/db.js";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+export const futureStudentsQuestions = [
   // =========================
   // GENERAL
   // =========================
@@ -38,8 +43,9 @@ export const prospectiveStudentsQuestions = [
             "Are motivated to participate in the college environment and possess the maturity to do so.",
         },
         { text: "Seek academic challenges not available at their high school." },
-        { text: "View Program Benefits and Considerations." ,
-          url: "https://www.greenriver.edu/students/academics/running-start/prospective-running-start-students/benefits-and-considerations.html"
+        {
+          text: "View Program Benefits and Considerations.",
+          url: "https://www.greenriver.edu/students/academics/running-start/prospective-running-start-students/benefits-and-considerations.html",
         },
       ],
     },
@@ -61,7 +67,7 @@ export const prospectiveStudentsQuestions = [
         {
           text:
             "Be eligible for ENGL& 101 (see Course Placement Options for assessment and placement options).",
-            url: "https://www.greenriver.edu/students/academics/placement-testing-center/course-placement-options/index.html",
+          url: "https://www.greenriver.edu/students/academics/placement-testing-center/course-placement-options/index.html",
         },
         {
           text:
@@ -165,12 +171,17 @@ export const prospectiveStudentsQuestions = [
     question: "My placement scores didn't accurately reflect my abilities…help!",
     answer: {
       bullets: [
-        { text: "Visit the Placement section of the site for advising and placement information." },
-        { text: "Most Running Start students place using high school transcripts or the WAMAP placement test." },
+        {
+          text:
+            "Visit the Placement section of the site for advising and placement information.",
+        },
+        {
+          text:
+            "Most Running Start students place using high school transcripts or the WAMAP placement test.",
+        },
       ],
     },
   },
-
   {
     type: "enrollment",
     question: "When can I enroll in classes?",
@@ -214,10 +225,11 @@ export const prospectiveStudentsQuestions = [
         {
           text: "Anything submitted over email will be deleted.",
         },
-        {text:
-          "View universities which have \"direct transfer agreements with Green River\"",
-          url: "https://catalog.greenriver.edu/content.php?catoid=8&navoid=391"
-        }
+        {
+          text:
+            'View universities which have "direct transfer agreements with Green River"',
+          url: "https://catalog.greenriver.edu/content.php?catoid=8&navoid=391",
+        },
       ],
     },
   },
@@ -254,6 +266,155 @@ export const prospectiveStudentsQuestions = [
       ],
     },
   },
+  {
+    type: "classes",
+    question: "Can students take online classes?",
+    answer: {
+      intro:
+        "Yes. Online courses are regular college classes. Before enrolling in eLearning, students may want to ask themselves:",
+      bullets: [
+        {
+          text:
+            "I feel comfortable using reading and writing as my primary means of communication and learning.",
+        },
+        {
+          text:
+            "I feel I can learn in an environment where oral lectures are not the primary mode of learning.",
+        },
+        { text: "I am self-motivated and can work independently." },
+        {
+          text:
+            "I have no problem communicating with my instructor and other classmates through electronic means such as email and discussion boards.",
+        },
+        {
+          text:
+            "I have no problem asking questions when I don't understand something or need clarification.",
+        },
+        {
+          text:
+            "I have or will have access to a computer with internet access on a regular basis.",
+        },
+        { text: "I feel comfortable in my keyboarding abilities." },
+        {
+          text:
+            "I feel comfortable with basic computer skills such as email, creating and saving files, and downloading files.",
+        },
+        {
+          text:
+            "I can dedicate approximately three hours of work per credit hour to my eLearning class.",
+        },
+        {
+          text:
+            "If your student answered ‘yes’ to most of these questions, eLearning could be a good option.",
+        },
+      ],
+    },
+  },
+  {
+    type: "classes",
+    question:
+      "How do I know which classes at Green River apply toward high school graduation requirements?",
+    answer: {
+      bullets: [
+        {
+          text:
+            "Each district accepts different Green River courses for specific graduation requirements, so required courses vary by district.",
+        },
+        {
+          text:
+            "Students must work with their high school counselor before enrolling to identify remaining graduation requirements.",
+        },
+        {
+          text:
+            "Graduation requirements are often listed on the Enrollment Verification Form.",
+        },
+        {
+          text:
+            "The department maintains a list of equivalency guides on the website (District Equivalency Guide).",
+        },
+      ],
+    },
+  },
+  {
+    type: "classes",
+    question:
+      "Can students receive a degree from Green River at the same time they get their high school diploma?",
+    answer: {
+      bullets: [
+        {
+          text:
+            "Yes, but it requires careful planning. Ask a Running Start advisor for help planning an AA degree.",
+        },
+        {
+          text:
+            "Students who do not plan to graduate from a public high school can ask the college to issue a State of Washington high school diploma after completing an associate degree.",
+        },
+      ],
+    },
+  },
+  {
+    type: "classes",
+    question:
+      "Should students stay at Green River to finish their AA degree before transferring?",
+    answer: {
+      bullets: [
+        {
+          text:
+            "Finishing an AA degree can have advantages when transferring to a 4-year university in Washington and some out-of-state institutions with direct transfer agreements (see the College Catalog).",
+        },
+        {
+          text:
+            "At some universities, transferring with an assortment of credits (without an AA degree) can be more difficult.",
+        },
+        {
+          text:
+            "Students should ask the university they plan to transfer to for guidance.",
+        },
+        {
+          text:
+            'View universities which have "direct transfer agreements with Green River"',
+          url: "https://catalog.greenriver.edu/content.php?catoid=8&navoid=391",
+        },
+      ],
+    },
+  },
+  {
+    type: "classes",
+    question: "Do Running Start classes transfer to other colleges/universities?",
+    answer: {
+      bullets: [
+        {
+          text:
+            "College credits transfer to Washington State public colleges and universities, and to most private colleges in the state.",
+        },
+        {
+          text:
+            "Students should consult college admissions representatives and departmental advisors early, and contact out-of-state colleges for their policies.",
+        },
+      ],
+    },
+  },
+  {
+    type: "classes",
+    question:
+      "What if my student doesn't graduate from high school? Can he/she still do Running Start?",
+    answer: {
+      bullets: [
+        {
+          text:
+            "If a student doesn’t graduate with their class, they may still participate in Running Start, but can take only classes required to earn the high school diploma.",
+        },
+        {
+          text:
+            "If they take classes outside those parameters, the student is responsible for tuition and fees.",
+        },
+        {
+          text:
+            "Students are not eligible for federal financial aid until they have a high school diploma or GED®. Plan accordingly to finish the diploma.",
+        },
+      ],
+    },
+  },
 
   // =========================
   // OTHER
@@ -268,8 +429,72 @@ export const prospectiveStudentsQuestions = [
           text:
             "Have the counselor at the new school fill out a new Enrollment Verification Form and submit it to the office.",
         },
-        { text: "Changing districts could impact high school graduation requirements." },
+        {
+          text:
+            "Changing districts could impact high school graduation requirements.",
+        },
+      ],
+    },
+  },
+  {
+    type: "other",
+    question:
+      "Can parents receive information about their daughter/son's academic progress or grades? Why or why not?",
+    answer: {
+      bullets: [
+        {
+          text:
+            "Running Start students have the same rights and responsibilities as other college students.",
+        },
+        {
+          text:
+            "Educational records are protected under FERPA, which governs how information may be disclosed.",
+        },
+        {
+          text:
+            "Only a student’s name, dates of enrollment, and degrees earned can be released without authorization.",
+        },
+        {
+          text:
+            "Students may authorize access to their records and can rescind that permission at any time.",
+        },
       ],
     },
   },
 ];
+
+async function seedFutureStudentFAQs() {
+  try {
+    console.log("Using DB:", process.env.DB_NAME);
+
+    // delete only future student FAQs first
+    await pool.query("DELETE FROM faq WHERE audience = ?", ["future"]);
+
+    let sortOrderByType = {};
+
+    for (const faq of futureStudentsQuestions) {
+      const { type, question, answer } = faq;
+
+      if (!sortOrderByType[type]) {
+        sortOrderByType[type] = 1;
+      }
+
+      await pool.query(
+        "INSERT INTO faq (audience, type, question, answer, sort_order) VALUES (?, ?, ?, ?, ?)",
+        ["future", type, question, JSON.stringify(answer), sortOrderByType[type]]
+      );
+
+      sortOrderByType[type]++;
+    }
+
+    console.log(
+      `Seeded ${futureStudentsQuestions.length} future student FAQ entries successfully!`
+    );
+    process.exit(0);
+  } catch (err) {
+    console.error("Seeding failed:", err);
+    process.exit(1);
+  }
+}
+
+seedFutureStudentFAQs();

@@ -1,8 +1,12 @@
+import pool from "../db/db.js";
+import dotenv from "dotenv";
+
+dotenv.config();
+
 export const currentStudentsQuestions = [
   // =====================================================
   // FEE WAIVER & BOOK LOAN (FWBL)
   // =====================================================
-
   {
     type: "fee-waiver-book-loan",
     question:
@@ -78,9 +82,8 @@ export const currentStudentsQuestions = [
   },
 
   // =====================================================
-  // DATES & DEADLINES (Enrollment)
+  // DATES & DEADLINES
   // =====================================================
-
   {
     type: "dates-deadlines",
     question: "What if my records are blocked when I try to enroll in classes?",
@@ -94,7 +97,7 @@ export const currentStudentsQuestions = [
         {
           text:
             "Did I meet Academic Standards last term? If last term's GPA was below a 2.0 you will need to meet with an advisor before enrolling in the next term. Check your GRC email or the Navigate app for messages about your next steps.",
-          url: "https://www.greenriver.edu/students/academics/running-start/current-running-start-students/running-start-academic-standards.html"
+          url: "https://www.greenriver.edu/students/academics/running-start/current-running-start-students/running-start-academic-standards.html",
         },
         {
           text:
@@ -123,8 +126,8 @@ export const currentStudentsQuestions = [
         },
         {
           text: "View enrollment deadlines",
-          url: "https://www.greenriver.edu/students/academics/office-of-the-registrar/index.html"
-        }
+          url: "https://www.greenriver.edu/students/academics/office-of-the-registrar/index.html",
+        },
       ],
     },
   },
@@ -202,9 +205,8 @@ export const currentStudentsQuestions = [
   },
 
   // =====================================================
-  // HOW TO PLAN CLASSES (Classes)
+  // HOW TO PLAN CLASSES
   // =====================================================
-
   {
     type: "how-to-plan-classes",
     question: "What classes am I not allowed to take?",
@@ -275,8 +277,7 @@ export const currentStudentsQuestions = [
             "If your advisor doesn't have any appointment availability, we recommend seeing them during drop-ins to get quick questions answered (drop-ins are limited to 15–20 minutes).",
         },
         {
-          text:
-            "An appointment is required to develop a full academic plan.",
+          text: "An appointment is required to develop a full academic plan.",
         },
       ],
     },
@@ -292,8 +293,7 @@ export const currentStudentsQuestions = [
             "No. Students must schedule an appointment for academic standards because these conversations typically take one hour.",
         },
         {
-          text:
-            "Drop-ins are limited to 15–20 minutes.",
+          text: "Drop-ins are limited to 15–20 minutes.",
         },
       ],
     },
@@ -401,9 +401,8 @@ export const currentStudentsQuestions = [
   },
 
   // =====================================================
-  // CAMPUS RESOURCES (Other)
+  // CAMPUS RESOURCES
   // =====================================================
-
   {
     type: "campus-resources",
     question: "What if my family moves or change school districts?",
@@ -448,3 +447,39 @@ export const currentStudentsQuestions = [
     },
   },
 ];
+
+async function seedCurrentStudentFaqs() {
+  try {
+    console.log("Using DB:", process.env.DB_NAME);
+
+    // delete only current student FAQs first
+    await pool.query("DELETE FROM faq WHERE audience = ?", ["current"]);
+
+    let sortOrderByType = {};
+
+    for (const faq of currentStudentsQuestions) {
+      const { type, question, answer } = faq;
+
+      if (!sortOrderByType[type]) {
+        sortOrderByType[type] = 1;
+      }
+
+      await pool.query(
+        "INSERT INTO faq (audience, type, question, answer, sort_order) VALUES (?, ?, ?, ?, ?)",
+        ["current", type, question, JSON.stringify(answer), sortOrderByType[type]]
+      );
+
+      sortOrderByType[type]++;
+    }
+
+    console.log(
+      `Seeded ${currentStudentsQuestions.length} current student FAQ entries successfully!`
+    );
+    process.exit(0);
+  } catch (err) {
+    console.error("Seeding failed:", err);
+    process.exit(1);
+  }
+}
+
+seedCurrentStudentFaqs();

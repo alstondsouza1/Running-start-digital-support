@@ -15,6 +15,40 @@ import {
 import Categories from "./Categories";
 import QuestionSearchBar from "./QuestionSearchBar";
 import { normalize, scoreText } from "../utils/search";
+import normalizeUrl from "../utils/normalizeURL.js";
+
+function escapeRegExp(str = "") {
+  return String(str).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function highlightText(text, query) {
+  const q = (query || "").trim();
+  if (!q) return text;
+
+  const parts = q.split(/\s+/).filter(Boolean).map(escapeRegExp);
+  if (parts.length === 0) return text;
+
+  const regex = new RegExp(`(${parts.join("|")})`, "gi");
+  const chunks = String(text ?? "").split(regex);
+
+  return chunks.map((chunk, i) =>
+    regex.test(chunk) ? (
+      <Box
+        key={i}
+        component="mark"
+        sx={{
+          backgroundColor: "rgba(187, 212, 22, 0.35)",
+          px: 0.3,
+          borderRadius: 0.5,
+        }}
+      >
+        {chunk}
+      </Box>
+    ) : (
+      <span key={i}>{chunk}</span>
+    )
+  );
+}
 
 function answerToText(answer) {
   if (!answer) return "";
@@ -49,7 +83,6 @@ export default function StudentFAQPage({
     return questions.filter((q) => q.type === selectedCategoryId);
   }, [questions, selectedCategoryId]);
 
-  // Search results
   const searchResults = useMemo(() => {
     if (!isSearching) return [];
 
@@ -57,13 +90,8 @@ export default function StudentFAQPage({
       .map((q, index) => {
         const cat = categoryById(categories, q.type);
 
-        // optional: weight question higher than answer/category text
         const questionBlob = q.question ?? "";
-        const restBlob = [
-          answerToText(q.answer),
-          cat?.name,
-          cat?.description,
-        ]
+        const restBlob = [answerToText(q.answer), cat?.name, cat?.description]
           .filter(Boolean)
           .join(" | ");
 
@@ -77,19 +105,16 @@ export default function StudentFAQPage({
       .map((r) => r.q);
   }, [categories, questions, isSearching, searchTerm]);
 
-  // when selecting a category, clear search so we go back to category mode
   const handleSelectCategory = (id) => {
-    setSearchTerm(""); // clear search when switching to category browsing
+    setSearchTerm("");
     setSelectedCategoryId((prev) => (prev === id ? null : id));
   };
 
-  // when typing a search, clear the category selection
   const handleSearchChange = (value) => {
-    setSelectedCategoryId(null); // clear category when searching
+    setSelectedCategoryId(null);
     setSearchTerm(value);
   };
 
-  // stable-ish key helper (better than type+question only)
   const getAccordionKey = (item, fallbackIndex) =>
     item.id ?? `${item.type}-${normalize(item.question)}-${fallbackIndex}`;
 
@@ -109,9 +134,10 @@ export default function StudentFAQPage({
         sx={{ "& .MuiAccordionSummary-content": { my: 1 } }}
       >
         <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
-          <Typography fontWeight={600}>{item.question}</Typography>
+          <Typography fontWeight={600}>
+            {isSearching ? highlightText(item.question, searchTerm) : item.question}
+          </Typography>
 
-          {/* show category label in search mode */}
           {isSearching && (
             <Box>
               <Chip
@@ -125,7 +151,11 @@ export default function StudentFAQPage({
 
       <AccordionDetails sx={{ pt: 0 }}>
         {item.answer?.intro && (
-          <Typography sx={{ mb: 1 }}>{item.answer.intro}</Typography>
+          <Typography sx={{ mb: 1 }}>
+            {isSearching
+              ? highlightText(item.answer.intro, searchTerm)
+              : item.answer.intro}
+          </Typography>
         )}
 
         {item.answer?.bullets?.length > 0 && (
@@ -144,12 +174,16 @@ export default function StudentFAQPage({
                   primary={
                     bullet.url ? (
                       <MuiLink
-                        href={bullet.url}
+                        href={normalizeUrl(bullet.url)}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        {bullet.text}
+                        {isSearching
+                          ? highlightText(bullet.text, searchTerm)
+                          : bullet.text}
                       </MuiLink>
+                    ) : isSearching ? (
+                      highlightText(bullet.text, searchTerm)
                     ) : (
                       bullet.text
                     )
@@ -166,7 +200,7 @@ export default function StudentFAQPage({
   return (
     <Box sx={{ width: "100%", px: { xs: 2, sm: 3 }, py: { xs: 3, sm: 4 } }}>
       <Box sx={{ width: "100%", maxWidth: 1100, mx: "auto" }}>
-        <Typography variant="h4" fontWeight={700} sx={{ mb: 1 }}>
+        <Typography variant="h4" component="h1" fontWeight={700} sx={{ mb: 1 }}>
           {title}
         </Typography>
 
@@ -176,10 +210,26 @@ export default function StudentFAQPage({
           </Typography>
         )}
 
-        {/* search bar ALWAYS visible (reusable component) */}
         <QuestionSearchBar value={searchTerm} onChange={handleSearchChange} />
 
-        {/* SEARCH MODE */}
+        <Box
+          sx={{
+            position: "absolute",
+            width: 1,
+            height: 1,
+            overflow: "hidden",
+            clip: "rect(0 0 0 0)",
+            whiteSpace: "nowrap",
+          }}
+          aria-live="polite"
+        >
+          {isSearching
+            ? `${searchResults.length} search results found`
+            : selectedCategory
+            ? `${questionsForCategory.length} questions in ${selectedCategory.name}`
+            : "Select a category to view questions"}
+        </Box>
+
         {isSearching ? (
           <Box
             sx={{
@@ -198,8 +248,7 @@ export default function StudentFAQPage({
 
             {searchResults.length === 0 ? (
               <Typography color="text.secondary">
-                No results found. Try different keywords (ex: “deadline”, “book”,
-                “ENGL”, “ctclink”).
+                No results found. Try different keywords like “deadline”, “book”, “ENGL”, or “ctcLink”.
               </Typography>
             ) : (
               searchResults.map((item, idx) => renderAccordion(item, idx))
@@ -207,7 +256,6 @@ export default function StudentFAQPage({
           </Box>
         ) : (
           <>
-            {/* CATEGORY MODE */}
             <Typography fontWeight={700} sx={{ mb: 2 }}>
               Browse Categories:
             </Typography>
@@ -218,7 +266,6 @@ export default function StudentFAQPage({
               onSelectCategory={handleSelectCategory}
             />
 
-            {/* Show questions ONLY when category selected */}
             {selectedCategory ? (
               <Box
                 sx={{
