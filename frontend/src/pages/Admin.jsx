@@ -83,15 +83,23 @@ function SortableCard({ question, onEdit, onDelete }) {
           gap: 1,
           flexWrap: "wrap",
           justifyContent: { xs: "flex-start", md: "flex-end" },
+          
         }}
       >
-        <Button size="small" variant="outlined" onClick={() => onEdit(question)}>
+        <Button
+          size="small"
+          variant="outlined"
+          sx={{ backgroundColor: "#2e5fd1", color: "white" }}
+          onClick={() => onEdit(question)}
+        >
           Edit
         </Button>
+
         <Button
           size="small"
           color="error"
           variant="outlined"
+          sx={{ backgroundColor: "#d42436", color: "white" }}
           onClick={() => onDelete(question.id)}
         >
           Delete
@@ -414,24 +422,21 @@ export default function Admin() {
           >
             + Add FAQ
           </Button>
-
-          <Button variant="outlined" color="error" onClick={handleLogout}>
-            Logout
-          </Button>
         </Box>
+
       </Box>
 
-      <Tabs
-        value={activeTab}
-        onChange={(e, v) => setActiveTab(v)}
-        centered
-        variant="scrollable"
-        scrollButtons="auto"
-        sx={{ mt: 1 }}
-      >
-        <Tab label="Current Students" />
-        <Tab label="Future Students" />
-      </Tabs>
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
+        <Tabs
+          value={activeTab}
+          onChange={(e, v) => setActiveTab(v)}
+          variant="scrollable"
+          scrollButtons="auto"
+        >
+          <Tab label="Current Students" />
+          <Tab label="Future Students" />
+        </Tabs>
+      </Box>
 
       {loadingFaqs && (
         <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
@@ -456,9 +461,9 @@ export default function Admin() {
               key={cat.id}
               sx={{
                 mt: 4,
-                maxWidth: "1500px",
-                marginLeft: "auto",
-                marginRight: "auto",
+                maxWidth: "1000px",
+                mx: "auto",
+                width: "100%"
               }}
             >
               <Typography variant="h6" gutterBottom>
@@ -482,7 +487,9 @@ export default function Admin() {
                 <Typography>Type</Typography>
               </Box>
 
-              <Paper sx={{ p: { xs: 1.25, sm: 2 }, mt: 1, overflow: "hidden" }}>
+              <Paper sx={{ 
+                p: { xs: 1.25, sm: 2 }, 
+                mt: 1, overflow: "hidden" }}>
                 <DndContext
                   collisionDetection={closestCenter}
                   onDragEnd={(evt) => handleDragEnd(evt, cat.id)}
