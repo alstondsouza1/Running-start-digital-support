@@ -2,30 +2,49 @@
 
 ## Overview
 
+This project was developed as part of a capstone collaboration with the Running Start Department at Green River College.
+
 The **Running Start Digital Support Portal** is a full-stack web application designed to help **current and prospective Running Start students at Green River College** quickly find answers to frequently asked questions.
 
-The goal of this project is to **reduce repetitive support requests to staff** while providing students with a **clear, searchable, and mobile-friendly FAQ experience**.
+The goal of this project is to:
 
-The system allows administrators to **add, edit, delete, and reorder FAQ items** through a secure admin dashboard while students can easily browse information categorized by topic.
+* Reduce repetitive support requests to staff
+* Provide a **clear, searchable, and mobile-friendly FAQ experience**
+* Allow administrators to easily manage content through a dashboard
+
+---
+
+# Prerequisites
+
+Make sure you have:
+
+- Node.js (v18+)
+- npm
+- MySQL (local or cloud)
+- Git
 
 ---
 
 # Team Information
 
 ## Team Name
+
 **Why Are You Running?**
 
 ## Team Members
-- Alston Dsouza  
-- Diana Khachaturova  
-- Laura Villaraza  
-- Daniel McCarragher  
+
+* Alston Dsouza
+* Diana Khachaturova
+* Laura Villaraza
+* Daniel McCarragher
 
 ## Client
-Running Start Department  
+
+Running Start Department
 Green River College
 
 ## Project Duration
+
 Winter 2026 – Spring 2026
 
 ---
@@ -36,50 +55,50 @@ Winter 2026 – Spring 2026
 
 Students can:
 
-- Browse FAQs for **Current Students**
-- Browse FAQs for **Future / Prospective Students**
-- View FAQs organized by category
-- Quickly scan **bullet-point answers**
-- Access helpful links provided in answers
-- Use the portal on **mobile, tablet, and desktop**
+* Browse FAQs for **Current Students**
+* Browse FAQs for **Future / Prospective Students**
+* View FAQs organized by category
+* Scan answers in **bullet-point format**
+* Access helpful resource links
+* Use the app on **mobile, tablet, and desktop**
 
 ---
 
 ## Admin Features
 
-Admins can securely manage FAQ content.
+Admins can securely manage FAQ content:
 
-Admin capabilities include:
-
-- Secure **JWT login authentication**
-- Add new FAQ entries
-- Edit existing FAQ entries
-- Delete FAQ entries
-- Reorder FAQ items within categories
-- Assign FAQ items to categories
-- Manage both **Current Student** and **Future Student** FAQs
+* JWT-based login authentication
+* Add new FAQ entries
+* Edit existing FAQ entries
+* Delete FAQ entries
+* Reorder FAQs (drag-and-drop)
+* Assign FAQs to categories
+* Manage both **Current** and **Future** student content
 
 ---
 
 # Tech Stack
 
 ## Frontend
-- React
-- Vite
-- Material UI
-- React Router
-- DnD Kit (drag-and-drop reordering)
+
+* React (Vite)
+* Material UI
+* React Router
+* DnD Kit (drag-and-drop)
 
 ## Backend
-- Node.js
-- Express
-- JWT authentication
-- bcryptjs for password hashing
-- mysql2 database driver
-- dotenv environment configuration
+
+* Node.js
+* Express.js
+* JWT Authentication
+* bcryptjs (password hashing)
+* mysql2
+* dotenv
 
 ## Database
-MySQL (Aiven Cloud Database)
+
+* MySQL (Aiven Cloud or Local)
 
 ---
 
@@ -92,10 +111,8 @@ Frontend (React + Vite)
 Backend API (Node.js + Express)
         │
         ▼
-MySQL Database (Aiven Cloud)
+MySQL Database
 ```
-
-The frontend communicates with the backend API, which performs authentication and database operations.
 
 ---
 
@@ -106,40 +123,21 @@ Running-start-digital-support
 │
 ├── backend
 │   ├── controllers
-│   │   ├── adminController.js
-│   │   └── faqController.js
-│   │
 │   ├── db
-│   │   └── db.js
-│   │
 │   ├── middleware
-│   │   └── authMiddleware.js
-│   │
 │   ├── router
-│   │   ├── adminRoutes.js
-│   │   └── faqRoutes.js
-│   │
 │   ├── scripts
-│   │   ├── seedCurrent.js
-│   │   └── seedFuture.js
-│   │
 │   ├── sql
-│   │   └── schema.sql
-│   │
 │   ├── app.js
 │   └── package.json
 │
 ├── frontend
 │   ├── src
-│   │   ├── assets
 │   │   ├── components
 │   │   ├── context
-│   │   ├── data
 │   │   ├── pages
 │   │   ├── utils
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   │
+│   │   └── App.jsx
 │   └── package.json
 │
 └── README.md
@@ -149,27 +147,23 @@ Running-start-digital-support
 
 # Database Structure
 
-The project uses a single **FAQ table**.
-
 ## Table: `faq`
 
-| Column | Type | Description |
-|------|------|-------------|
-| id | INT | Primary key |
-| audience | VARCHAR | current or future |
-| type | VARCHAR | FAQ category |
-| question | TEXT | FAQ question |
-| answer | JSON | Answer content including intro and bullet points |
-| sort_order | INT | Order within category |
-| created_at | TIMESTAMP | Creation date |
+| Column     | Type      | Description       |
+| ---------- | --------- | ----------------- |
+| id         | INT       | Primary key       |
+| audience   | VARCHAR   | current or future |
+| type       | VARCHAR   | category          |
+| question   | TEXT      | FAQ question      |
+| answer     | JSON      | answer content    |
+| sort_order | INT       | display order     |
+| created_at | TIMESTAMP | creation date     |
 
 ---
 
 # API Routes
 
 ## Public Routes
-
-Get FAQs by audience.
 
 ```
 GET /api/getFAQS?audience=current
@@ -180,59 +174,44 @@ GET /api/getFAQS?audience=future
 
 ## Admin Routes (Protected)
 
-### Add FAQ
 ```
-POST /api/addFAQ
-```
-
-### Update FAQ
-```
-PUT /api/faq/:id
-```
-
-### Delete FAQ
-```
+POST   /api/addFAQ
+PUT    /api/faq/:id
 DELETE /api/faq/:id
-```
-
-### Update FAQ order
-```
-PUT /api/faq/order
+PUT    /api/faq/order
 ```
 
 ---
 
-# Authentication
-
-Admin login:
+## Authentication
 
 ```
 POST /api/auth/login
 ```
 
-Returns a **JWT token** used for protected routes.
+Returns a JWT token for admin access.
 
 ---
 
-# Environment Variables
+# Environment Setup
+Use the provided `.env.example` files as a reference. Do not commit real `.env` files to version control.
 
 ## Backend `.env`
 
-Example configuration:
+Create a `.env` file based on `.env.example`:
 
 ```
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD_HASH=your_bcrypt_hash
-
-JWT_SECRET=your_jwt_secret
-
 PORT=5001
 
-DB_HOST=your_aiven_host
-DB_PORT=your_aiven_port
-DB_USER=your_aiven_user
-DB_PASSWORD=your_aiven_password
-DB_NAME=defaultdb
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD_HASH=your_bcrypt_hash
+JWT_SECRET=replace_with_strong_secret
+
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=runningstart
 ```
 
 ---
@@ -256,43 +235,87 @@ cd Running-start-digital-support
 
 ---
 
-## 2. Install Backend Dependencies
+## 2. Backend Setup
 
 ```
 cd backend
 npm install
 ```
 
-Start backend server:
+### Create `.env`
 
 ```
-npm run dev
-```
-
-Backend runs on:
-
-```
-http://localhost:5001
+cp .env.example .env
 ```
 
 ---
 
-## 3. Install Frontend Dependencies
+## 3. Database Setup
 
-Open a new terminal.
+### Create Database
+
+```sql
+CREATE DATABASE runningstart;
+USE runningstart;
+```
+
+### Run Schema
+
+```sql
+SOURCE sql/faq.sql;
+```
+
+---
+
+## 4. Seed Data
 
 ```
-cd frontend
-npm install
+npm run seed:current
+npm run seed:future
 ```
 
-Start frontend:
+---
+
+## 5. Generate Admin Password Hash
+
+Run in Node:
+
+```js
+import bcrypt from "bcryptjs";
+console.log(await bcrypt.hash("yourpassword", 12));
+```
+
+Paste result into `.env`.
+
+---
+
+## 6. Start Backend
 
 ```
 npm run dev
 ```
 
-Frontend runs on:
+Backend:
+
+```
+http://localhost:5001
+```
+API health check: http://localhost:5001/api/health
+
+---
+
+## 7. Frontend Setup
+
+Open new terminal:
+
+```
+cd frontend
+npm install
+cp .env.example .env
+npm run dev
+```
+
+Frontend:
 
 ```
 http://localhost:5173
@@ -300,91 +323,77 @@ http://localhost:5173
 
 ---
 
-# Database Setup
+# How to Test
 
-The project uses **MySQL hosted on Aiven Cloud**.
-
-You can connect using:
-
-- MySQL Workbench
-- DBeaver
-- TablePlus
-- MySQL CLI
-
-Connection settings include:
-
-- Host
-- Port
-- Username
-- Password
-- SSL certificate
+1. Open homepage
+2. Navigate to Current Students
+3. Navigate to Future Students
+4. Search FAQs
+5. Login at `/admin`
+6. Add / Edit / Delete FAQs
+7. Reorder FAQs
 
 ---
 
-# Seeding FAQ Data
+# Known Limitations
 
-The project includes scripts to populate the database.
+* Requires JavaScript (no SSR fallback)
+* JWT stored in localStorage (not production-safe)
+* No login rate limiting
+* No automated testing yet
+* Accessibility improvements still in progress
 
-### Seed Current Student FAQs
+---
 
-```
-npm run seed:current
-```
+# Security Notes
 
-### Seed Future Student FAQs
+* Do NOT commit `.env` files
+* Rotate secrets if exposed
+* Use strong JWT secrets
+* Consider:
 
-```
-npm run seed:future
-```
-
-### Seed all FAQs
-
-```
-npm run seed:all
-```
+  * Rate limiting
+  * Helmet middleware
+  * Input validation improvements
 
 ---
 
 # Accessibility Goals
 
-Future improvements include:
-
-- ARIA accessibility labels
-- Improved keyboard navigation
-- Better screen reader compatibility
-- Enhanced contrast and readability
-- Improved mobile accessibility
+* Improve keyboard navigation
+* Add better ARIA labeling
+* Improve contrast and readability
+* Enhance screen reader compatibility
 
 ---
 
 # Future Improvements
 
-Potential enhancements for the portal:
-
-- Full text search functionality
-- Multilingual support
-- Analytics for frequently viewed FAQs
-- Admin activity logs
-- Content approval workflow
-- Deployment to cloud hosting
+* Full-text search
+* Multilingual support
+* Admin analytics dashboard
+* Role-based access control
+* Automated testing (Jest)
+* Improved admin UX
 
 ---
 
 # Deployment
 
-The project can be deployed using:
-
 ## Frontend
-- Vercel
-- Netlify
+
+* Vercel
+* Netlify
 
 ## Backend
-- Render
-- Railway
-- DigitalOcean
+
+* Render
+* Railway
+* DigitalOcean
 
 ## Database
-- Aiven MySQL
+
+* Aiven MySQL
 
 ---
 
@@ -392,27 +401,35 @@ The project can be deployed using:
 
 This portal helps the Running Start office by:
 
-- Reducing repetitive student questions
-- Providing consistent information
-- Improving student access to resources
-- Supporting both new and current students
+* Reducing repetitive student questions
+* Providing consistent information
+* Improving accessibility to resources
+* Supporting both new and current students
+
+---
+
+# Notes for Reviewers
+
+- Use `.env.example` to configure environment variables
+- Use local MySQL for easiest setup
+- Run seed scripts before testing
+- Admin password must be generated using bcrypt (see instructions above)
+- If backend fails, check database connection settings
+
+This project is part of a handoff/review assignment, so feedback on setup, usability, and code structure is encouraged.
 
 ---
 
 # Acknowledgements
 
-Special thanks to:
-
-Running Start Department  
-Green River College  
-
-For providing guidance and requirements for the project.
+Running Start Department
+Green River College
 
 ---
 
 # License
 
-This project was created as part of the  
-**Green River College BAS Software Development Capstone Project.**
+This project was created for the
+**Green River College BAS Software Development Capstone.**
 
-Educational use only.
+For educational use only.
