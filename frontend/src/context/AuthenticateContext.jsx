@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect } from "react";
+import { createContext, useState, useContext, useEffect, useRef } from "react";
 import { jwtDecode } from "jwt-decode";
 
 const AuthenticateContext = createContext(null);
@@ -6,27 +6,46 @@ const AuthenticateContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const logoutTimerRef = useRef(null);
+
+  const clearLogoutTimer = () => {
+    if (logoutTimerRef.current) {
+      clearTimeout(logoutTimerRef.current);
+      logoutTimerRef.current = null;
+    }
+  };
 
   const logout = () => {
+    clearLogoutTimer();
     localStorage.removeItem("token");
     setUser(null);
   };
 
   const runLogoutTimer = (exp) => {
+    clearLogoutTimer();
+
     const remainingMs = exp * 1000 - Date.now();
-    if (remainingMs <= 0) return logout();
-    setTimeout(logout, remainingMs);
+    if (remainingMs <= 0) {
+      logout();
+      return;
+    }
+
+    logoutTimerRef.current = setTimeout(logout, remainingMs);
   };
 
   const login = (newToken) => {
     localStorage.setItem("token", newToken);
     const decoded = jwtDecode(newToken);
     setUser(decoded);
-    if (decoded?.exp) runLogoutTimer(decoded.exp);
+
+    if (decoded?.exp) {
+      runLogoutTimer(decoded.exp);
+    }
   };
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
+
     if (!storedToken) {
       setIsLoading(false);
       return;
@@ -47,6 +66,10 @@ export function AuthProvider({ children }) {
     }
 
     setIsLoading(false);
+
+    return () => {
+      clearLogoutTimer();
+    };
   }, []);
 
   const value = {

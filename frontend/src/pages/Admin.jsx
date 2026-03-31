@@ -183,7 +183,9 @@ export default function Admin() {
       return;
     }
 
-    const confirmed = window.confirm("Are you sure you want to delete this FAQ?");
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this FAQ?"
+    );
     if (!confirmed) return;
 
     try {
@@ -351,17 +353,25 @@ export default function Admin() {
         </Box>
       </Box>
 
-      <Tabs
-        value={activeTab}
-        onChange={(e, v) => setActiveTab(v)}
-        centered
-        variant="scrollable"
-        scrollButtons="auto"
-        sx={{ mt: 1 }}
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
+        <Tabs
+          value={activeTab}
+          onChange={(e, v) => setActiveTab(v)}
+          centered
+          variant="scrollable"
+          scrollButtons="auto"
+        >
+          <Tab label="Current Students" />
+          <Tab label="Future Students" />
+        </Tabs>
+      </Box>
+
+      <Typography
+        color="text.secondary"
+        sx={{ mt: 2, mb: 1, textAlign: "center" }}
       >
-        <Tab label="Current Students" />
-        <Tab label="Future Students" />
-      </Tabs>
+        Drag and drop questions to reorder them within each category.
+      </Typography>
 
       {loadingFaqs && (
         <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
@@ -386,9 +396,9 @@ export default function Admin() {
               key={cat.id}
               sx={{
                 mt: 4,
-                maxWidth: "1500px",
-                marginLeft: "auto",
-                marginRight: "auto",
+                maxWidth: "1200px",
+                mx: "auto",
+                width: "100%",
               }}
             >
               <Typography variant="h6" gutterBottom>
@@ -417,7 +427,10 @@ export default function Admin() {
                   collisionDetection={closestCenter}
                   onDragEnd={(evt) => handleDragEnd(evt, cat.id)}
                 >
-                  <SortableContext items={ids} strategy={verticalListSortingStrategy}>
+                  <SortableContext
+                    items={ids}
+                    strategy={verticalListSortingStrategy}
+                  >
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                       {questions.length > 0 ? (
                         questions.map((q) => (

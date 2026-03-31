@@ -14,11 +14,20 @@ The goal of this project is to:
 
 ---
 
+# Live Demo
+
+Frontend:
+https://running-start-portal.vercel.app/
+
+Note: Backend is hosted separately. Some admin features may require local setup.
+
+---
+
 # Prerequisites
 
 Make sure you have:
 
-- Node.js (v18+)
+- Node.js v18+
 - npm
 - MySQL (local or cloud)
 - Git
@@ -163,6 +172,8 @@ Running-start-digital-support
 
 # API Routes
 
+Note: Some routes are not fully RESTful and may be refactored in future iterations.
+
 ## Public Routes
 
 ```
@@ -250,19 +261,53 @@ cp .env.example .env
 
 ---
 
-## 3. Database Setup
+## 3. Install MySQL & Setup Database
 
-### Create Database
+
+Download MySQL:  
+https://dev.mysql.com/downloads/
+
+Recommended tools:
+
+- MySQL Server  
+- MySQL Workbench  
+
+---
+
+### Database Setup
+
+#### Option 1: MySQL Workbench (Recommended for beginners)
+
+1. Open MySQL Workbench  
+2. Create a connection to your local MySQL server  
+3. Run:
 
 ```sql
 CREATE DATABASE runningstart;
 USE runningstart;
 ```
 
-### Run Schema
+4. Open the file:
 
 ```sql
-SOURCE sql/faq.sql;
+backend/sql/faq.sql
+```
+
+5. Copy and run the SQL in Workbench
+
+
+#### Option 2: Terminal
+
+```
+mysql -u root -p
+```
+
+Then run:
+
+```
+CREATE DATABASE runningstart;
+USE runningstart;
+SOURCE backend/sql/faq.sql;
 ```
 
 ---
@@ -329,9 +374,9 @@ http://localhost:5173
 2. Navigate to Current Students
 3. Navigate to Future Students
 4. Search FAQs
-5. Login at `/admin`
+5. Login at `/admin-login`
 6. Add / Edit / Delete FAQs
-7. Reorder FAQs
+7. Reorder FAQs by drag and drop
 
 ---
 
@@ -355,6 +400,12 @@ http://localhost:5173
   * Rate limiting
   * Helmet middleware
   * Input validation improvements
+
+# Additional Considerations
+
+- JWT is currently stored in localStorage (not recommended for production)
+- HTTPS should be enforced in production deployments
+- Input validation should be expanded on all endpoints
 
 ---
 
