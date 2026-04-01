@@ -148,7 +148,8 @@ Running-start-digital-support
 │   │   ├── utils
 │   │   └── App.jsx
 │   └── package.json
-│
+|
+│── REVIEW_NOTES.md
 └── README.md
 ```
 
@@ -179,6 +180,7 @@ Note: Some routes are not fully RESTful and may be refactored in future iteratio
 ```
 GET /api/getFAQS?audience=current
 GET /api/getFAQS?audience=future
+GET /api/categories
 ```
 
 ---
@@ -223,6 +225,9 @@ DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=your_password
 DB_NAME=runningstart
+
+DB_SSL=false
+DB_SSL_REJECT_UNAUTHORIZED=false
 ```
 
 ---
