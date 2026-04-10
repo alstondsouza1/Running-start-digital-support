@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import { CssBaseline, Box, Toolbar } from "@mui/material";
+import { Analytics } from "@vercel/analytics/react";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -47,6 +48,7 @@ export default function App() {
 
         <Footer />
       </Box>
+      <Analytics />
     </>
   );
 }
