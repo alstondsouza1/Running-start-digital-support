@@ -6,7 +6,6 @@ import {
   Paper,
   Tab,
   Tabs,
-  TextField,
   Typography,
 } from "@mui/material";
 import { DndContext, closestCenter } from "@dnd-kit/core";
@@ -62,8 +61,14 @@ function SortableCard({ question, onEdit, onDelete }) {
         ...style,
       }}
     >
-      <Box {...attributes} {...listeners} sx={{ flex: 1, cursor: "grab", minWidth: 0 }}>
-        <Typography sx={{ wordBreak: "break-word" }}>{question.question}</Typography>
+      <Box
+        {...attributes}
+        {...listeners}
+        sx={{ flex: 1, cursor: "grab", minWidth: 0 }}
+      >
+        <Typography sx={{ wordBreak: "break-word" }}>
+          {question.question}
+        </Typography>
       </Box>
 
       <Typography
@@ -85,7 +90,11 @@ function SortableCard({ question, onEdit, onDelete }) {
           justifyContent: { xs: "flex-start", md: "flex-end" },
         }}
       >
-        <Button size="small" variant="outlined" onClick={() => onEdit(question)}>
+        <Button
+          size="small"
+          variant="outlined"
+          onClick={() => onEdit(question)}
+        >
           Edit
         </Button>
         <Button
@@ -102,14 +111,10 @@ function SortableCard({ question, onEdit, onDelete }) {
 }
 
 export default function Admin() {
-  const { isAdmin, login, logout } = useAuth();
+  const { isAdmin } = useAuth();
 
   const [view, setView] = useState("dashboard");
   const [activeTab, setActiveTab] = useState(0);
-
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [authError, setAuthError] = useState("");
 
   const [groupedCurrent, setGroupedCurrent] = useState({});
   const [groupedFuture, setGroupedFuture] = useState({});
@@ -170,41 +175,6 @@ export default function Admin() {
     loadFaqs();
   }, [isAdmin]);
 
-  async function handleLogin(e) {
-    e.preventDefault();
-    setAuthError("");
-
-    try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
-
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        throw new Error(data?.message || "Login failed");
-      }
-
-      if (!data?.token) {
-        throw new Error("Missing token from server");
-      }
-
-      login(data.token);
-      setUsername("");
-      setPassword("");
-    } catch (err) {
-      setAuthError(err?.message || "Login failed");
-    }
-  }
-
-  function handleLogout() {
-    logout();
-    setView("dashboard");
-    setEditingFaq(null);
-  }
-
   async function handleDelete(id) {
     const token = localStorage.getItem("token");
 
@@ -213,7 +183,9 @@ export default function Admin() {
       return;
     }
 
-    const confirmed = window.confirm("Are you sure you want to delete this FAQ?");
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this FAQ?"
+    );
     if (!confirmed) return;
 
     try {
@@ -308,55 +280,16 @@ export default function Admin() {
     }
   }
 
-  if (!isAdmin) {
-    return (
-      <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 520, mx: "auto" }}>
-        <Typography variant="h4" sx={{ mb: 2 }}>
-          Admin Login
-        </Typography>
-
-        <Paper sx={{ p: 3 }}>
-          <Box
-            component="form"
-            onSubmit={handleLogin}
-            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-          >
-            <TextField
-              label="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              autoComplete="username"
-              required
-            />
-            <TextField
-              label="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              type="password"
-              autoComplete="current-password"
-              required
-            />
-
-            {authError && <Typography color="error">{authError}</Typography>}
-
-            <Button
-              type="submit"
-              variant="contained"
-              sx={{ backgroundColor: "#006225", "&:hover": { backgroundColor: "#004d1a" } }}
-            >
-              Login
-            </Button>
-          </Box>
-        </Paper>
-      </Box>
-    );
-  }
-
   if (view === "addFaq") {
     return (
       <Box sx={{ p: { xs: 2, sm: 3 } }}>
         <Box
-          sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+          }}
         >
           <Button
             variant="text"
@@ -410,28 +343,35 @@ export default function Admin() {
               setEditingFaq(null);
               setView("addFaq");
             }}
-            sx={{ backgroundColor: "#006225", "&:hover": { backgroundColor: "#004d1a" } }}
+            sx={{
+              backgroundColor: "#006225",
+              "&:hover": { backgroundColor: "#004d1a" },
+            }}
           >
             + Add FAQ
-          </Button>
-
-          <Button variant="outlined" color="error" onClick={handleLogout}>
-            Logout
           </Button>
         </Box>
       </Box>
 
-      <Tabs
-        value={activeTab}
-        onChange={(e, v) => setActiveTab(v)}
-        centered
-        variant="scrollable"
-        scrollButtons="auto"
-        sx={{ mt: 1 }}
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
+        <Tabs
+          value={activeTab}
+          onChange={(e, v) => setActiveTab(v)}
+          centered
+          variant="scrollable"
+          scrollButtons="auto"
+        >
+          <Tab label="Current Students" />
+          <Tab label="Future Students" />
+        </Tabs>
+      </Box>
+
+      <Typography
+        color="text.secondary"
+        sx={{ mt: 2, mb: 1, textAlign: "center" }}
       >
-        <Tab label="Current Students" />
-        <Tab label="Future Students" />
-      </Tabs>
+        Drag and drop questions to reorder them within each category.
+      </Typography>
 
       {loadingFaqs && (
         <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
@@ -456,9 +396,9 @@ export default function Admin() {
               key={cat.id}
               sx={{
                 mt: 4,
-                maxWidth: "1500px",
-                marginLeft: "auto",
-                marginRight: "auto",
+                maxWidth: "1200px",
+                mx: "auto",
+                width: "100%",
               }}
             >
               <Typography variant="h6" gutterBottom>
@@ -487,7 +427,10 @@ export default function Admin() {
                   collisionDetection={closestCenter}
                   onDragEnd={(evt) => handleDragEnd(evt, cat.id)}
                 >
-                  <SortableContext items={ids} strategy={verticalListSortingStrategy}>
+                  <SortableContext
+                    items={ids}
+                    strategy={verticalListSortingStrategy}
+                  >
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                       {questions.length > 0 ? (
                         questions.map((q) => (

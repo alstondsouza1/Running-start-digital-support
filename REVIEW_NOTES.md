@@ -91,3 +91,18 @@
 - Improve security hardening
 - Clean unused or duplicate frontend data files
 - Add testing in a future iteration
+
+---
+
+# Quick Start for Reviewers
+
+1. Clone repo
+2. Setup backend `.env`
+3. Run MySQL and import schema
+4. Run seed scripts
+5. Start backend
+6. Start frontend
+7. Visit http://localhost:5173
+
+Optional:
+- Login as admin to test CRUD functionality
