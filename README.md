@@ -451,6 +451,43 @@ http://localhost:5173
 
 * Aiven MySQL
 
+# Deployment Overview
+
+The Running Start Digital Support Portal is a full-stack web application consisting of three main components:
+
+- Frontend: React (Vite)
+- Backend: Node.js + Express API
+- Database: MySQL
+
+### System Flow
+
+1. The frontend (React app) is deployed on Vercel and serves the user interface.
+2. The frontend communicates with the backend via REST API requests.
+3. The backend (Express server) processes requests and interacts with the MySQL database.
+4. The database stores all FAQ content and related data.
+
+### Recommended Deployment Setup
+
+Frontend:
+- Hosted on Vercel
+
+Backend:
+- Hosted on Render or Railway
+
+Database:
+- Hosted on Aiven MySQL or another managed cloud database
+
+### Configuration Requirements
+
+- Environment variables must be configured for:
+  - API base URL (frontend)
+  - Database connection (backend)
+  - JWT authentication secret
+- All services should use HTTPS for secure communication
+- CORS must be configured to allow frontend-backend communication
+
+This setup ensures scalability, security, and maintainability for future use.
+
 ---
 
 # Client Impact
