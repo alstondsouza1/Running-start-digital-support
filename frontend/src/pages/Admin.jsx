@@ -64,6 +64,8 @@ function SortableCard({ question, onEdit, onDelete }) {
       <Box
         {...attributes}
         {...listeners}
+        aria-describedby="drag-help-text"
+        aria-label={`Drag to reorder question: ${question.question}`}
         sx={{ flex: 1, cursor: "grab", minWidth: 0 }}
       >
         <Typography sx={{ wordBreak: "break-word" }}>
@@ -367,10 +369,11 @@ export default function Admin() {
       </Box>
 
       <Typography
+        id="drag-help-text"
         color="text.secondary"
         sx={{ mt: 2, mb: 1, textAlign: "center" }}
       >
-        Drag and drop questions to reorder them within each category.
+        Drag and drop questions to reorder them within each category. Edit and Delete buttons are available on each item.
       </Typography>
 
       {loadingFaqs && (
