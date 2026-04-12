@@ -517,6 +517,25 @@ This ensures compliance with college privacy expectations.
 
 ---
 
+# Launch Checklist
+
+Before deploying the application, ensure the following:
+
+- Frontend deployed (Vercel)
+- Backend deployed (Render/Railway)
+- Database connected and accessible
+- Environment variables configured correctly
+- HTTPS enabled for all services
+- FAQ content reviewed by stakeholders
+- Accessibility checks completed (WCAG 2.1 AA)
+- Support links verified
+- Disclaimer added to website
+- Admin credentials secured
+
+This checklist ensures the application is ready for production use.
+
+---
+
 # Notes for Reviewers
 
 - Use `.env.example` to configure environment variables
