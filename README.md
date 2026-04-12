@@ -501,6 +501,22 @@ This portal helps the Running Start office by:
 
 ---
 
+# Data Collection & Privacy
+
+This application does NOT collect personal student data.
+
+- No login is required for students
+- No personal identifiable information (PII) is stored
+- FAQ usage is not tracked by default
+
+Any future analytics should:
+- Avoid collecting personal data
+- Only track general usage (e.g., FAQ clicks, searches)
+
+This ensures compliance with college privacy expectations.
+
+---
+
 # Notes for Reviewers
 
 - Use `.env.example` to configure environment variables
