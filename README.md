@@ -4,7 +4,7 @@
 
 This project was developed as part of a capstone collaboration with the Running Start Department at Green River College.
 
-The **Running Start Digital Support Portal** is a full-stack web application designed to help **current and prospective Running Start students at Green River College** quickly find answers to frequently asked questions.
+The **Running Start Digital Support Portal** is a full-stack web application designed to help **current and prospective Running Start students** quickly find answers to frequently asked questions.
 
 The goal of this project is to:
 
@@ -17,9 +17,9 @@ The goal of this project is to:
 # Live Demo
 
 Frontend:
-https://running-start-portal.vercel.app/
+[https://running-start-portal.vercel.app/](https://running-start-portal.vercel.app/)
 
-Note: Backend is hosted separately. Some admin features may require local setup.
+> Note: Backend is hosted separately. Admin features may require local setup.
 
 ---
 
@@ -27,10 +27,10 @@ Note: Backend is hosted separately. Some admin features may require local setup.
 
 Make sure you have:
 
-- Node.js v18+
-- npm
-- MySQL (local or cloud)
-- Git
+* Node.js v18+
+* npm
+* MySQL (local or cloud)
+* Git
 
 ---
 
@@ -67,7 +67,7 @@ Students can:
 * Browse FAQs for **Current Students**
 * Browse FAQs for **Future / Prospective Students**
 * View FAQs organized by category
-* Scan answers in **bullet-point format**
+* Read answers in **bullet-point format**
 * Access helpful resource links
 * Use the app on **mobile, tablet, and desktop**
 
@@ -75,15 +75,15 @@ Students can:
 
 ## Admin Features
 
-Admins can securely manage FAQ content:
+Admins can:
 
-* JWT-based login authentication
+* Login securely using JWT authentication
 * Add new FAQ entries
-* Edit existing FAQ entries
-* Delete FAQ entries
+* Edit existing FAQs
+* Delete FAQs
 * Reorder FAQs (drag-and-drop)
 * Assign FAQs to categories
-* Manage both **Current** and **Future** student content
+* Manage both **Current** and **Future** content
 
 ---
 
@@ -94,14 +94,14 @@ Admins can securely manage FAQ content:
 * React (Vite)
 * Material UI
 * React Router
-* DnD Kit (drag-and-drop)
+* DnD Kit
 
 ## Backend
 
 * Node.js
 * Express.js
 * JWT Authentication
-* bcryptjs (password hashing)
+* bcryptjs
 * mysql2
 * dotenv
 
@@ -207,11 +207,8 @@ Returns a JWT token for admin access.
 ---
 
 # Environment Setup
-Use the provided `.env.example` files as a reference. Do not commit real `.env` files to version control.
 
 ## Backend `.env`
-
-Create a `.env` file based on `.env.example`:
 
 ```
 PORT=5001
@@ -242,7 +239,7 @@ VITE_API_BASE=http://localhost:5001/api
 
 # Running the Project Locally
 
-## 1. Clone the Repository
+## 1. Clone Repository
 
 ```
 git clone https://github.com/alstondsouza1/Running-start-digital-support.git
@@ -256,60 +253,32 @@ cd Running-start-digital-support
 ```
 cd backend
 npm install
-```
-
-### Create `.env`
-
-```
 cp .env.example .env
 ```
 
 ---
 
-## 3. Install MySQL & Setup Database
+## 3. Setup Database
 
-
-Download MySQL:  
-https://dev.mysql.com/downloads/
-
-Recommended tools:
-
-- MySQL Server  
-- MySQL Workbench  
-
----
-
-### Database Setup
-
-#### Option 1: MySQL Workbench (Recommended for beginners)
-
-1. Open MySQL Workbench  
-2. Create a connection to your local MySQL server  
-3. Run:
+### Option 1: MySQL Workbench
 
 ```sql
 CREATE DATABASE runningstart;
 USE runningstart;
 ```
 
-4. Open the file:
+Run:
 
-```sql
+```
 backend/sql/faq.sql
 ```
 
-5. Copy and run the SQL in Workbench
+---
 
-
-#### Option 2: Terminal
+### Option 2: Terminal
 
 ```
 mysql -u root -p
-```
-
-Then run:
-
-```
 CREATE DATABASE runningstart;
 USE runningstart;
 SOURCE backend/sql/faq.sql;
@@ -326,16 +295,12 @@ npm run seed:future
 
 ---
 
-## 5. Generate Admin Password Hash
-
-Run in Node:
+## 5. Generate Admin Password
 
 ```js
 import bcrypt from "bcryptjs";
 console.log(await bcrypt.hash("yourpassword", 12));
 ```
-
-Paste result into `.env`.
 
 ---
 
@@ -350,13 +315,10 @@ Backend:
 ```
 http://localhost:5001
 ```
-API health check: http://localhost:5001/api/health
 
 ---
 
-## 7. Frontend Setup
-
-Open new terminal:
+## 7. Start Frontend
 
 ```
 cd frontend
@@ -376,35 +338,175 @@ http://localhost:5173
 # How to Test
 
 1. Open homepage
-2. Navigate to Current Students
-3. Navigate to Future Students
-4. Search FAQs
-5. Login at `/admin-login`
-6. Add / Edit / Delete FAQs
-7. Reorder FAQs by drag and drop
+2. Navigate between Current and Future students
+3. Search FAQs
+4. Login at `/admin-login`
+5. Add / Edit / Delete FAQs
+6. Reorder FAQs
+
+---
+
+# Deployment Overview
+
+The application consists of three main components:
+
+* Frontend: React (Vite)
+* Backend: Node.js + Express API
+* Database: MySQL
+
+This architecture allows independent scaling of the frontend, backend, and database as usage grows.
+
+---
+
+## Deployment Configuration
+
+For production deployment:
+
+Frontend (Vercel):
+- VITE_API_BASE=https://your-backend-url/api
+
+Backend (Render):
+- DB_HOST=your-aiven-host
+- DB_PORT=your-port
+- DB_USER=your-user
+- DB_PASSWORD=your-password
+- DB_NAME=your-db
+- JWT_SECRET=your-secret
+
+Ensure environment variables are configured in each platform dashboard.
+
+---
+
+### System Flow
+
+1. Frontend is deployed on Vercel
+2. Frontend sends API requests to backend
+3. Backend processes requests and connects to database
+4. Database stores FAQ content and admin-managed data
+
+---
+
+## Hosting Summary
+
+* Frontend → Vercel
+* Backend → Render
+* Database → Aiven MySQL
+
+---
+
+## Monthly Cost Estimate
+
+| Service         | Estimated Cost |
+| --------------- | -------------- |
+| Aiven MySQL (Developer Plan)     | ~$5/month      |
+| Render Backend (Starter Plan)  | ~$7/month      |
+| Vercel Frontend (Pro Plan) | ~$20/month           |
+
+Estimated Total: **~$32/month**
+
+Projected Range: ~$40–$50/month depending on usage, traffic, and future features such as analytics.
+
+### Notes
+
+* Free tiers are sufficient for development and demos
+* Costs may increase with traffic or scaling
+* Paid plans can be used for production reliability
+
+---
+
+# Data Collection & Privacy
+
+* No student login required
+* No personal data stored
+* FAQ browsing is anonymous
+
+Admin access:
+
+* JWT authentication
+* Password hashing (bcrypt)
+
+Future analytics (if added):
+
+* Will avoid collecting personal data
+* Focus on general usage only
+
+---
+
+# Support
+
+If students are unable to find the information they need, they are encouraged to:
+
+- Visit the official Green River College website  
+- Contact the Running Start office directly  
+- Use available student support services  
+
+Future versions of this portal may include direct support links or live assistance options.
+
+---
+
+# Launch Checklist
+
+* Frontend deployed
+* Backend deployed
+* Database connected
+* Environment variables configured
+* HTTPS enabled
+* CORS configured
+* Admin credentials secured
+* FAQ content reviewed
+* Accessibility checked (WCAG 2.1 AA)
+* Support/Help links added
+* Disclaimer added
+
+---
+
+# Maintenance & Ownership
+
+## Ownership
+
+* Student Team (until June 2026): development + fixes
+* Running Start Department: content updates
+* Future support: potential student interns or college team
+
+---
+
+## Maintenance Tasks
+
+* Update FAQ content
+* Monitor backend uptime
+* Maintain database backups
+* Update dependencies
+* Rotate secrets
+
+---
+
+## Change Management
+
+* Maintain documentation
+* Define ownership roles
+* Provide onboarding for future teams
 
 ---
 
 # Known Limitations
 
-* Requires JavaScript (no SSR fallback)
-* JWT stored in localStorage (not production-safe)
-* No login rate limiting
+* Requires JavaScript
+* JWT stored in localStorage
+* No rate limiting
 * No automated testing yet
-* Accessibility improvements still in progress
+* Accessibility improvements ongoing
 
 ---
 
 # Security Notes
 
 * Do NOT commit `.env` files
-* Rotate secrets if exposed
 * Use strong JWT secrets
-* Consider:
+* Consider adding:
 
   * Rate limiting
   * Helmet middleware
-  * Input validation improvements
+  * Input validation
 
 # Additional Considerations
 
@@ -417,9 +519,9 @@ http://localhost:5173
 # Accessibility Goals
 
 * Improve keyboard navigation
-* Add better ARIA labeling
-* Improve contrast and readability
-* Enhance screen reader compatibility
+* Add ARIA labels
+* Improve contrast
+* Enhance screen reader support
 
 ---
 
@@ -429,27 +531,8 @@ http://localhost:5173
 * Multilingual support
 * Admin analytics dashboard
 * Role-based access control
-* Automated testing (Jest)
-* Improved admin UX
-
----
-
-# Deployment
-
-## Frontend
-
-* Vercel
-* Netlify
-
-## Backend
-
-* Render
-* Railway
-* DigitalOcean
-
-## Database
-
-* Aiven MySQL
+* Automated testing
+* Improved admin UI
 
 ---
 
@@ -457,22 +540,27 @@ http://localhost:5173
 
 This portal helps the Running Start office by:
 
-* Reducing repetitive student questions
+* Reducing repetitive questions
 * Providing consistent information
-* Improving accessibility to resources
-* Supporting both new and current students
+* Improving accessibility
+* Supporting current and future students
+
+---
+
+# Disclaimer
+
+This website was created by students as part of a Green River College capstone project.
+
+The content provided does not represent official Green River College policies. Students should refer to the official Green River College website or contact the Running Start office for verified information.
 
 ---
 
 # Notes for Reviewers
 
-- Use `.env.example` to configure environment variables
-- Use local MySQL for easiest setup
-- Run seed scripts before testing
-- Admin password must be generated using bcrypt (see instructions above)
-- If backend fails, check database connection settings
-
-This project is part of a handoff/review assignment, so feedback on setup, usability, and code structure is encouraged.
+* Use `.env.example`
+* Run seed scripts before testing
+* Generate admin password using bcrypt
+* Check DB connection if backend fails
 
 ---
 
@@ -486,6 +574,6 @@ Green River College
 # License
 
 This project was created for the
-**Green River College BAS Software Development Capstone.**
+**Green River College BAS Software Development Capstone**
 
 For educational use only.
