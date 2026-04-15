@@ -1,92 +1,11 @@
 import pool from "../db/db.js";
 
-const ALLOWED_CATEGORIES = {
-  current: [
-    "fee-waiver-book-loan",
-    "how-to-plan-classes",
-    "dates-deadlines",
-    "campus-resources",
-  ],
-  future: ["general", "enrollment", "classes", "other"],
-};
-
-function normalizeAnswer(answer) {
-  if (!answer || typeof answer !== "object") {
-    return { error: "answer is required and must be an object" };
-  }
-
-  const intro =
-    typeof answer.intro === "string" ? answer.intro.trim() : "";
-
-  if (!Array.isArray(answer.bullets)) {
-    return { error: "answer.bullets must be an array" };
-  }
-
-  const bullets = answer.bullets
-    .map((bullet) => ({
-      text: typeof bullet?.text === "string" ? bullet.text.trim() : "",
-      ...(typeof bullet?.url === "string" && bullet.url.trim()
-        ? { url: bullet.url.trim() }
-        : {}),
-    }))
-    .filter((bullet) => bullet.text.length > 0);
-
-  if (bullets.length === 0) {
-    return { error: "answer.bullets must contain at least one valid bullet" };
-  }
-
-  return {
-    value: {
-      ...(intro ? { intro } : {}),
-      bullets,
-    },
-  };
-}
-
-function validateFaqInput({ audience, type, question, answer }) {
-  const trimmedAudience = typeof audience === "string" ? audience.trim() : "";
-  const trimmedType = typeof type === "string" ? type.trim() : "";
-  const trimmedQuestion = typeof question === "string" ? question.trim() : "";
-
-  if (!trimmedAudience || !trimmedType || !trimmedQuestion || !answer) {
-    return {
-      error: "audience, type, question, and answer are required",
-    };
-  }
-
-  if (!Object.hasOwn(ALLOWED_CATEGORIES, trimmedAudience)) {
-    return { error: "Invalid audience value" };
-  }
-
-  if (!ALLOWED_CATEGORIES[trimmedAudience].includes(trimmedType)) {
-    return { error: "Invalid category for the selected audience" };
-  }
-
-  const normalizedAnswer = normalizeAnswer(answer);
-  if (normalizedAnswer.error) {
-    return { error: normalizedAnswer.error };
-  }
-
-  return {
-    value: {
-      audience: trimmedAudience,
-      type: trimmedType,
-      question: trimmedQuestion,
-      answer: normalizedAnswer.value,
-    },
-  };
-}
-
 export const getFaqs = async (req, res) => {
   try {
-    const audience = typeof req.query.audience === "string" ? req.query.audience.trim() : "";
+    const { audience } = req.query;
 
     if (!audience) {
       return res.status(400).json({ error: "audience query parameter is required" });
-    }
-
-    if (!Object.hasOwn(ALLOWED_CATEGORIES, audience)) {
-      return res.status(400).json({ error: "Invalid audience value" });
     }
 
     const [rows] = await pool.query(
@@ -111,27 +30,44 @@ export const getFaqs = async (req, res) => {
       };
     });
 
-    return res.json(formatted);
+    res.json(formatted);
   } catch (err) {
     console.error("Get FAQ error:", err);
-    return res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Server error" });
   }
 };
 
 export const addFaq = async (req, res) => {
   try {
-    const validated = validateFaqInput(req.body);
-    if (validated.error) {
-      return res.status(400).json({ error: validated.error });
+    const { audience, type, question, answer } = req.body;
+
+    if (!audience || !type || !question || !answer) {
+      return res.status(400).json({
+        error: "audience, type, question, and answer are required",
+      });
     }
 
-    const { audience, type, question, answer } = validated.value;
+    if (!Array.isArray(answer.bullets)) {
+      return res.status(400).json({ error: "answer.bullets must be an array" });
+    }
+
+    for (const b of answer.bullets) {
+      if (!b || typeof b.text !== "string") {
+        return res.status(400).json({
+          error: "Each bullet must be an object like { text: string, url?: string }",
+        });
+      }
+      if (b.url && typeof b.url !== "string") {
+        return res.status(400).json({
+          error: "If provided, bullet.url must be a string",
+        });
+      }
+    }
 
     const [maxRows] = await pool.query(
       "SELECT COALESCE(MAX(sort_order), 0) AS maxSort FROM faq WHERE audience = ? AND type = ?",
       [audience, type]
     );
-
     const nextSort = (maxRows?.[0]?.maxSort ?? 0) + 1;
 
     const [result] = await pool.query(
@@ -152,18 +88,35 @@ export const addFaq = async (req, res) => {
 
 export const updateFaq = async (req, res) => {
   try {
-    const id = Number(req.params.id);
+    const { id } = req.params;
+    const { audience, type, question, answer } = req.body;
 
-    if (!Number.isInteger(id) || id <= 0) {
-      return res.status(400).json({ error: "Valid FAQ id is required" });
+    if (!id) {
+      return res.status(400).json({ error: "FAQ id is required" });
     }
 
-    const validated = validateFaqInput(req.body);
-    if (validated.error) {
-      return res.status(400).json({ error: validated.error });
+    if (!audience || !type || !question || !answer) {
+      return res.status(400).json({
+        error: "audience, type, question, and answer are required",
+      });
     }
 
-    const { audience, type, question, answer } = validated.value;
+    if (!Array.isArray(answer.bullets)) {
+      return res.status(400).json({ error: "answer.bullets must be an array" });
+    }
+
+    for (const b of answer.bullets) {
+      if (!b || typeof b.text !== "string") {
+        return res.status(400).json({
+          error: "Each bullet must be an object like { text: string, url?: string }",
+        });
+      }
+      if (b.url && typeof b.url !== "string") {
+        return res.status(400).json({
+          error: "If provided, bullet.url must be a string",
+        });
+      }
+    }
 
     const [existingRows] = await pool.query(
       "SELECT id, audience, type, sort_order FROM faq WHERE id = ?",
@@ -175,6 +128,7 @@ export const updateFaq = async (req, res) => {
     }
 
     const existing = existingRows[0];
+
     let sortOrder = existing.sort_order;
 
     if (existing.audience !== audience || existing.type !== type) {
@@ -201,11 +155,7 @@ export const updateFaq = async (req, res) => {
 
 export const deleteFaq = async (req, res) => {
   try {
-    const id = Number(req.params.id);
-
-    if (!Number.isInteger(id) || id <= 0) {
-      return res.status(400).json({ error: "Valid FAQ id is required" });
-    }
+    const { id } = req.params;
 
     const [existingRows] = await pool.query(
       "SELECT id FROM faq WHERE id = ?",
@@ -239,42 +189,29 @@ export const getFaqCategories = async (req, res) => {
       return acc;
     }, {});
 
-    return res.json(categories);
+    res.json(categories);
   } catch (err) {
     console.error("Get FAQ categories error:", err);
-    return res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Server error" });
   }
 };
 
 export const updateFaqOrder = async (req, res) => {
   try {
-    const audience = typeof req.body.audience === "string" ? req.body.audience.trim() : "";
-    const type = typeof req.body.type === "string" ? req.body.type.trim() : "";
+    const { audience, type, orderedIds } = req.body;
 
-    if (!Object.hasOwn(ALLOWED_CATEGORIES, audience)) {
-      return res.status(400).json({ error: "Invalid audience value" });
+    if (!audience || !type || !Array.isArray(orderedIds)) {
+      return res.status(400).json({
+        error: "audience, type, orderedIds[] are required",
+      });
     }
-
-    if (!ALLOWED_CATEGORIES[audience].includes(type)) {
-      return res.status(400).json({ error: "Invalid category for the selected audience" });
-    }
-
-    if (!Array.isArray(req.body.orderedIds)) {
-      return res.status(400).json({ error: "orderedIds[] are required" });
-    }
-
-    const orderedIds = [...new Set(
-      req.body.orderedIds
-        .map((id) => Number(id))
-        .filter((id) => Number.isInteger(id) && id > 0)
-    )];
 
     if (orderedIds.length === 0) {
       return res.json({ ok: true });
     }
 
     const caseSql = orderedIds
-      .map((id, idx) => `WHEN ${id} THEN ${idx + 1}`)
+      .map((id, idx) => `WHEN ${Number(id)} THEN ${idx + 1}`)
       .join(" ");
 
     const sql = `
@@ -285,10 +222,10 @@ export const updateFaqOrder = async (req, res) => {
 
     await pool.query(sql, [audience, type, ...orderedIds]);
 
-    return res.json({ ok: true });
+    res.json({ ok: true });
   } catch (err) {
     console.error("Update order error:", err);
-    return res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Server error" });
   }
 };
 

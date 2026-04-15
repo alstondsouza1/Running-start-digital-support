@@ -121,26 +121,18 @@ export default function AddFaqForm({
       return;
     }
 
-    const cleanedBullets = formData.answer.bullets
-      .filter((b) => b.text.trim().length > 0)
-      .map((b) => ({
-        text: b.text.trim(),
-        ...(b.url?.trim() ? { url: b.url.trim() } : {}),
-      }));
-
-    if (cleanedBullets.length === 0) {
-      alert("Please add at least one bullet point before submitting.");
-      return;
-    }
-
     const payload = {
       ...formData,
-      question: formData.question.trim(),
       answer: {
         ...(formData.answer.intro?.trim()
           ? { intro: formData.answer.intro.trim() }
           : {}),
-        bullets: cleanedBullets,
+        bullets: formData.answer.bullets
+          .filter((b) => b.text.trim().length > 0)
+          .map((b) => ({
+            text: b.text.trim(),
+            ...(b.url?.trim() ? { url: b.url.trim() } : {}),
+          })),
       },
     };
 
@@ -247,6 +239,7 @@ export default function AddFaqForm({
             label={`Bullet ${index + 1} text`}
             value={bullet.text}
             onChange={(e) => handleBulletChange(index, "text", e.target.value)}
+            required
           />
           <TextField
             label="URL (optional)"

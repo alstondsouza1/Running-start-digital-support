@@ -14,7 +14,7 @@ import {
 
 import Categories from "./Categories";
 import QuestionSearchBar from "./QuestionSearchBar";
-import { normalize, scoreText, tokenize } from "../utils/search";
+import { normalize, scoreText } from "../utils/search";
 import normalizeUrl from "../utils/normalizeURL.js";
 
 function escapeRegExp(str = "") {
@@ -22,39 +22,32 @@ function escapeRegExp(str = "") {
 }
 
 function highlightText(text, query) {
-  const sourceText = String(text ?? "");
-  const tokens = tokenize(query);
+  const q = (query || "").trim();
+  if (!q) return text;
 
-  if (tokens.length === 0) {
-    return sourceText;
-  }
+  const parts = q.split(/\s+/).filter(Boolean).map(escapeRegExp);
+  if (parts.length === 0) return text;
 
-  const regex = new RegExp(`(${tokens.map(escapeRegExp).join("|")})`, "gi");
-  const chunks = sourceText.split(regex);
+  const regex = new RegExp(`(${parts.join("|")})`, "gi");
+  const chunks = String(text ?? "").split(regex);
 
-  return chunks.map((chunk, index) => {
-    const isMatch = tokens.some(
-      (token) => chunk.toLowerCase() === token.toLowerCase()
-    );
-
-    if (isMatch) {
-      return (
-        <Box
-          key={index}
-          component="mark"
-          sx={{
-            backgroundColor: "rgba(187, 212, 22, 0.35)",
-            px: 0.3,
-            borderRadius: 0.5,
-          }}
-        >
-          {chunk}
-        </Box>
-      );
-    }
-
-    return <span key={index}>{chunk}</span>;
-  });
+  return chunks.map((chunk, i) =>
+    regex.test(chunk) ? (
+      <Box
+        key={i}
+        component="mark"
+        sx={{
+          backgroundColor: "rgba(187, 212, 22, 0.35)",
+          px: 0.3,
+          borderRadius: 0.5,
+        }}
+      >
+        {chunk}
+      </Box>
+    ) : (
+      <span key={i}>{chunk}</span>
+    )
+  );
 }
 
 function answerToText(answer) {
@@ -103,8 +96,7 @@ export default function StudentFAQPage({
           .join(" | ");
 
         const score =
-          scoreText(questionBlob, searchTerm) * 3 +
-          scoreText(restBlob, searchTerm);
+          scoreText(questionBlob, searchTerm) * 3 + scoreText(restBlob, searchTerm);
 
         return { q, score, index };
       })
