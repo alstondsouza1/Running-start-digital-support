@@ -148,7 +148,8 @@ Running-start-digital-support
 │   │   ├── utils
 │   │   └── App.jsx
 │   └── package.json
-│
+|
+│── REVIEW_NOTES.md
 └── README.md
 ```
 
@@ -171,6 +172,8 @@ Running-start-digital-support
 ---
 
 # API Routes
+
+Note: Some routes are not fully RESTful and may be refactored in future iterations.
 
 ## Public Routes
 
@@ -504,6 +507,12 @@ Future versions of this portal may include direct support links or live assistan
   * Rate limiting
   * Helmet middleware
   * Input validation
+
+# Additional Considerations
+
+- JWT is currently stored in localStorage (not recommended for production)
+- HTTPS should be enforced in production deployments
+- Input validation should be expanded on all endpoints
 
 ---
 
