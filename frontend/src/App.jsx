@@ -1,4 +1,5 @@
-import { Routes, Route } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { CssBaseline, Box, Toolbar } from "@mui/material";
 import { Analytics } from "@vercel/analytics/react";
 
@@ -14,11 +15,49 @@ import AdminLogin from "./components/admin/AdminLogin";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
+const srOnlyStyles = {
+  position: "absolute",
+  width: "1px",
+  height: "1px",
+  padding: 0,
+  margin: "-1px",
+  overflow: "hidden",
+  clip: "rect(0 0 0 0)",
+  whiteSpace: "nowrap",
+  border: 0,
+};
+
+function RouteAnnouncer() {
+  const location = useLocation();
+  const [announcement, setAnnouncement] = useState("");
+
+  useEffect(() => {
+    const titles = {
+      "/": "Home",
+      "/current-student": "Current Running Start Students",
+      "/future-student": "Future Running Start Students",
+      "/admin-login": "Admin Login",
+      "/admin": "Admin Dashboard",
+    };
+
+    const pageTitle = titles[location.pathname] || "Page Not Found";
+    document.title = `${pageTitle} | Running Start Digital Portal`;
+    setAnnouncement(`${pageTitle} page loaded`);
+  }, [location.pathname]);
+
+  return (
+    <Box aria-live="polite" aria-atomic="true" sx={srOnlyStyles}>
+      {announcement}
+    </Box>
+  );
+}
+
 export default function App() {
   return (
     <>
       <CssBaseline />
       <SkipLink />
+      <RouteAnnouncer />
       <Navbar />
 
       <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -48,6 +87,7 @@ export default function App() {
 
         <Footer />
       </Box>
+
       <Analytics />
     </>
   );
