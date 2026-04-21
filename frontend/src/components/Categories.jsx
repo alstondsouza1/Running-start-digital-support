@@ -8,8 +8,13 @@ export default function Categories({ categories, onSelectCategory, selectedId })
   };
 
   return (
-    <Box sx={{ width: "100%", display: "flex", justifyContent: "center" }}>
+    <Box
+      component="section"
+      aria-labelledby="faq-category-heading"
+      sx={{ width: "100%", display: "flex", justifyContent: "center" }}
+    >
       <Box
+        role="list"
         sx={{
           width: "100%",
           maxWidth: 980,
@@ -25,74 +30,76 @@ export default function Categories({ categories, onSelectCategory, selectedId })
           const isSelected = selectedId === cat.id;
 
           return (
-            <Card
-              key={cat.id}
-              sx={{
-                borderRadius: 2,
-                border: isSelected
-                  ? "2px solid #2c882b"
-                  : "1px solid rgba(0,0,0,0.12)",
-                boxShadow: isSelected ? 4 : 1,
-                minHeight: { xs: 120, sm: 140 },
-              }}
-            >
-              <CardActionArea
-                onClick={() => handleSelect(cat.id)}
-                disabled={!clickable}
-                aria-pressed={clickable ? isSelected : undefined}
-                aria-label={`Open category ${cat.name}`}
+            <Box role="listitem" key={cat.id}>
+              <Card
                 sx={{
-                  height: "100%",
-                  alignItems: "stretch",
-                  transition: "transform 0.15s ease, box-shadow 0.15s ease",
-                  "&:hover": clickable
-                    ? { transform: "translateY(-2px)" }
-                    : {},
+                  borderRadius: 2,
+                  border: isSelected
+                    ? "2px solid #2c882b"
+                    : "1px solid rgba(0,0,0,0.12)",
+                  boxShadow: isSelected ? 4 : 1,
+                  minHeight: { xs: 120, sm: 140 },
                 }}
               >
-                <CardContent
+                <CardActionArea
+                  onClick={() => handleSelect(cat.id)}
+                  disabled={!clickable}
+                  aria-pressed={clickable ? isSelected : undefined}
+                  aria-label={`${isSelected ? "Selected category" : "Open category"} ${cat.name}`}
                   sx={{
                     height: "100%",
-                    px: { xs: 2, sm: 3 },
-                    py: { xs: 2, sm: 2.5 },
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    gap: 1,
-                    textAlign: "left",
+                    alignItems: "stretch",
+                    transition: "transform 0.15s ease, box-shadow 0.15s ease",
+                    "&:hover": clickable
+                      ? { transform: "translateY(-2px)" }
+                      : {},
                   }}
                 >
-                  <Typography
-                    variant="h6"
+                  <CardContent
                     sx={{
-                      lineHeight: 1.2,
-                      fontSize: { xs: "1rem", sm: "1.15rem" },
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
+                      height: "100%",
+                      px: { xs: 2, sm: 3 },
+                      py: { xs: 2, sm: 2.5 },
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      gap: 1,
+                      textAlign: "left",
                     }}
                   >
-                    {cat.name}
-                  </Typography>
+                    <Typography
+                      variant="h6"
+                      component="h3"
+                      sx={{
+                        lineHeight: 1.2,
+                        fontSize: { xs: "1rem", sm: "1.15rem" },
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      }}
+                    >
+                      {cat.name}
+                    </Typography>
 
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{
-                      lineHeight: 1.35,
-                      fontSize: { xs: "0.92rem", sm: "0.95rem" },
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {cat.description}
-                  </Typography>
-                </CardContent>
-              </CardActionArea>
-            </Card>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        lineHeight: 1.35,
+                        fontSize: { xs: "0.92rem", sm: "0.95rem" },
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      }}
+                    >
+                      {cat.description}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            </Box>
           );
         })}
       </Box>

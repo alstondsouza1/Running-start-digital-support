@@ -19,6 +19,7 @@ export default function QuestionSearchBar({
     >
       <TextField
         fullWidth
+        type="search"
         label="Search FAQs"
         value={value}
         onChange={(e) => onChange(e.target.value)}

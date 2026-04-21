@@ -126,89 +126,115 @@ export default function StudentFAQPage({
   const getAccordionKey = (item, fallbackIndex) =>
     item.id ?? `${item.type}-${normalize(item.question)}-${fallbackIndex}`;
 
-  const renderAccordion = (item, idx) => (
-    <Accordion
-      key={getAccordionKey(item, idx)}
-      disableGutters
-      sx={{
-        "&:before": { display: "none" },
-        boxShadow: 0,
-        borderBottom: "1px solid",
-        borderColor: "divider",
-      }}
-    >
-      <AccordionSummary
-        expandIcon={<span aria-hidden="true">▼</span>}
-        sx={{ "& .MuiAccordionSummary-content": { my: 1 } }}
+  const renderAccordion = (item, idx) => {
+    const key = getAccordionKey(item, idx);
+    const summaryId = `${key}-summary`;
+    const detailsId = `${key}-details`;
+    const categoryName = categoryById(categories, item.type)?.name ?? item.type;
+
+    return (
+      <Accordion
+        key={key}
+        disableGutters
+        sx={{
+          "&:before": { display: "none" },
+          boxShadow: 0,
+          borderBottom: "1px solid",
+          borderColor: "divider",
+        }}
       >
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
-          <Typography fontWeight={600}>
-            {isSearching ? highlightText(item.question, searchTerm) : item.question}
-          </Typography>
+        <AccordionSummary
+          id={summaryId}
+          aria-controls={detailsId}
+          expandIcon={<span aria-hidden="true">▼</span>}
+          sx={{ "& .MuiAccordionSummary-content": { my: 1 } }}
+        >
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
+            <Typography component="h3" fontWeight={600}>
+              {isSearching ? highlightText(item.question, searchTerm) : item.question}
+            </Typography>
 
-          {isSearching && (
-            <Box>
-              <Chip
-                size="small"
-                label={categoryById(categories, item.type)?.name ?? item.type}
-              />
-            </Box>
-          )}
-        </Box>
-      </AccordionSummary>
-
-      <AccordionDetails sx={{ pt: 0 }}>
-        {item.answer?.intro && (
-          <Typography sx={{ mb: 1 }}>
-            {isSearching
-              ? highlightText(item.answer.intro, searchTerm)
-              : item.answer.intro}
-          </Typography>
-        )}
-
-        {item.answer?.bullets?.length > 0 && (
-          <List dense disablePadding sx={{ pl: 2 }}>
-            {item.answer.bullets.map((bullet, i) => (
-              <ListItem
-                key={`${getAccordionKey(item, idx)}-bullet-${i}`}
-                component="li"
-                sx={{
-                  display: "list-item",
-                  listStyleType: "disc",
-                  py: 0.25,
-                }}
-              >
-                <ListItemText
-                  primary={
-                    bullet.url ? (
-                      <MuiLink
-                        href={normalizeUrl(bullet.url)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {isSearching
-                          ? highlightText(bullet.text, searchTerm)
-                          : bullet.text}
-                      </MuiLink>
-                    ) : isSearching ? (
-                      highlightText(bullet.text, searchTerm)
-                    ) : (
-                      bullet.text
-                    )
-                  }
+            {isSearching && (
+              <Box>
+                <Chip
+                  size="small"
+                  label={categoryName}
+                  aria-label={`Category ${categoryName}`}
                 />
-              </ListItem>
-            ))}
-          </List>
-        )}
-      </AccordionDetails>
-    </Accordion>
-  );
+              </Box>
+            )}
+          </Box>
+        </AccordionSummary>
+
+        <AccordionDetails
+          id={detailsId}
+          role="region"
+          aria-labelledby={summaryId}
+          sx={{ pt: 0 }}
+        >
+          {item.answer?.intro && (
+            <Typography sx={{ mb: 1 }}>
+              {isSearching
+                ? highlightText(item.answer.intro, searchTerm)
+                : item.answer.intro}
+            </Typography>
+          )}
+
+          {item.answer?.bullets?.length > 0 && (
+            <List dense disablePadding sx={{ pl: 2 }}>
+              {item.answer.bullets.map((bullet, i) => (
+                <ListItem
+                  key={`${key}-bullet-${i}`}
+                  component="li"
+                  sx={{
+                    display: "list-item",
+                    listStyleType: "disc",
+                    py: 0.25,
+                  }}
+                >
+                  <ListItemText
+                    primary={
+                      bullet.url ? (
+                        <MuiLink
+                          href={normalizeUrl(bullet.url)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`${bullet.text} opens in a new tab`}
+                        >
+                          {isSearching
+                            ? highlightText(bullet.text, searchTerm)
+                            : bullet.text}
+                        </MuiLink>
+                      ) : isSearching ? (
+                        highlightText(bullet.text, searchTerm)
+                      ) : (
+                        bullet.text
+                      )
+                    }
+                  />
+                </ListItem>
+              ))}
+            </List>
+          )}
+        </AccordionDetails>
+      </Accordion>
+    );
+  };
 
   return (
-    <Box sx={{ width: "100%", px: { xs: 2, sm: 3 }, py: { xs: 3, sm: 4 } }}>
+    <Box
+      component="section"
+      aria-labelledby="faq-page-title"
+      sx={{ width: "100%", px: { xs: 2, sm: 3 }, py: { xs: 3, sm: 4 } }}
+    >
       <Box sx={{ width: "100%", maxWidth: 1100, mx: "auto" }}>
-        <Typography variant="h4" component="h1" fontWeight={700} sx={{ mb: 1 }}>
+        <Typography
+          id="faq-page-title"
+          variant="h4"
+          component="h1"
+          fontWeight={700}
+          sx={{ mb: 1 }}
+        >
           {title}
         </Typography>
 
@@ -230,6 +256,7 @@ export default function StudentFAQPage({
             whiteSpace: "nowrap",
           }}
           aria-live="polite"
+          aria-atomic="true"
         >
           {isSearching
             ? `${searchResults.length} search results found`
@@ -240,6 +267,8 @@ export default function StudentFAQPage({
 
         {isSearching ? (
           <Box
+            component="section"
+            aria-labelledby="search-results-heading"
             sx={{
               p: 3,
               backgroundColor: "white",
@@ -250,7 +279,7 @@ export default function StudentFAQPage({
               mx: "auto",
             }}
           >
-            <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+            <Typography id="search-results-heading" variant="h6" fontWeight={700} sx={{ mb: 2 }}>
               Search Results ({searchResults.length})
             </Typography>
 
@@ -264,8 +293,12 @@ export default function StudentFAQPage({
           </Box>
         ) : (
           <>
-            <Typography fontWeight={700} sx={{ mb: 2 }}>
-              Browse Categories:
+            <Typography id="faq-category-heading" fontWeight={700} sx={{ mb: 2 }}>
+              Browse Categories
+            </Typography>
+
+            <Typography color="text.secondary" sx={{ mb: 2 }}>
+              Select a category card to view related frequently asked questions.
             </Typography>
 
             <Categories
@@ -276,6 +309,8 @@ export default function StudentFAQPage({
 
             {selectedCategory ? (
               <Box
+                component="section"
+                aria-labelledby="selected-category-heading"
                 sx={{
                   mt: 4,
                   p: 3,
@@ -287,7 +322,12 @@ export default function StudentFAQPage({
                   mx: "auto",
                 }}
               >
-                <Typography variant="h5" sx={{ mb: 0.5 }} fontWeight={700}>
+                <Typography
+                  id="selected-category-heading"
+                  variant="h5"
+                  sx={{ mb: 0.5 }}
+                  fontWeight={700}
+                >
                   {selectedCategory.name}
                 </Typography>
 
