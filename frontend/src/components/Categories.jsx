@@ -24,8 +24,8 @@ export default function Categories({ categories, onSelectCategory, selectedId })
           display: "grid",
           gap: { xs: 2, sm: 3 },
           gridTemplateColumns: {
-            xs: "1fr",       // phone
-            sm: "1fr 1fr",   // tablet+
+            xs: "1fr",
+            sm: "1fr 1fr",
           },
         }}
       >
@@ -48,7 +48,7 @@ export default function Categories({ categories, onSelectCategory, selectedId })
                   : "1px solid rgba(0,0,0,0.12)",
                 boxShadow: isSelected ? 4 : 1,
                 transition: "transform 0.15s ease, box-shadow 0.15s ease",
-                minHeight: 140,
+                minHeight: { xs: 120, sm: 140 },
                 "&:hover": clickable
                   ? { transform: "translateY(-2px)", boxShadow: isSelected ? 6 : 3 }
                   : {},
@@ -58,7 +58,7 @@ export default function Categories({ categories, onSelectCategory, selectedId })
                 sx={{
                   height: "100%",
                   px: { xs: 2, sm: 3 },
-                  py: 2.5,
+                  py: { xs: 2, sm: 2.5 },
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "center",
@@ -69,7 +69,7 @@ export default function Categories({ categories, onSelectCategory, selectedId })
                   variant="h6"
                   sx={{
                     lineHeight: 1.2,
-                    fontSize: { xs: "1.05rem", sm: "1.15rem" },
+                    fontSize: { xs: "1rem", sm: "1.15rem" },
                     display: "-webkit-box",
                     WebkitLineClamp: 2,
                     WebkitBoxOrient: "vertical",
@@ -84,6 +84,7 @@ export default function Categories({ categories, onSelectCategory, selectedId })
                   color="text.secondary"
                   sx={{
                     lineHeight: 1.35,
+                    fontSize: { xs: "0.92rem", sm: "0.95rem" },
                     display: "-webkit-box",
                     WebkitLineClamp: 2,
                     WebkitBoxOrient: "vertical",
