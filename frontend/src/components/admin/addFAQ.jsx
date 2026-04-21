@@ -19,7 +19,7 @@ export default function AddFaqForm({
 }) {
   const token = localStorage.getItem("token");
 
-  const emptyForm = {
+  const EMPTY_FORM = {
     audience: "",
     type: "",
     question: "",
@@ -29,7 +29,7 @@ export default function AddFaqForm({
     },
   };
 
-  const [formData, setFormData] = useState(emptyForm);
+  const [formData, setFormData] = useState(EMPTY_FORM);
   const [allCategories, setAllCategories] = useState({});
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
@@ -68,9 +68,17 @@ export default function AddFaqForm({
         },
       });
     } else {
-      setFormData(emptyForm);
+      setFormData({
+        audience: "",
+        type: "",
+        question: "",
+        answer: {
+          intro: "",
+          bullets: [{ text: "", url: "" }],
+        },
+      });
     }
-
+  
     setFormError("");
     setFormSuccess("");
   }, [initialData]);
@@ -207,7 +215,7 @@ export default function AddFaqForm({
       );
 
       if (!initialData) {
-        setFormData(emptyForm);
+        setFormData(EMPTY_FORM);
       }
 
       if (onSuccess) onSuccess();

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { CssBaseline, Box, Toolbar } from "@mui/material";
 import { Analytics } from "@vercel/analytics/react";
@@ -27,27 +27,29 @@ const srOnlyStyles = {
   border: 0,
 };
 
+function getPageTitle(pathname) {
+  const titles = {
+    "/": "Home",
+    "/current-student": "Current Running Start Students",
+    "/future-student": "Future Running Start Students",
+    "/admin-login": "Admin Login",
+    "/admin": "Admin Dashboard",
+  };
+
+  return titles[pathname] || "Page Not Found";
+}
+
 function RouteAnnouncer() {
   const location = useLocation();
-  const [announcement, setAnnouncement] = useState("");
+  const pageTitle = getPageTitle(location.pathname);
 
   useEffect(() => {
-    const titles = {
-      "/": "Home",
-      "/current-student": "Current Running Start Students",
-      "/future-student": "Future Running Start Students",
-      "/admin-login": "Admin Login",
-      "/admin": "Admin Dashboard",
-    };
-
-    const pageTitle = titles[location.pathname] || "Page Not Found";
     document.title = `${pageTitle} | Running Start Digital Portal`;
-    setAnnouncement(`${pageTitle} page loaded`);
-  }, [location.pathname]);
+  }, [pageTitle]);
 
   return (
     <Box aria-live="polite" aria-atomic="true" sx={srOnlyStyles}>
-      {announcement}
+      {pageTitle} page loaded
     </Box>
   );
 }
@@ -74,7 +76,6 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/current-student" element={<CurrentStudent />} />
             <Route path="/future-student" element={<ProspectiveStudent />} />
-
             <Route path="/admin-login" element={<AdminLogin />} />
 
             <Route element={<ProtectedRoute />}>

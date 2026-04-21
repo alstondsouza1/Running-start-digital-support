@@ -22,6 +22,8 @@ export default function Home() {
 
   return (
     <Box
+      component="section"
+      aria-labelledby="home-page-title"
       sx={{
         minHeight: "80vh",
         display: "flex",
@@ -34,7 +36,9 @@ export default function Home() {
       }}
     >
       <Typography
+        id="home-page-title"
         variant="h3"
+        component="h1"
         fontWeight={700}
         sx={{
           textAlign: "center",
@@ -62,6 +66,8 @@ export default function Home() {
       </Box>
 
       <Box
+        component="section"
+        aria-label="Student type options"
         sx={{
           width: "100%",
           display: "flex",
@@ -85,8 +91,8 @@ export default function Home() {
             }}
           >
             <CardContent sx={{ px: 3 }}>
-              <SchoolIcon sx={{ fontSize: 70, color: "#2c882b" }} />
-              <Typography variant="h5" sx={{ mt: 2 }} fontWeight={700}>
+              <SchoolIcon sx={{ fontSize: 70, color: "#2c882b" }} aria-hidden="true" />
+              <Typography variant="h5" component="h2" sx={{ mt: 2 }} fontWeight={700}>
                 Current Student
               </Typography>
               <Typography variant="body1" color="text.secondary" sx={{ mt: 1.5 }}>
@@ -110,8 +116,8 @@ export default function Home() {
             }}
           >
             <CardContent sx={{ px: 3 }}>
-              <PersonAddIcon sx={{ fontSize: 70, color: "#2c882b" }} />
-              <Typography variant="h5" sx={{ mt: 2 }} fontWeight={700}>
+              <PersonAddIcon sx={{ fontSize: 70, color: "#2c882b" }} aria-hidden="true" />
+              <Typography variant="h5" component="h2" sx={{ mt: 2 }} fontWeight={700}>
                 Future Student
               </Typography>
               <Typography variant="body1" color="text.secondary" sx={{ mt: 1.5 }}>
