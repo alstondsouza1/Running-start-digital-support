@@ -17,7 +17,7 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import Logo from "../assets/GRC_Logo_White.png";
-import { useAuth } from "../../context/useAuth";
+import { useAuth } from "../context/useAuth";
 
 export default function Navbar() {
   const { adminInfo, logout } = useAuth();
