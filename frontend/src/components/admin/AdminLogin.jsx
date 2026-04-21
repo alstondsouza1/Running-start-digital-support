@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Box, TextField, Button, Typography, Alert } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthenticateContext";
+
 const API_BASE = import.meta.env.VITE_API_BASE;
 
 export default function AdminLogin() {
@@ -31,10 +32,8 @@ export default function AdminLogin() {
         throw new Error(data.message || "Login failed");
       }
 
-      // store token in context + localStorage
       login(data.token);
-
-      setMessage("Login successful!");
+      setMessage("Login successful! Redirecting to admin dashboard.");
       navigate("/admin");
     } catch (err) {
       setError(err.message || "Login failed");
@@ -42,33 +41,50 @@ export default function AdminLogin() {
   };
 
   return (
-    // Login box -----------------------------------------------------------------
     <Box
+      component="section"
+      aria-labelledby="admin-login-heading"
       sx={{
         minHeight: "100vh",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: "#f1ffe9",
+        px: 2,
       }}
     >
       <Box
         component="form"
         onSubmit={handleSubmit}
+        noValidate
         sx={{
-          width: 350,
+          width: "100%",
+          maxWidth: 400,
           p: 4,
           boxShadow: 3,
           borderRadius: 2,
           backgroundColor: "white",
         }}
       >
-        <Typography variant="h5" align="center" gutterBottom>
+        <Typography id="admin-login-heading" variant="h5" align="center" gutterBottom>
           Admin Login
         </Typography>
 
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-        {message && <Alert severity="success" sx={{ mb: 2 }}>{message}</Alert>}
+        <Typography color="text.secondary" align="center" sx={{ mb: 2 }}>
+          Sign in to manage FAQ content.
+        </Typography>
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }} role="alert">
+            {error}
+          </Alert>
+        )}
+
+        {message && (
+          <Alert severity="success" sx={{ mb: 2 }} role="status">
+            {message}
+          </Alert>
+        )}
 
         <TextField
           label="Username"
@@ -76,6 +92,8 @@ export default function AdminLogin() {
           margin="normal"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          autoComplete="username"
+          required
         />
 
         <TextField
@@ -85,6 +103,8 @@ export default function AdminLogin() {
           margin="normal"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password"
+          required
         />
 
         <Button
@@ -95,7 +115,7 @@ export default function AdminLogin() {
             mt: 2,
             backgroundColor: "#006225",
             "&:hover": {
-              backgroundColor: "#D14900",
+              backgroundColor: "#004d1a",
             },
           }}
         >
