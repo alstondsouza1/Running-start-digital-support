@@ -13,7 +13,7 @@ import {
   Divider,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import Logo from "../assets/GRC_Logo_White.png";
@@ -66,7 +66,7 @@ export default function Navbar() {
       onClick={() => toggleDrawer(false)}
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, p: 2 }}>
-        <img src={Logo} alt="Green River College logo" style={{ height: 40 }} />
+        <img src={Logo} alt="" aria-hidden="true" style={{ height: 40 }} />
         <Box sx={{ display: "flex", flexDirection: "column" }}>
           <Typography fontWeight={700}>Running Start Digital Portal</Typography>
           <Typography sx={{ fontSize: "0.75rem", opacity: 0.8 }}>
@@ -77,7 +77,7 @@ export default function Navbar() {
 
       <Divider />
 
-      <List sx={{ py: 1 }}>
+      <List sx={{ py: 1 }} aria-label="Mobile navigation">
         {links.map((item, index) => {
           const active = item.to ? location.pathname === item.to : false;
           const isLogin = item.label === "Login";
@@ -85,19 +85,20 @@ export default function Navbar() {
           return (
             <ListItemButton
               key={index}
-              component={item.to ? Link : "button"}
+              component={item.to ? NavLink : "button"}
               to={item.to}
               onClick={item.action}
               selected={active}
+              aria-current={active ? "page" : undefined}
               sx={{
                 px: 2,
                 ...(isLogin && {
-                  backgroundColor: "green",
-                  color: "white",
+                  backgroundColor: "#ffffff",
+                  color: "#006225",
+                  fontWeight: 700,
                   "@media (hover: hover) and (pointer: fine)": {
                     "&:hover": {
-                      backgroundColor: "#d14900",
-                      color: "white",
+                      backgroundColor: "#f3f3f3",
                     },
                   },
                 }),
@@ -130,7 +131,9 @@ export default function Navbar() {
           <IconButton
             color="inherit"
             edge="start"
-            aria-label="Open navigation menu"
+            aria-label={open ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={open ? "true" : "false"}
+            aria-controls="mobile-navigation-drawer"
             onClick={() => toggleDrawer(true)}
           >
             <MenuIcon />
@@ -141,6 +144,7 @@ export default function Navbar() {
           href="https://www.greenriver.edu/students/academics/running-start/index.html"
           target="_blank"
           rel="noopener noreferrer"
+          aria-label="Visit the official Green River Running Start website in a new tab"
           style={{ display: "flex", alignItems: "center", flexShrink: 0 }}
         >
           <img
@@ -194,7 +198,7 @@ export default function Navbar() {
         </Box>
 
         {!isMobile && (
-          <Box sx={{ display: "flex", gap: 0.5 }}>
+          <Box component="nav" aria-label="Primary navigation" sx={{ display: "flex", gap: 0.5 }}>
             {links.map((item, index) => {
               const isLogin = item.label === "Login";
               const isActive = item.to ? location.pathname === item.to : false;
@@ -202,18 +206,20 @@ export default function Navbar() {
               return item.to ? (
                 <Button
                   key={index}
-                  component={Link}
+                  component={NavLink}
                   to={item.to}
+                  aria-current={isActive ? "page" : undefined}
                   variant={isLogin ? "contained" : "text"}
                   sx={
                     isLogin
                       ? {
-                          backgroundColor: "green",
-                          color: "white",
+                          backgroundColor: "#ffffff",
+                          color: "#006225",
+                          fontWeight: 700,
                           "@media (hover: hover) and (pointer: fine)": {
                             "&:hover": {
-                              color: "white",
-                              backgroundColor: "#d14900",
+                              backgroundColor: "#f3f3f3",
+                              color: "#004d1a",
                             },
                           },
                         }
@@ -233,6 +239,7 @@ export default function Navbar() {
                   key={index}
                   onClick={item.action}
                   color="inherit"
+                  aria-label="Log out of admin session"
                   sx={navButtonStyle}
                 >
                   {item.label}
@@ -242,7 +249,15 @@ export default function Navbar() {
           </Box>
         )}
 
-        <Drawer anchor="left" open={open} onClose={() => toggleDrawer(false)}>
+        <Drawer
+          anchor="left"
+          open={open}
+          onClose={() => toggleDrawer(false)}
+          PaperProps={{
+            id: "mobile-navigation-drawer",
+            "aria-label": "Mobile navigation drawer",
+          }}
+        >
           {DrawerContent}
         </Drawer>
       </Toolbar>
