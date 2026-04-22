@@ -5,6 +5,22 @@
     <link rel="icon" type="image/svg+xml" href="/GRC_Logo-Green.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Running Start Portal</title>
+    <script>
+      const id = import.meta.env.GOOGLE_ID; 
+
+      const script = document.createElement("script");
+      script.async = true;
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`;
+
+      document.head.appendChild(script);
+
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", id);
+    </script>
   </head>
   <body>
     <div id="root"></div>

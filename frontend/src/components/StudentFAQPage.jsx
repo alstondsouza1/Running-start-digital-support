@@ -16,6 +16,7 @@ import Categories from "./Categories";
 import QuestionSearchBar from "./QuestionSearchBar";
 import { normalize, scoreText, tokenize } from "../utils/search";
 import normalizeUrl from "../utils/normalizeURL.js";
+import { trackQuestionClick } from "../utils/analytics";
 
 function escapeRegExp(str = "") {
   return String(str).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -126,10 +127,22 @@ export default function StudentFAQPage({
   const getAccordionKey = (item, fallbackIndex) =>
     item.id ?? `${item.type}-${normalize(item.question)}-${fallbackIndex}`;
 
+  const handleAccordionChange = (item) => (_event, expanded) => {
+    if (!expanded) return;
+    const cat = categoryById(categories, item.type);
+    trackQuestionClick({
+      question: item.question,
+      categoryId: item.type,
+      categoryName: cat?.name ?? item.type,
+      source: isSearching ? "search" : "browse",
+    });
+  };
+
   const renderAccordion = (item, idx) => (
     <Accordion
       key={getAccordionKey(item, idx)}
       disableGutters
+      onChange={handleAccordionChange(item)}
       sx={{
         "&:before": { display: "none" },
         boxShadow: 0,
