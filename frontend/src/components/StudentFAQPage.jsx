@@ -10,6 +10,12 @@ import {
   AccordionSummary,
   AccordionDetails,
   Chip,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+  TableContainer,
+  Paper,
 } from "@mui/material";
 
 import Categories from "./Categories";
@@ -336,34 +342,53 @@ export default function StudentFAQPage({
           If you couldn’t find your answer, feel free to reach out to us below in our Zoom Lobby or our normal hours.
         </Typography>
 
-        <Typography>
-          Hours
-          Monday to Thursday:
-          8:00 AM to 5:00 PM
+        <TableContainer component={Paper} elevation={0}>
+          <Table>
+            <TableBody>
+              <TableRow>
 
-          Friday:
-          9:30 AM to 4:30 PM
-        </Typography>
+                {/* Column 1 */}
+                <TableCell sx={{ fontWeight: 600, verticalAlign: "top", width: 200 }}>
+                  Virtual Lobby
+                  <br />
+                  <Typography>
+                  Zoom Virtual Lobby - Click Here 
 
-        <Typography>
-          Virtual Lobby
-          Zoom Virtual Lobby - Click Here 
+                  Monday to Thursday:
+                  2:00 PM to 4:30 PM
 
-          Monday to Thursday:
-          2:00 PM to 4:30 PM
+                  Friday:
+                  2:00 PM to 4:00 PM
+                  </Typography>
+                </TableCell>
 
-          Friday:
-          2:00 PM to 4:00 PM
+                {/* Column 2 */}
+                <TableCell sx={{ fontWeight: 600, verticalAlign: "top", width: 200 }}>
+                  Hours
+                  <br />
+                  <Typography>
+                    Monday to Thursday:
+                    8:00 AM to 5:00 PM
 
-        </Typography>
+                    Friday:
+                    9:30 AM to 4:30 PM
+                  </Typography>
+                </TableCell>
 
-        <MuiLink
-          href="/contact"
-          underline="hover"
-          sx={{ fontWeight: 600 }}
-        >
-          Contact us here →
-        </MuiLink>
+                {/* Column 3 */}
+                <TableCell sx={{ fontWeight: 600, verticalAlign: "top", width: 200 }}>
+                  Social Media
+                  <br />
+                  <Typography>
+                  Facebook
+                  Instagram
+                  </Typography>
+                </TableCell>
+
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Box>
     </Box>
   );
