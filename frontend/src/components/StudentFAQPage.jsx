@@ -316,6 +316,55 @@ export default function StudentFAQPage({
           </>
         )}
       </Box>
+      <Box
+        sx={{
+          mt: 6,
+          p: 3,
+          backgroundColor: "#f9fafb",
+          borderRadius: 2,
+          textAlign: "center",
+          maxWidth: 800,
+          mx: "auto",
+          boxShadow: 1,
+        }}
+      >
+        <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
+          Need more help?
+        </Typography>
+
+        <Typography color="text.secondary" sx={{ mb: 2 }}>
+          If you couldn’t find your answer, feel free to reach out to us below in our Zoom Lobby or our normal hours.
+        </Typography>
+
+        <Typography>
+          Hours
+          Monday to Thursday:
+          8:00 AM to 5:00 PM
+
+          Friday:
+          9:30 AM to 4:30 PM
+        </Typography>
+
+        <Typography>
+          Virtual Lobby
+          Zoom Virtual Lobby - Click Here 
+
+          Monday to Thursday:
+          2:00 PM to 4:30 PM
+
+          Friday:
+          2:00 PM to 4:00 PM
+
+        </Typography>
+
+        <MuiLink
+          href="/contact"
+          underline="hover"
+          sx={{ fontWeight: 600 }}
+        >
+          Contact us here →
+        </MuiLink>
+      </Box>
     </Box>
   );
 }
