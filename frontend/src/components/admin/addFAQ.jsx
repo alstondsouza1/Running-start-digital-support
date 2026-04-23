@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Button,
@@ -8,8 +8,31 @@ import {
   Alert,
   FormHelperText,
 } from "@mui/material";
+import { categorySets } from "../../data/categories.js";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
+
+const EMPTY_FORM = {
+  audience: "",
+  type: "",
+  question: "",
+  answer: {
+    intro: "",
+    bullets: [{ text: "", url: "" }],
+  },
+};
+
+function createEmptyForm() {
+  return {
+    audience: "",
+    type: "",
+    question: "",
+    answer: {
+      intro: "",
+      bullets: [{ text: "", url: "" }],
+    },
+  };
+}
 
 export default function AddFaqForm({
   initialData = null,
@@ -19,39 +42,23 @@ export default function AddFaqForm({
 }) {
   const token = localStorage.getItem("token");
 
-  const EMPTY_FORM = {
-    audience: "",
-    type: "",
-    question: "",
-    answer: {
-      intro: "",
-      bullets: [{ text: "", url: "" }],
-    },
-  };
-
-  const [formData, setFormData] = useState(EMPTY_FORM);
-  const [allCategories, setAllCategories] = useState({});
+  const [formData, setFormData] = useState(createEmptyForm());
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/categories`);
-        const data = await res.json();
-        setAllCategories(data);
-      } catch (err) {
-        console.error("Failed to fetch categories:", err);
-      }
-    };
-
-    fetchCategories();
-  }, []);
+  const allCategories = useMemo(
+    () => ({
+      current: categorySets.current.map((c) => c.id),
+      future: categorySets.future.map((c) => c.id),
+    }),
+    []
+  );
 
   useEffect(() => {
     if (initialData) {
       const audience = initialData.audience || "";
       const type = initialData.type || "";
+
       setFormData({
         audience,
         type,
@@ -68,17 +75,9 @@ export default function AddFaqForm({
         },
       });
     } else {
-      setFormData({
-        audience: "",
-        type: "",
-        question: "",
-        answer: {
-          intro: "",
-          bullets: [{ text: "", url: "" }],
-        },
-      });
+      setFormData(createEmptyForm());
     }
-  
+
     setFormError("");
     setFormSuccess("");
   }, [initialData]);
@@ -215,7 +214,7 @@ export default function AddFaqForm({
       );
 
       if (!initialData) {
-        setFormData(EMPTY_FORM);
+        setFormData(createEmptyForm());
       }
 
       if (onSuccess) onSuccess();
@@ -297,7 +296,10 @@ export default function AddFaqForm({
         minRows={2}
       />
 
-      <Box component="fieldset" sx={{ border: "1px solid #d0d0d0", borderRadius: 2, p: 2 }}>
+      <Box
+        component="fieldset"
+        sx={{ border: "1px solid #d0d0d0", borderRadius: 2, p: 2 }}
+      >
         <Typography component="legend" variant="h6" sx={{ px: 1 }}>
           Bullet Points
         </Typography>

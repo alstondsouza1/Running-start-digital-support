@@ -20,7 +20,7 @@ import {
 
 import Categories from "./Categories";
 import QuestionSearchBar from "./QuestionSearchBar";
-import { normalize, scoreText, tokenize } from "../utils/search";
+import { normalize, tokenize, scoreText } from "../utils/search";
 import normalizeUrl from "../utils/normalizeURL.js";
 import { trackQuestionClick } from "../utils/analytics";
 
@@ -70,6 +70,7 @@ function answerToText(answer) {
   const bullets = Array.isArray(answer.bullets)
     ? answer.bullets.map((b) => b?.text ?? "").join(" ")
     : "";
+
   return `${intro} ${bullets}`.trim();
 }
 
@@ -133,6 +134,19 @@ export default function StudentFAQPage({
   const getAccordionKey = (item, fallbackIndex) =>
     item.id ?? `${item.type}-${normalize(item.question)}-${fallbackIndex}`;
 
+  const handleAccordionChange = (item) => (_event, expanded) => {
+    if (!expanded) return;
+
+    const cat = categoryById(categories, item.type);
+
+    trackQuestionClick({
+      question: item.question,
+      categoryId: item.type,
+      categoryName: cat?.name ?? item.type,
+      source: isSearching ? "search" : "browse",
+    });
+  };
+
   const renderAccordion = (item, idx) => {
     const key = getAccordionKey(item, idx);
     const summaryId = `${key}-summary`;
@@ -143,38 +157,13 @@ export default function StudentFAQPage({
       <Accordion
         key={key}
         disableGutters
+        onChange={handleAccordionChange(item)}
         sx={{
           "&:before": { display: "none" },
           boxShadow: 0,
           borderBottom: "1px solid",
           borderColor: "divider",
         }}
-  const handleAccordionChange = (item) => (_event, expanded) => {
-    if (!expanded) return;
-    const cat = categoryById(categories, item.type);
-    trackQuestionClick({
-      question: item.question,
-      categoryId: item.type,
-      categoryName: cat?.name ?? item.type,
-      source: isSearching ? "search" : "browse",
-    });
-  };
-
-  const renderAccordion = (item, idx) => (
-    <Accordion
-      key={getAccordionKey(item, idx)}
-      disableGutters
-      onChange={handleAccordionChange(item)}
-      sx={{
-        "&:before": { display: "none" },
-        boxShadow: 0,
-        borderBottom: "1px solid",
-        borderColor: "divider",
-      }}
-    >
-      <AccordionSummary
-        expandIcon={<span aria-hidden="true">▼</span>}
-        sx={{ "& .MuiAccordionSummary-content": { my: 1 } }}
       >
         <AccordionSummary
           id={summaryId}
@@ -312,13 +301,19 @@ export default function StudentFAQPage({
               mx: "auto",
             }}
           >
-            <Typography id="search-results-heading" variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+            <Typography
+              id="search-results-heading"
+              variant="h6"
+              fontWeight={700}
+              sx={{ mb: 2 }}
+            >
               Search Results ({searchResults.length})
             </Typography>
 
             {searchResults.length === 0 ? (
               <Typography color="text.secondary">
-                No results found. Try different keywords like “deadline”, “book”, “ENGL”, or “ctcLink”.
+                No results found. Try different keywords like “deadline”, “book”,
+                “ENGL”, or “ctcLink”.
               </Typography>
             ) : (
               searchResults.map((item, idx) => renderAccordion(item, idx))
@@ -389,6 +384,7 @@ export default function StudentFAQPage({
           </>
         )}
       </Box>
+
       <Box
         sx={{
           mt: 6,
@@ -406,52 +402,45 @@ export default function StudentFAQPage({
         </Typography>
 
         <Typography color="text.secondary" sx={{ mb: 2 }}>
-          If you couldn’t find your answer, feel free to reach out to us below in our Zoom Lobby or our normal hours.
+          If you couldn’t find your answer, reach out to the Running Start office
+          during normal hours or use the virtual lobby when available.
         </Typography>
 
         <TableContainer component={Paper} elevation={0}>
           <Table>
             <TableBody>
               <TableRow>
-
-                {/* Column 1 */}
                 <TableCell sx={{ fontWeight: 600, verticalAlign: "top", width: 200 }}>
                   Virtual Lobby
                   <br />
-                  <Typography>
-                  Zoom Virtual Lobby - Click Here 
-
-                  Monday to Thursday:
-                  2:00 PM to 4:30 PM
-
-                  Friday:
-                  2:00 PM to 4:00 PM
+                  <Typography component="div" sx={{ mt: 1 }}>
+                    Zoom Virtual Lobby
+                    <br />
+                    Monday to Thursday: 2:00 PM to 4:30 PM
+                    <br />
+                    Friday: 2:00 PM to 4:00 PM
                   </Typography>
                 </TableCell>
 
-                {/* Column 2 */}
                 <TableCell sx={{ fontWeight: 600, verticalAlign: "top", width: 200 }}>
                   Hours
                   <br />
-                  <Typography>
-                    Monday to Thursday:
-                    8:00 AM to 5:00 PM
-
-                    Friday:
-                    9:30 AM to 4:30 PM
+                  <Typography component="div" sx={{ mt: 1 }}>
+                    Monday to Thursday: 8:00 AM to 5:00 PM
+                    <br />
+                    Friday: 9:30 AM to 4:30 PM
                   </Typography>
                 </TableCell>
 
-                {/* Column 3 */}
                 <TableCell sx={{ fontWeight: 600, verticalAlign: "top", width: 200 }}>
                   Social Media
                   <br />
-                  <Typography>
-                  Facebook
-                  Instagram
+                  <Typography component="div" sx={{ mt: 1 }}>
+                    Facebook
+                    <br />
+                    Instagram
                   </Typography>
                 </TableCell>
-
               </TableRow>
             </TableBody>
           </Table>
