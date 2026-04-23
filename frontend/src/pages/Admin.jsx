@@ -19,8 +19,7 @@ import { CSS } from "@dnd-kit/utilities";
 
 import { categorySets } from "../data/categories.js";
 import AddFaqForm from "../components/admin/addFAQ.jsx";
-import { useAuth } from "../context/AuthenticateContext";
-
+import { useAuth } from "../context/useAuth";
 const API_BASE = import.meta.env.VITE_API_BASE;
 
 function groupByType(questions) {
