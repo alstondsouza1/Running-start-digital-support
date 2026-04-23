@@ -10,6 +10,12 @@ import {
   AccordionSummary,
   AccordionDetails,
   Chip,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+  TableContainer,
+  Paper,
 } from "@mui/material";
 
 import Categories from "./Categories";
@@ -328,6 +334,74 @@ export default function StudentFAQPage({
             )}
           </>
         )}
+      </Box>
+      <Box
+        sx={{
+          mt: 6,
+          p: 3,
+          backgroundColor: "#f9fafb",
+          borderRadius: 2,
+          textAlign: "center",
+          maxWidth: 800,
+          mx: "auto",
+          boxShadow: 1,
+        }}
+      >
+        <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
+          Need more help?
+        </Typography>
+
+        <Typography color="text.secondary" sx={{ mb: 2 }}>
+          If you couldn’t find your answer, feel free to reach out to us below in our Zoom Lobby or our normal hours.
+        </Typography>
+
+        <TableContainer component={Paper} elevation={0}>
+          <Table>
+            <TableBody>
+              <TableRow>
+
+                {/* Column 1 */}
+                <TableCell sx={{ fontWeight: 600, verticalAlign: "top", width: 200 }}>
+                  Virtual Lobby
+                  <br />
+                  <Typography>
+                  Zoom Virtual Lobby - Click Here 
+
+                  Monday to Thursday:
+                  2:00 PM to 4:30 PM
+
+                  Friday:
+                  2:00 PM to 4:00 PM
+                  </Typography>
+                </TableCell>
+
+                {/* Column 2 */}
+                <TableCell sx={{ fontWeight: 600, verticalAlign: "top", width: 200 }}>
+                  Hours
+                  <br />
+                  <Typography>
+                    Monday to Thursday:
+                    8:00 AM to 5:00 PM
+
+                    Friday:
+                    9:30 AM to 4:30 PM
+                  </Typography>
+                </TableCell>
+
+                {/* Column 3 */}
+                <TableCell sx={{ fontWeight: 600, verticalAlign: "top", width: 200 }}>
+                  Social Media
+                  <br />
+                  <Typography>
+                  Facebook
+                  Instagram
+                  </Typography>
+                </TableCell>
+
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Box>
     </Box>
   );
