@@ -514,6 +514,12 @@ Future versions of this portal may include direct support links or live assistan
 - HTTPS should be enforced in production deployments
 - Input validation should be expanded on all endpoints
 
+# Additional Considerations
+
+- JWT is currently stored in localStorage (not recommended for production)
+- HTTPS should be enforced in production deployments
+- Input validation should be expanded on all endpoints
+
 ---
 
 # Accessibility Goals
