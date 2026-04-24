@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -8,19 +8,8 @@ import {
   Alert,
   FormHelperText,
 } from "@mui/material";
-import { categorySets } from "../../data/categories.js";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
-
-const EMPTY_FORM = {
-  audience: "",
-  type: "",
-  question: "",
-  answer: {
-    intro: "",
-    bullets: [{ text: "", url: "" }],
-  },
-};
 
 function createEmptyForm() {
   return {
@@ -43,25 +32,35 @@ export default function AddFaqForm({
   const token = localStorage.getItem("token");
 
   const [formData, setFormData] = useState(createEmptyForm());
+  const [allCategories, setAllCategories] = useState({});
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
 
-  const allCategories = useMemo(
-    () => ({
-      current: categorySets.current.map((c) => c.id),
-      future: categorySets.future.map((c) => c.id),
-    }),
-    []
-  );
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const res = await fetch(`${API_BASE}/categories`);
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to load categories.");
+        }
+
+        setAllCategories(data);
+      } catch (err) {
+        console.error("Failed to fetch categories:", err);
+        setFormError("Failed to load categories. Please refresh and try again.");
+      }
+    }
+
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     if (initialData) {
-      const audience = initialData.audience || "";
-      const type = initialData.type || "";
-
       setFormData({
-        audience,
-        type,
+        audience: initialData.audience || "",
+        type: initialData.type || "",
         question: initialData.question || "",
         answer: {
           intro: initialData.answer?.intro || "",
@@ -114,7 +113,14 @@ export default function AddFaqForm({
     setFormData((prev) => {
       const bullets = [...prev.answer.bullets];
       bullets[index] = { ...bullets[index], [field]: value };
-      return { ...prev, answer: { ...prev.answer, bullets } };
+
+      return {
+        ...prev,
+        answer: {
+          ...prev.answer,
+          bullets,
+        },
+      };
     });
   };
 
@@ -176,7 +182,8 @@ export default function AddFaqForm({
     }
 
     const payload = {
-      ...formData,
+      audience: formData.audience.trim(),
+      type: formData.type.trim(),
       question: formData.question.trim(),
       answer: {
         ...(formData.answer.intro?.trim()
@@ -257,8 +264,11 @@ export default function AddFaqForm({
         required
       >
         <MenuItem value="">Select Audience</MenuItem>
-        <MenuItem value="current">Current</MenuItem>
-        <MenuItem value="future">Future</MenuItem>
+        {Object.keys(allCategories).map((audience) => (
+          <MenuItem key={audience} value={audience}>
+            {audience === "current" ? "Current" : "Future"}
+          </MenuItem>
+        ))}
       </TextField>
 
       <TextField
@@ -321,13 +331,19 @@ export default function AddFaqForm({
             <TextField
               label={`Bullet ${index + 1} text`}
               value={bullet.text}
-              onChange={(e) => handleBulletChange(index, "text", e.target.value)}
+              onChange={(e) =>
+                handleBulletChange(index, "text", e.target.value)
+              }
             />
+
             <TextField
               label={`Bullet ${index + 1} URL (optional)`}
               value={bullet.url}
-              onChange={(e) => handleBulletChange(index, "url", e.target.value)}
+              onChange={(e) =>
+                handleBulletChange(index, "url", e.target.value)
+              }
             />
+
             <Button
               type="button"
               onClick={() => removeBullet(index)}
@@ -347,7 +363,10 @@ export default function AddFaqForm({
         <Button
           type="submit"
           variant="contained"
-          sx={{ backgroundColor: "#006225", "&:hover": { backgroundColor: "#004d1a" } }}
+          sx={{
+            backgroundColor: "#006225",
+            "&:hover": { backgroundColor: "#004d1a" },
+          }}
         >
           {mode === "edit" ? "Update FAQ" : "Submit FAQ"}
         </Button>
