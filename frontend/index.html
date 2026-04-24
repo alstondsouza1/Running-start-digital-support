@@ -4,25 +4,31 @@
     <meta charset="UTF-8" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@200..900&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@200..900&display=swap"
+      rel="stylesheet"
+    />
     <link rel="icon" type="image/svg+xml" href="/GRC_Logo-Green.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Running Start Portal</title>
-    <script>
-      const id = "G-15EYVHR401"; 
 
-      const script = document.createElement("script");
-      script.async = true;
-      script.src = `https://www.googletagmanager.com/gtag/js?id=${(id)}`;
+    <script type="module">
+      const id = import.meta.env.VITE_GOOGLE_ID;
 
-      document.head.appendChild(script);
+      if (id) {
+        const script = document.createElement("script");
+        script.async = true;
+        script.src = `https://www.googletagmanager.com/gtag/js?id=${id}`;
+        document.head.appendChild(script);
 
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function () {
+          window.dataLayer.push(arguments);
+        };
+
+        window.gtag("js", new Date());
+        window.gtag("config", id);
       }
-      gtag("js", new Date());
-      gtag("config", id);
     </script>
   </head>
   <body>

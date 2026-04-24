@@ -10,26 +10,88 @@ const ALLOWED_CATEGORIES = {
   future: ["general", "enrollment", "classes", "other"],
 };
 
+function isValidHttpUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function normalizeUrl(value) {
+  const trimmed = String(value ?? "").trim();
+  if (!trimmed) return "";
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+
+  return `https://${trimmed}`;
+}
+
+function parseAnswer(answerValue) {
+  if (typeof answerValue === "object" && answerValue !== null) {
+    return answerValue;
+  }
+
+  if (typeof answerValue === "string") {
+    try {
+      return JSON.parse(answerValue);
+    } catch {
+      return { bullets: [] };
+    }
+  }
+
+  return { bullets: [] };
+}
+
+async function resequenceFaqs(audience, type) {
+  const [rows] = await pool.query(
+    `SELECT id
+     FROM faq
+     WHERE audience = ? AND type = ?
+     ORDER BY sort_order, created_at, id`,
+    [audience, type]
+  );
+
+  for (let i = 0; i < rows.length; i += 1) {
+    await pool.query("UPDATE faq SET sort_order = ? WHERE id = ?", [i + 1, rows[i].id]);
+  }
+}
+
 function normalizeAnswer(answer) {
   if (!answer || typeof answer !== "object") {
     return { error: "answer is required and must be an object" };
   }
 
-  const intro =
-    typeof answer.intro === "string" ? answer.intro.trim() : "";
+  const intro = typeof answer.intro === "string" ? answer.intro.trim() : "";
 
   if (!Array.isArray(answer.bullets)) {
     return { error: "answer.bullets must be an array" };
   }
 
-  const bullets = answer.bullets
-    .map((bullet) => ({
-      text: typeof bullet?.text === "string" ? bullet.text.trim() : "",
-      ...(typeof bullet?.url === "string" && bullet.url.trim()
-        ? { url: bullet.url.trim() }
-        : {}),
-    }))
-    .filter((bullet) => bullet.text.length > 0);
+  const bullets = [];
+  for (const bullet of answer.bullets) {
+    const text = typeof bullet?.text === "string" ? bullet.text.trim() : "";
+    const rawUrl = typeof bullet?.url === "string" ? bullet.url.trim() : "";
+
+    if (!text) continue;
+
+    const cleanedBullet = { text };
+
+    if (rawUrl) {
+      const finalUrl = normalizeUrl(rawUrl);
+
+      if (!isValidHttpUrl(finalUrl)) {
+        return { error: "Each bullet URL must be a valid http or https URL" };
+      }
+
+      cleanedBullet.url = finalUrl;
+    }
+
+    bullets.push(cleanedBullet);
+  }
 
   if (bullets.length === 0) {
     return { error: "answer.bullets must contain at least one valid bullet" };
@@ -79,7 +141,8 @@ function validateFaqInput({ audience, type, question, answer }) {
 
 export const getFaqs = async (req, res) => {
   try {
-    const audience = typeof req.query.audience === "string" ? req.query.audience.trim() : "";
+    const audience =
+      typeof req.query.audience === "string" ? req.query.audience.trim() : "";
 
     if (!audience) {
       return res.status(400).json({ error: "audience query parameter is required" });
@@ -93,23 +156,19 @@ export const getFaqs = async (req, res) => {
       `SELECT id, audience, type, question, answer, sort_order, created_at
        FROM faq
        WHERE audience = ?
-       ORDER BY type, sort_order, created_at`,
+       ORDER BY type, sort_order, created_at, id`,
       [audience]
     );
 
-    const formatted = rows.map((row) => {
-      const answer = typeof row.answer === "string" ? JSON.parse(row.answer) : row.answer;
-
-      return {
-        id: row.id,
-        audience: row.audience,
-        type: row.type,
-        sort_order: row.sort_order,
-        created_at: row.created_at,
-        question: row.question,
-        answer,
-      };
-    });
+    const formatted = rows.map((row) => ({
+      id: row.id,
+      audience: row.audience,
+      type: row.type,
+      sort_order: row.sort_order,
+      created_at: row.created_at,
+      question: row.question,
+      answer: parseAnswer(row.answer),
+    }));
 
     return res.json(formatted);
   } catch (err) {
@@ -177,7 +236,10 @@ export const updateFaq = async (req, res) => {
     const existing = existingRows[0];
     let sortOrder = existing.sort_order;
 
-    if (existing.audience !== audience || existing.type !== type) {
+    const movedToDifferentGroup =
+      existing.audience !== audience || existing.type !== type;
+
+    if (movedToDifferentGroup) {
       const [maxRows] = await pool.query(
         "SELECT COALESCE(MAX(sort_order), 0) AS maxSort FROM faq WHERE audience = ? AND type = ?",
         [audience, type]
@@ -191,6 +253,11 @@ export const updateFaq = async (req, res) => {
        WHERE id = ?`,
       [audience, type, question, JSON.stringify(answer), sortOrder, id]
     );
+
+    if (movedToDifferentGroup) {
+      await resequenceFaqs(existing.audience, existing.type);
+      await resequenceFaqs(audience, type);
+    }
 
     return res.json({ message: "FAQ updated successfully" });
   } catch (err) {
@@ -208,7 +275,7 @@ export const deleteFaq = async (req, res) => {
     }
 
     const [existingRows] = await pool.query(
-      "SELECT id FROM faq WHERE id = ?",
+      "SELECT id, audience, type FROM faq WHERE id = ?",
       [id]
     );
 
@@ -216,7 +283,10 @@ export const deleteFaq = async (req, res) => {
       return res.status(404).json({ error: "FAQ not found" });
     }
 
+    const existing = existingRows[0];
+
     await pool.query("DELETE FROM faq WHERE id = ?", [id]);
+    await resequenceFaqs(existing.audience, existing.type);
 
     return res.json({ message: "FAQ deleted successfully" });
   } catch (err) {
@@ -225,21 +295,9 @@ export const deleteFaq = async (req, res) => {
   }
 };
 
-export const getFaqCategories = async (req, res) => {
+export const getFaqCategories = async (_req, res) => {
   try {
-    const [rows] = await pool.query(
-      `SELECT DISTINCT audience, type
-       FROM faq
-       ORDER BY audience, type`
-    );
-
-    const categories = rows.reduce((acc, { audience, type }) => {
-      if (!acc[audience]) acc[audience] = [];
-      acc[audience].push(type);
-      return acc;
-    }, {});
-
-    return res.json(categories);
+    return res.json(ALLOWED_CATEGORIES);
   } catch (err) {
     console.error("Get FAQ categories error:", err);
     return res.status(500).json({ error: "Server error" });
@@ -248,7 +306,8 @@ export const getFaqCategories = async (req, res) => {
 
 export const updateFaqOrder = async (req, res) => {
   try {
-    const audience = typeof req.body.audience === "string" ? req.body.audience.trim() : "";
+    const audience =
+      typeof req.body.audience === "string" ? req.body.audience.trim() : "";
     const type = typeof req.body.type === "string" ? req.body.type.trim() : "";
 
     if (!Object.hasOwn(ALLOWED_CATEGORIES, audience)) {
@@ -263,27 +322,42 @@ export const updateFaqOrder = async (req, res) => {
       return res.status(400).json({ error: "orderedIds[] are required" });
     }
 
-    const orderedIds = [...new Set(
-      req.body.orderedIds
-        .map((id) => Number(id))
-        .filter((id) => Number.isInteger(id) && id > 0)
-    )];
+    const orderedIds = [
+      ...new Set(
+        req.body.orderedIds
+          .map((id) => Number(id))
+          .filter((id) => Number.isInteger(id) && id > 0)
+      ),
+    ];
 
     if (orderedIds.length === 0) {
       return res.json({ ok: true });
     }
 
-    const caseSql = orderedIds
+    const [existingRows] = await pool.query(
+      `SELECT id
+       FROM faq
+       WHERE audience = ? AND type = ?
+       ORDER BY sort_order, created_at, id`,
+      [audience, type]
+    );
+
+    const existingIds = existingRows.map((row) => row.id);
+
+    const missingIds = existingIds.filter((id) => !orderedIds.includes(id));
+    const finalOrderedIds = [...orderedIds, ...missingIds];
+
+    const caseSql = finalOrderedIds
       .map((id, idx) => `WHEN ${id} THEN ${idx + 1}`)
       .join(" ");
 
     const sql = `
       UPDATE faq
       SET sort_order = CASE id ${caseSql} ELSE sort_order END
-      WHERE audience = ? AND type = ? AND id IN (${orderedIds.map(() => "?").join(",")})
+      WHERE audience = ? AND type = ? AND id IN (${finalOrderedIds.map(() => "?").join(",")})
     `;
 
-    await pool.query(sql, [audience, type, ...orderedIds]);
+    await pool.query(sql, [audience, type, ...finalOrderedIds]);
 
     return res.json({ ok: true });
   } catch (err) {
