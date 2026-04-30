@@ -2,8 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@200..900&display=swap"
       rel="stylesheet"
@@ -13,9 +13,9 @@
     <title>Running Start Portal</title>
 
     <script type="module">
-      const id = import.meta.env.VITE_GOOGLE_ID;
+      const id = "%VITE_GOOGLE_ID%";
 
-      if (id) {
+      if (id && !id.startsWith("%VITE_")) {
         const script = document.createElement("script");
         script.async = true;
         script.src = `https://www.googletagmanager.com/gtag/js?id=${id}`;
@@ -31,6 +31,7 @@
       }
     </script>
   </head>
+
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>

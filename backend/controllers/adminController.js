@@ -2,13 +2,54 @@ import pool from "../db/db.js";
 
 const ALLOWED_CATEGORIES = {
   current: [
-    "fee-waiver-book-loan",
-    "how-to-plan-classes",
-    "dates-deadlines",
-    "campus-resources",
+    {
+      id: "fee-waiver-book-loan",
+      name: "Fee Waiver & Book Loan",
+      description: "Fee waiver steps, book loan info, and related support",
+    },
+    {
+      id: "how-to-plan-classes",
+      name: "How to Plan Classes",
+      description: "Advising, planning schedules, and choosing classes",
+    },
+    {
+      id: "dates-deadlines",
+      name: "Dates & Deadlines",
+      description: "Enrollment deadlines, important dates, and term timelines",
+    },
+    {
+      id: "campus-resources",
+      name: "Campus Resources",
+      description: "Support services, offices, and student resources at GRC",
+    },
   ],
-  future: ["general", "enrollment", "classes", "other"],
+  future: [
+    {
+      id: "general",
+      name: "General Questions",
+      description: "Program overview, eligibility, and participation basics",
+    },
+    {
+      id: "enrollment",
+      name: "Enrollment",
+      description: "Deadlines, placement, and getting registered",
+    },
+    {
+      id: "classes",
+      name: "Classes",
+      description: "Allowed courses, online learning, transfer, and degrees",
+    },
+    {
+      id: "other",
+      name: "Other",
+      description: "Moving districts, FERPA, and parent/guardian info",
+    },
+  ],
 };
+
+function getAllowedCategoryIds(audience) {
+  return ALLOWED_CATEGORIES[audience]?.map((category) => category.id) ?? [];
+}
 
 function isValidHttpUrl(value) {
   try {
@@ -22,11 +63,7 @@ function isValidHttpUrl(value) {
 function normalizeUrl(value) {
   const trimmed = String(value ?? "").trim();
   if (!trimmed) return "";
-
-  if (/^https?:\/\//i.test(trimmed)) {
-    return trimmed;
-  }
-
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
   return `https://${trimmed}`;
 }
 
@@ -56,7 +93,10 @@ async function resequenceFaqs(audience, type) {
   );
 
   for (let i = 0; i < rows.length; i += 1) {
-    await pool.query("UPDATE faq SET sort_order = ? WHERE id = ?", [i + 1, rows[i].id]);
+    await pool.query("UPDATE faq SET sort_order = ? WHERE id = ?", [
+      i + 1,
+      rows[i].id,
+    ]);
   }
 }
 
@@ -72,6 +112,7 @@ function normalizeAnswer(answer) {
   }
 
   const bullets = [];
+
   for (const bullet of answer.bullets) {
     const text = typeof bullet?.text === "string" ? bullet.text.trim() : "";
     const rawUrl = typeof bullet?.url === "string" ? bullet.url.trim() : "";
@@ -120,11 +161,14 @@ function validateFaqInput({ audience, type, question, answer }) {
     return { error: "Invalid audience value" };
   }
 
-  if (!ALLOWED_CATEGORIES[trimmedAudience].includes(trimmedType)) {
+  const allowedCategoryIds = getAllowedCategoryIds(trimmedAudience);
+
+  if (!allowedCategoryIds.includes(trimmedType)) {
     return { error: "Invalid category for the selected audience" };
   }
 
   const normalizedAnswer = normalizeAnswer(answer);
+
   if (normalizedAnswer.error) {
     return { error: normalizedAnswer.error };
   }
@@ -145,7 +189,9 @@ export const getFaqs = async (req, res) => {
       typeof req.query.audience === "string" ? req.query.audience.trim() : "";
 
     if (!audience) {
-      return res.status(400).json({ error: "audience query parameter is required" });
+      return res
+        .status(400)
+        .json({ error: "audience query parameter is required" });
     }
 
     if (!Object.hasOwn(ALLOWED_CATEGORIES, audience)) {
@@ -180,6 +226,7 @@ export const getFaqs = async (req, res) => {
 export const addFaq = async (req, res) => {
   try {
     const validated = validateFaqInput(req.body);
+
     if (validated.error) {
       return res.status(400).json({ error: validated.error });
     }
@@ -218,6 +265,7 @@ export const updateFaq = async (req, res) => {
     }
 
     const validated = validateFaqInput(req.body);
+
     if (validated.error) {
       return res.status(400).json({ error: validated.error });
     }
@@ -244,6 +292,7 @@ export const updateFaq = async (req, res) => {
         "SELECT COALESCE(MAX(sort_order), 0) AS maxSort FROM faq WHERE audience = ? AND type = ?",
         [audience, type]
       );
+
       sortOrder = (maxRows?.[0]?.maxSort ?? 0) + 1;
     }
 
@@ -314,8 +363,12 @@ export const updateFaqOrder = async (req, res) => {
       return res.status(400).json({ error: "Invalid audience value" });
     }
 
-    if (!ALLOWED_CATEGORIES[audience].includes(type)) {
-      return res.status(400).json({ error: "Invalid category for the selected audience" });
+    const allowedCategoryIds = getAllowedCategoryIds(audience);
+
+    if (!allowedCategoryIds.includes(type)) {
+      return res
+        .status(400)
+        .json({ error: "Invalid category for the selected audience" });
     }
 
     if (!Array.isArray(req.body.orderedIds)) {
@@ -343,7 +396,6 @@ export const updateFaqOrder = async (req, res) => {
     );
 
     const existingIds = existingRows.map((row) => row.id);
-
     const missingIds = existingIds.filter((id) => !orderedIds.includes(id));
     const finalOrderedIds = [...orderedIds, ...missingIds];
 
@@ -354,7 +406,9 @@ export const updateFaqOrder = async (req, res) => {
     const sql = `
       UPDATE faq
       SET sort_order = CASE id ${caseSql} ELSE sort_order END
-      WHERE audience = ? AND type = ? AND id IN (${finalOrderedIds.map(() => "?").join(",")})
+      WHERE audience = ? AND type = ? AND id IN (${finalOrderedIds
+        .map(() => "?")
+        .join(",")})
     `;
 
     await pool.query(sql, [audience, type, ...finalOrderedIds]);

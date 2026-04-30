@@ -274,7 +274,7 @@ export default function AddFaqForm({
       <TextField
         select
         name="type"
-        label="Category (Type)"
+        label="Category"
         value={formData.type}
         onChange={handleChange}
         required
@@ -283,8 +283,8 @@ export default function AddFaqForm({
       >
         <MenuItem value="">Select a category</MenuItem>
         {categoriesForAudience.map((cat) => (
-          <MenuItem key={cat} value={cat}>
-            {cat}
+          <MenuItem key={cat.id} value={cat.id}>
+            {cat.name}
           </MenuItem>
         ))}
       </TextField>
