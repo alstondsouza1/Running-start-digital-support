@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Typography,
@@ -22,7 +22,11 @@ import Categories from "./Categories";
 import QuestionSearchBar from "./QuestionSearchBar";
 import { normalize, tokenize, scoreText } from "../utils/search";
 import normalizeUrl from "../utils/normalizeURL.js";
-import { trackQuestionClick } from "../utils/analytics";
+import {
+  trackQuestionClick,
+  trackFaqSearch,
+  trackCategoryClick,
+} from "../utils/analytics";
 
 function escapeRegExp(str = "") {
   return String(str).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -32,9 +36,7 @@ function highlightText(text, query) {
   const sourceText = String(text ?? "");
   const tokens = tokenize(query);
 
-  if (tokens.length === 0) {
-    return sourceText;
-  }
+  if (tokens.length === 0) return sourceText;
 
   const regex = new RegExp(`(${tokens.map(escapeRegExp).join("|")})`, "gi");
   const chunks = sourceText.split(regex);
@@ -66,6 +68,7 @@ function highlightText(text, query) {
 
 function answerToText(answer) {
   if (!answer) return "";
+
   const intro = answer.intro ? String(answer.intro) : "";
   const bullets = Array.isArray(answer.bullets)
     ? answer.bullets.map((b) => b?.text ?? "").join(" ")
@@ -121,8 +124,32 @@ export default function StudentFAQPage({
       .map((r) => r.q);
   }, [categories, questions, isSearching, searchTerm]);
 
+  useEffect(() => {
+    if (!isSearching) return;
+
+    const timer = setTimeout(() => {
+      trackFaqSearch({
+        searchTerm,
+        resultCount: searchResults.length,
+      });
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [isSearching, searchTerm, searchResults.length]);
+
   const handleSelectCategory = (id) => {
     setSearchTerm("");
+
+    const cat = categoryById(categories, id);
+
+    if (cat) {
+      trackCategoryClick({
+        categoryId: cat.id,
+        categoryName: cat.name,
+        audience: title,
+      });
+    }
+
     setSelectedCategoryId((prev) => (prev === id ? null : id));
   };
 
@@ -173,7 +200,9 @@ export default function StudentFAQPage({
         >
           <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
             <Typography component="h3" fontWeight={600}>
-              {isSearching ? highlightText(item.question, searchTerm) : item.question}
+              {isSearching
+                ? highlightText(item.question, searchTerm)
+                : item.question}
             </Typography>
 
             {isSearching && (
