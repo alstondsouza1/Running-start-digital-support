@@ -19,8 +19,7 @@ import { CSS } from "@dnd-kit/utilities";
 
 import { categorySets } from "../data/categories.js";
 import AddFaqForm from "../components/admin/addFAQ.jsx";
-import { useAuth } from "../context/AuthenticateContext";
-
+import { useAuth } from "../context/useAuth";
 const API_BASE = import.meta.env.VITE_API_BASE;
 
 function groupByType(questions) {
@@ -64,6 +63,8 @@ function SortableCard({ question, onEdit, onDelete }) {
       <Box
         {...attributes}
         {...listeners}
+        aria-describedby="drag-help-text"
+        aria-label={`Drag to reorder question: ${question.question}`}
         sx={{ flex: 1, cursor: "grab", minWidth: 0 }}
       >
         <Typography sx={{ wordBreak: "break-word" }}>
@@ -326,34 +327,60 @@ export default function Admin() {
     <Box sx={{ p: { xs: 2, sm: 3 } }}>
       <Box
         sx={{
+          position: "fixed",
+          top: { xs: 56, sm: 64 },
+          left: 0,
+          right: 0,
+          zIndex: 3000,
+          backgroundColor: "white",
+          pointerEvents: "auto",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+        }}
+      >
+      <Box
+        sx={{
           display: "flex",
           alignItems: { xs: "flex-start", sm: "center" },
           flexDirection: { xs: "column", sm: "row" },
           justifyContent: "space-between",
           gap: 2,
-          mb: 2,
+          padding: 1,
+          backgroundColor: "#f5f5f5",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
         }}
       >
-        <Typography variant="h4">Admin Dashboard</Typography>
 
-        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-          <Button
-            variant="contained"
-            onClick={() => {
-              setEditingFaq(null);
-              setView("addFaq");
-            }}
-            sx={{
-              backgroundColor: "#006225",
-              "&:hover": { backgroundColor: "#004d1a" },
-            }}
-          >
-            + Add FAQ
-          </Button>
+      <Typography
+        variant="h4"
+        sx={{
+          fontFamily: "'Chiron GoRound TC', sans-serif",
+          fontWeight: 600
+        }}
+      >
+        Admin Dashboard
+      </Typography>
+
+
+        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", paddingRight: 3 }}>
+            <Button
+              variant="contained"
+              onClick={() => {
+                setEditingFaq(null);
+                setView("addFaq");
+              }}
+              sx={{
+                backgroundColor: "#006225",
+                "&:hover": { backgroundColor: "#004d1a" },
+              }}
+            >
+              + Add FAQ
+            </Button>
+          </Box>
         </Box>
       </Box>
 
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
+
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
         <Tabs
           value={activeTab}
           onChange={(e, v) => setActiveTab(v)}
@@ -366,11 +393,14 @@ export default function Admin() {
         </Tabs>
       </Box>
 
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
+      </Box>
       <Typography
+        id="drag-help-text"
         color="text.secondary"
         sx={{ mt: 2, mb: 1, textAlign: "center" }}
       >
-        Drag and drop questions to reorder them within each category.
+        Drag and drop questions to reorder them within each category. Edit and Delete buttons are available on each item.
       </Typography>
 
       {loadingFaqs && (

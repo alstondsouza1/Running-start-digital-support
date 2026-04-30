@@ -1,4 +1,4 @@
-import { Card, CardContent, Typography, Box } from "@mui/material";
+import { Card, CardContent, Typography, Box, CardActionArea } from "@mui/material";
 
 export default function Categories({ categories, onSelectCategory, selectedId }) {
   const clickable = Boolean(onSelectCategory);
@@ -7,17 +7,14 @@ export default function Categories({ categories, onSelectCategory, selectedId })
     if (onSelectCategory) onSelectCategory(id);
   };
 
-  const handleKeyDown = (e, id) => {
-    if (!clickable) return;
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      handleSelect(id);
-    }
-  };
-
   return (
-    <Box sx={{ width: "100%", display: "flex", justifyContent: "center" }}>
+    <Box
+      component="section"
+      aria-labelledby="faq-category-heading"
+      sx={{ width: "100%", display: "flex", justifyContent: "center" }}
+    >
       <Box
+        role="list"
         sx={{
           width: "100%",
           maxWidth: 980,
@@ -33,68 +30,76 @@ export default function Categories({ categories, onSelectCategory, selectedId })
           const isSelected = selectedId === cat.id;
 
           return (
-            <Card
-              key={cat.id}
-              onClick={() => handleSelect(cat.id)}
-              onKeyDown={(e) => handleKeyDown(e, cat.id)}
-              role={clickable ? "button" : undefined}
-              tabIndex={clickable ? 0 : undefined}
-              aria-pressed={clickable ? isSelected : undefined}
-              sx={{
-                cursor: clickable ? "pointer" : "default",
-                borderRadius: 2,
-                border: isSelected
-                  ? "2px solid #2c882b"
-                  : "1px solid rgba(0,0,0,0.12)",
-                boxShadow: isSelected ? 4 : 1,
-                transition: "transform 0.15s ease, box-shadow 0.15s ease",
-                minHeight: { xs: 120, sm: 140 },
-                "&:hover": clickable
-                  ? { transform: "translateY(-2px)", boxShadow: isSelected ? 6 : 3 }
-                  : {},
-              }}
-            >
-              <CardContent
+            <Box role="listitem" key={cat.id}>
+              <Card
                 sx={{
-                  height: "100%",
-                  px: { xs: 2, sm: 3 },
-                  py: { xs: 2, sm: 2.5 },
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  gap: 1,
+                  borderRadius: 2,
+                  border: isSelected
+                    ? "2px solid #2c882b"
+                    : "1px solid rgba(0,0,0,0.12)",
+                  boxShadow: isSelected ? 4 : 1,
+                  minHeight: { xs: 120, sm: 140 },
                 }}
               >
-                <Typography
-                  variant="h6"
+                <CardActionArea
+                  onClick={() => handleSelect(cat.id)}
+                  disabled={!clickable}
+                  aria-pressed={clickable ? isSelected : undefined}
+                  aria-label={`${isSelected ? "Selected category" : "Open category"} ${cat.name}`}
                   sx={{
-                    lineHeight: 1.2,
-                    fontSize: { xs: "1rem", sm: "1.15rem" },
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
+                    height: "100%",
+                    alignItems: "stretch",
+                    transition: "transform 0.15s ease, box-shadow 0.15s ease",
+                    "&:hover": clickable
+                      ? { transform: "translateY(-2px)" }
+                      : {},
                   }}
                 >
-                  {cat.name}
-                </Typography>
+                  <CardContent
+                    sx={{
+                      height: "100%",
+                      px: { xs: 2, sm: 3 },
+                      py: { xs: 2, sm: 2.5 },
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      gap: 1,
+                      textAlign: "left",
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      component="h3"
+                      sx={{
+                        lineHeight: 1.2,
+                        fontSize: { xs: "1rem", sm: "1.15rem" },
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      }}
+                    >
+                      {cat.name}
+                    </Typography>
 
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{
-                    lineHeight: 1.35,
-                    fontSize: { xs: "0.92rem", sm: "0.95rem" },
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
-                  }}
-                >
-                  {cat.description}
-                </Typography>
-              </CardContent>
-            </Card>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        lineHeight: 1.35,
+                        fontSize: { xs: "0.92rem", sm: "0.95rem" },
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      }}
+                    >
+                      {cat.description}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            </Box>
           );
         })}
       </Box>

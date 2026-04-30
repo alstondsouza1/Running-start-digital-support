@@ -10,11 +10,17 @@ import {
   AccordionSummary,
   AccordionDetails,
   Chip,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+  TableContainer,
+  Paper,
 } from "@mui/material";
 
 import Categories from "./Categories";
 import QuestionSearchBar from "./QuestionSearchBar";
-import { normalize, scoreText, tokenize } from "../utils/search";
+import { normalize, tokenize, scoreText } from "../utils/search";
 import normalizeUrl from "../utils/normalizeURL.js";
 import { trackQuestionClick } from "../utils/analytics";
 
@@ -64,6 +70,7 @@ function answerToText(answer) {
   const bullets = Array.isArray(answer.bullets)
     ? answer.bullets.map((b) => b?.text ?? "").join(" ")
     : "";
+
   return `${intro} ${bullets}`.trim();
 }
 
@@ -129,7 +136,9 @@ export default function StudentFAQPage({
 
   const handleAccordionChange = (item) => (_event, expanded) => {
     if (!expanded) return;
+
     const cat = categoryById(categories, item.type);
+
     trackQuestionClick({
       question: item.question,
       categoryId: item.type,
@@ -138,90 +147,116 @@ export default function StudentFAQPage({
     });
   };
 
-  const renderAccordion = (item, idx) => (
-    <Accordion
-      key={getAccordionKey(item, idx)}
-      disableGutters
-      onChange={handleAccordionChange(item)}
-      sx={{
-        "&:before": { display: "none" },
-        boxShadow: 0,
-        borderBottom: "1px solid",
-        borderColor: "divider",
-      }}
-    >
-      <AccordionSummary
-        expandIcon={<span aria-hidden="true">▼</span>}
-        sx={{ "& .MuiAccordionSummary-content": { my: 1 } }}
+  const renderAccordion = (item, idx) => {
+    const key = getAccordionKey(item, idx);
+    const summaryId = `${key}-summary`;
+    const detailsId = `${key}-details`;
+    const categoryName = categoryById(categories, item.type)?.name ?? item.type;
+
+    return (
+      <Accordion
+        key={key}
+        disableGutters
+        onChange={handleAccordionChange(item)}
+        sx={{
+          "&:before": { display: "none" },
+          boxShadow: 0,
+          borderBottom: "1px solid",
+          borderColor: "divider",
+        }}
       >
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
-          <Typography fontWeight={600}>
-            {isSearching ? highlightText(item.question, searchTerm) : item.question}
-          </Typography>
+        <AccordionSummary
+          id={summaryId}
+          aria-controls={detailsId}
+          expandIcon={<span aria-hidden="true">▼</span>}
+          sx={{ "& .MuiAccordionSummary-content": { my: 1 } }}
+        >
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
+            <Typography component="h3" fontWeight={600}>
+              {isSearching ? highlightText(item.question, searchTerm) : item.question}
+            </Typography>
 
-          {isSearching && (
-            <Box>
-              <Chip
-                size="small"
-                label={categoryById(categories, item.type)?.name ?? item.type}
-              />
-            </Box>
-          )}
-        </Box>
-      </AccordionSummary>
-
-      <AccordionDetails sx={{ pt: 0 }}>
-        {item.answer?.intro && (
-          <Typography sx={{ mb: 1 }}>
-            {isSearching
-              ? highlightText(item.answer.intro, searchTerm)
-              : item.answer.intro}
-          </Typography>
-        )}
-
-        {item.answer?.bullets?.length > 0 && (
-          <List dense disablePadding sx={{ pl: 2 }}>
-            {item.answer.bullets.map((bullet, i) => (
-              <ListItem
-                key={`${getAccordionKey(item, idx)}-bullet-${i}`}
-                component="li"
-                sx={{
-                  display: "list-item",
-                  listStyleType: "disc",
-                  py: 0.25,
-                }}
-              >
-                <ListItemText
-                  primary={
-                    bullet.url ? (
-                      <MuiLink
-                        href={normalizeUrl(bullet.url)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {isSearching
-                          ? highlightText(bullet.text, searchTerm)
-                          : bullet.text}
-                      </MuiLink>
-                    ) : isSearching ? (
-                      highlightText(bullet.text, searchTerm)
-                    ) : (
-                      bullet.text
-                    )
-                  }
+            {isSearching && (
+              <Box>
+                <Chip
+                  size="small"
+                  label={categoryName}
+                  aria-label={`Category ${categoryName}`}
                 />
-              </ListItem>
-            ))}
-          </List>
-        )}
-      </AccordionDetails>
-    </Accordion>
-  );
+              </Box>
+            )}
+          </Box>
+        </AccordionSummary>
+
+        <AccordionDetails
+          id={detailsId}
+          role="region"
+          aria-labelledby={summaryId}
+          sx={{ pt: 0 }}
+        >
+          {item.answer?.intro && (
+            <Typography sx={{ mb: 1 }}>
+              {isSearching
+                ? highlightText(item.answer.intro, searchTerm)
+                : item.answer.intro}
+            </Typography>
+          )}
+
+          {item.answer?.bullets?.length > 0 && (
+            <List dense disablePadding sx={{ pl: 2 }}>
+              {item.answer.bullets.map((bullet, i) => (
+                <ListItem
+                  key={`${key}-bullet-${i}`}
+                  component="li"
+                  sx={{
+                    display: "list-item",
+                    listStyleType: "disc",
+                    py: 0.25,
+                  }}
+                >
+                  <ListItemText
+                    primary={
+                      bullet.url ? (
+                        <MuiLink
+                          href={normalizeUrl(bullet.url)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`${bullet.text} opens in a new tab`}
+                        >
+                          {isSearching
+                            ? highlightText(bullet.text, searchTerm)
+                            : bullet.text}
+                        </MuiLink>
+                      ) : isSearching ? (
+                        highlightText(bullet.text, searchTerm)
+                      ) : (
+                        bullet.text
+                      )
+                    }
+                  />
+                </ListItem>
+              ))}
+            </List>
+          )}
+        </AccordionDetails>
+      </Accordion>
+    );
+  };
 
   return (
-    <Box sx={{ width: "100%", px: { xs: 2, sm: 3 }, py: { xs: 3, sm: 4 } }}>
+    <Box
+      component="section"
+      aria-labelledby="faq-page-title"
+      sx={{ width: "100%", px: { xs: 2, sm: 3 }, py: { xs: 3, sm: 4 } }}
+    >
       <Box sx={{ width: "100%", maxWidth: 1100, mx: "auto" }}>
-        <Typography variant="h4" component="h1" fontWeight={700} sx={{ mb: 1 }}>
+        <Typography
+          id="faq-page-title"
+          variant="h4"
+          component="h1"
+          fontWeight={700}
+          sx={{ mb: 1 }}
+        >
           {title}
         </Typography>
 
@@ -243,6 +278,7 @@ export default function StudentFAQPage({
             whiteSpace: "nowrap",
           }}
           aria-live="polite"
+          aria-atomic="true"
         >
           {isSearching
             ? `${searchResults.length} search results found`
@@ -253,6 +289,8 @@ export default function StudentFAQPage({
 
         {isSearching ? (
           <Box
+            component="section"
+            aria-labelledby="search-results-heading"
             sx={{
               p: 3,
               backgroundColor: "white",
@@ -263,13 +301,19 @@ export default function StudentFAQPage({
               mx: "auto",
             }}
           >
-            <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+            <Typography
+              id="search-results-heading"
+              variant="h6"
+              fontWeight={700}
+              sx={{ mb: 2 }}
+            >
               Search Results ({searchResults.length})
             </Typography>
 
             {searchResults.length === 0 ? (
               <Typography color="text.secondary">
-                No results found. Try different keywords like “deadline”, “book”, “ENGL”, or “ctcLink”.
+                No results found. Try different keywords like “deadline”, “book”,
+                “ENGL”, or “ctcLink”.
               </Typography>
             ) : (
               searchResults.map((item, idx) => renderAccordion(item, idx))
@@ -277,8 +321,12 @@ export default function StudentFAQPage({
           </Box>
         ) : (
           <>
-            <Typography fontWeight={700} sx={{ mb: 2 }}>
-              Browse Categories:
+            <Typography id="faq-category-heading" fontWeight={700} sx={{ mb: 2 }}>
+              Browse Categories
+            </Typography>
+
+            <Typography color="text.secondary" sx={{ mb: 2 }}>
+              Select a category card to view related frequently asked questions.
             </Typography>
 
             <Categories
@@ -289,6 +337,8 @@ export default function StudentFAQPage({
 
             {selectedCategory ? (
               <Box
+                component="section"
+                aria-labelledby="selected-category-heading"
                 sx={{
                   mt: 4,
                   p: 3,
@@ -300,7 +350,12 @@ export default function StudentFAQPage({
                   mx: "auto",
                 }}
               >
-                <Typography variant="h5" sx={{ mb: 0.5 }} fontWeight={700}>
+                <Typography
+                  id="selected-category-heading"
+                  variant="h5"
+                  sx={{ mb: 0.5 }}
+                  fontWeight={700}
+                >
                   {selectedCategory.name}
                 </Typography>
 
@@ -328,6 +383,68 @@ export default function StudentFAQPage({
             )}
           </>
         )}
+      </Box>
+
+      <Box
+        sx={{
+          mt: 6,
+          p: 3,
+          backgroundColor: "#f9fafb",
+          borderRadius: 2,
+          textAlign: "center",
+          maxWidth: 800,
+          mx: "auto",
+          boxShadow: 1,
+        }}
+      >
+        <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
+          Need more help?
+        </Typography>
+
+        <Typography color="text.secondary" sx={{ mb: 2 }}>
+          If you couldn’t find your answer, reach out to the Running Start office
+          during normal hours or use the virtual lobby when available.
+        </Typography>
+
+        <TableContainer component={Paper} elevation={0}>
+          <Table>
+            <TableBody>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 600, verticalAlign: "top", width: 200 }}>
+                  Virtual Lobby
+                  <br />
+                  <Typography component="div" sx={{ mt: 1 }}>
+                    Zoom Virtual Lobby
+                    <br />
+                    Monday to Thursday: 2:00 PM to 4:30 PM
+                    <br />
+                    Friday: 2:00 PM to 4:00 PM
+                  </Typography>
+                </TableCell>
+
+                <TableCell sx={{ fontWeight: 600, verticalAlign: "top", width: 200 }}>
+                  Hours
+                  <br />
+                  <Typography component="div" sx={{ mt: 1 }}>
+                    Monday to Thursday: 8:00 AM to 5:00 PM
+                    <br />
+                    Friday: 9:30 AM to 4:30 PM
+                  </Typography>
+                </TableCell>
+
+                <TableCell sx={{ fontWeight: 600, verticalAlign: "top", width: 200 }}>
+                  Social Media
+                  <br />
+                  <Typography component="div" sx={{ mt: 1 }}>
+                    Facebook
+                    <br />
+                    Instagram
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Box>
     </Box>
   );

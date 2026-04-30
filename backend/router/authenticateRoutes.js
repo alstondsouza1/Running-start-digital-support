@@ -11,15 +11,19 @@ router.post("/login", async (req, res) => {
     return res.status(400).json({ message: "Username and password are required." });
   }
 
-  const adminUsername = process.env.ADMIN_USERNAME || "admin";
+  const adminUsername = process.env.ADMIN_USERNAME;
+  const hash = process.env.ADMIN_PASSWORD_HASH;
+  const jwtSecret = process.env.JWT_SECRET;
 
-  if (username !== adminUsername) {
-    return res.status(401).json({ message: "Invalid username or password" });
+  if (!adminUsername || !hash || !jwtSecret) {
+    return res.status(500).json({
+      message:
+        "Server authentication configuration is incomplete. Missing ADMIN_USERNAME, ADMIN_PASSWORD_HASH, or JWT_SECRET.",
+    });
   }
 
-  const hash = process.env.ADMIN_PASSWORD_HASH;
-  if (!hash) {
-    return res.status(500).json({ message: "Missing ADMIN_PASSWORD_HASH in server env" });
+  if (username.trim() !== adminUsername.trim()) {
+    return res.status(401).json({ message: "Invalid username or password" });
   }
 
   const isMatch = await bcrypt.compare(password, hash);
@@ -27,14 +31,14 @@ router.post("/login", async (req, res) => {
     return res.status(401).json({ message: "Invalid username or password" });
   }
 
-  if (!process.env.JWT_SECRET) {
-    return res.status(500).json({ message: "Missing JWT_SECRET in server env" });
-  }
+  const payload = {
+    role: "admin",
+    username: adminUsername,
+  };
 
-  const payload = { role: "admin" };
-  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "2h" });
+  const token = jwt.sign(payload, jwtSecret, { expiresIn: "2h" });
 
-  res.json({ message: "Login successful", token });
+  return res.json({ message: "Login successful", token });
 });
 
 export default router;

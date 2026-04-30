@@ -1,34 +1,46 @@
 import { useEffect, useState } from "react";
 import StudentFAQPage from "../components/StudentFAQPage";
-import { categorySets } from "../data/categories";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
 export default function CurrentStudent() {
   const [questions, setQuestions] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    async function loadFaqs() {
+    async function loadData() {
       try {
-        const res = await fetch(`${API_BASE}/getFAQS?audience=current`);
+        const [faqRes, categoryRes] = await Promise.all([
+          fetch(`${API_BASE}/getFAQS?audience=current`),
+          fetch(`${API_BASE}/categories`),
+        ]);
 
-        if (!res.ok) {
-          throw new Error("Failed to load current student FAQs.");
+        const [faqData, categoryData] = await Promise.all([
+          faqRes.json(),
+          categoryRes.json(),
+        ]);
+
+        if (!faqRes.ok) {
+          throw new Error(faqData.error || "Failed to load current student FAQs.");
         }
 
-        const data = await res.json();
-        setQuestions(data);
+        if (!categoryRes.ok) {
+          throw new Error(categoryData.error || "Failed to load categories.");
+        }
+
+        setQuestions(faqData);
+        setCategories(categoryData.current || []);
       } catch (err) {
-        console.error("Failed to load current student FAQs:", err);
+        console.error("Failed to load current student page:", err);
         setError(err.message || "Something went wrong.");
       } finally {
         setLoading(false);
       }
     }
 
-    loadFaqs();
+    loadData();
   }, []);
 
   if (loading) {
@@ -51,7 +63,7 @@ export default function CurrentStudent() {
     <StudentFAQPage
       title="Current Running Start Students"
       description="Find information on fee waivers, class planning, enrollment deadlines, and available campus resources."
-      categories={categorySets.current}
+      categories={categories}
       questions={questions}
     />
   );
