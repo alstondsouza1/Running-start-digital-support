@@ -2,11 +2,11 @@ import { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { CssBaseline, Box, Toolbar } from "@mui/material";
 import { Analytics } from "@vercel/analytics/react";
-import AccessibilityBar from "./components/AccessibilityBar";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import SkipLink from "./components/SkipLink";
+import AccessibilityBar from "./components/AccessibilityBar";
 
 import Home from "./pages/Home";
 import CurrentStudent from "./pages/CurrentStudent";
@@ -61,6 +61,7 @@ export default function App() {
       <CssBaseline />
       <SkipLink />
       <RouteAnnouncer />
+      <AccessibilityBar />
       <Navbar />
 
       <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -90,7 +91,6 @@ export default function App() {
         <Footer />
       </Box>
 
-      <AccessibilityBar />
       <Analytics />
     </>
   );

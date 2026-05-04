@@ -2,20 +2,16 @@ import { useEffect, useState } from "react";
 import {
   Box,
   Button,
+  Collapse,
   Divider,
-  IconButton,
-  Paper,
   Stack,
   Typography,
 } from "@mui/material";
-import AccessibilityNewIcon from "@mui/icons-material/AccessibilityNew";
-import CloseIcon from "@mui/icons-material/Close";
-import AddIcon from "@mui/icons-material/Add";
-import RemoveIcon from "@mui/icons-material/Remove";
-import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import TranslateIcon from "@mui/icons-material/Translate";
 import TextFieldsIcon from "@mui/icons-material/TextFields";
 import ContrastIcon from "@mui/icons-material/Contrast";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import RecordVoiceOverIcon from "@mui/icons-material/RecordVoiceOver";
 
 const MIN_ZOOM = 90;
 const MAX_ZOOM = 140;
@@ -35,6 +31,8 @@ export default function AccessibilityBar() {
   const [readableFont, setReadableFont] = useState(() => {
     return localStorage.getItem("readableFont") === "true";
   });
+
+  const [isReading, setIsReading] = useState(false);
 
   useEffect(() => {
     const scale = zoom / 100;
@@ -86,10 +84,42 @@ export default function AccessibilityBar() {
     setZoom((prev) => Math.max(prev - ZOOM_STEP, MIN_ZOOM));
   };
 
+  const readPage = () => {
+    if (!("speechSynthesis" in window)) {
+      alert("Your browser does not support read aloud.");
+      return;
+    }
+
+    if (isReading) {
+      window.speechSynthesis.cancel();
+      setIsReading(false);
+      return;
+    }
+
+    const main = document.getElementById("main-content");
+    const text = main?.innerText || "";
+
+    if (!text.trim()) return;
+
+    const speech = new SpeechSynthesisUtterance(text);
+    speech.rate = 0.95;
+    speech.pitch = 1;
+
+    speech.onend = () => setIsReading(false);
+    speech.onerror = () => setIsReading(false);
+
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(speech);
+    setIsReading(true);
+  };
+
   const resetSettings = () => {
     setZoom(100);
     setHighContrast(false);
     setReadableFont(false);
+    setIsReading(false);
+
+    window.speechSynthesis?.cancel();
 
     localStorage.removeItem("accessibilityZoom");
     localStorage.removeItem("highContrast");
@@ -101,159 +131,150 @@ export default function AccessibilityBar() {
   };
 
   return (
-    <>
-      <IconButton
-        onClick={() => setOpen((prev) => !prev)}
-        aria-label="Open accessibility tools"
-        aria-expanded={open ? "true" : "false"}
+    <Box
+      component="section"
+      aria-label="Accessibility and translation tools"
+      sx={{
+        width: "100%",
+        backgroundColor: "#ffffff",
+        borderBottom: "1px solid #d0d0d0",
+        px: { xs: 1, sm: 2 },
+        py: 1,
+        position: "relative",
+        zIndex: 2000,
+      }}
+    >
+      <Box
         sx={{
-          position: "fixed",
-          right: 24,
-          bottom: 24,
-          zIndex: 9999,
-          width: 64,
-          height: 64,
-          backgroundColor: "#006225",
-          color: "white",
-          boxShadow: 5,
-          "&:hover": {
-            backgroundColor: "#004d1a",
-          },
-          "&:focus-visible": {
-            outline: "3px solid #d14900",
-            outlineOffset: "3px",
-          },
+          maxWidth: 1200,
+          mx: "auto",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 1,
+          flexWrap: "wrap",
         }}
       >
-        <AccessibilityNewIcon fontSize="large" />
-      </IconButton>
-
-      {open && (
-        <Paper
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="accessibility-title"
+        <Box
           sx={{
-            position: "fixed",
-            right: 24,
-            bottom: 100,
-            zIndex: 9999,
-            width: { xs: "90vw", sm: 390 },
-            maxWidth: 420,
-            p: 3,
-            borderRadius: 3,
-            boxShadow: 8,
-            backgroundColor: "white",
+            minWidth: { xs: "100%", sm: 220 },
           }}
         >
-          <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
-            <Box>
-              <Typography id="accessibility-title" variant="h5" fontWeight={700}>
-                Accessibility Tools
-              </Typography>
+          <Box id="google_translate_element" aria-label="Language translation selector" />
+        </Box>
 
-              <Typography color="text.secondary" sx={{ mt: 0.5 }}>
-                Adjust text size, contrast, font, and translation.
-              </Typography>
-            </Box>
+        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+          <Button size="small" variant="outlined" onClick={() => setOpen((prev) => !prev)}>
+            Accessibility Tools
+          </Button>
 
-            <IconButton onClick={() => setOpen(false)} aria-label="Close tools">
-              <CloseIcon />
-            </IconButton>
-          </Box>
+          <Button size="small" variant="outlined" onClick={zoomOut} disabled={zoom <= MIN_ZOOM}>
+            A-
+          </Button>
 
-          <Divider sx={{ my: 2 }} />
-
-          <Typography fontWeight={700} sx={{ mb: 1 }}>
-            Text Size: {zoom}%
-          </Typography>
-
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ mb: 2 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              startIcon={<RemoveIcon />}
-              onClick={zoomOut}
-              disabled={zoom <= MIN_ZOOM}
-            >
-              Zoom Out
-            </Button>
-
-            <Button
-              fullWidth
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={zoomIn}
-              disabled={zoom >= MAX_ZOOM}
-              sx={{
-                backgroundColor: "#006225",
-                "&:hover": { backgroundColor: "#004d1a" },
-              }}
-            >
-              Zoom In
-            </Button>
-          </Stack>
-
-          <Button
-            fullWidth
-            variant={readableFont ? "contained" : "outlined"}
-            startIcon={<TextFieldsIcon />}
-            onClick={() => setReadableFont((prev) => !prev)}
-            sx={{ mb: 1.5 }}
-          >
-            {readableFont ? "Readable Font On" : "Turn On Readable Font"}
+          <Button size="small" variant="outlined" onClick={zoomIn} disabled={zoom >= MAX_ZOOM}>
+            A+
           </Button>
 
           <Button
-            fullWidth
+            size="small"
             variant={highContrast ? "contained" : "outlined"}
-            startIcon={<ContrastIcon />}
             onClick={() => setHighContrast((prev) => !prev)}
-            sx={{ mb: 2 }}
           >
-            {highContrast ? "High Contrast On" : "Turn On High Contrast"}
+            Contrast
           </Button>
+        </Stack>
+      </Box>
 
-          <Box
-            sx={{
-              border: "1px solid #ccc",
-              borderRadius: 2,
-              p: 2,
-              mb: 2,
-              backgroundColor: "#fafafa",
-            }}
-          >
-            <Typography
-              fontWeight={700}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                mb: 1,
-              }}
-            >
-              <TranslateIcon fontSize="small" />
-              Translate Page
+      <Collapse in={open}>
+        <Divider sx={{ my: 1.5 }} />
+
+        <Box
+          sx={{
+            maxWidth: 1200,
+            mx: "auto",
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "1fr 1fr 1fr" },
+            gap: 2,
+            py: 1,
+          }}
+        >
+          <Box>
+            <Typography fontWeight={700} sx={{ mb: 1 }}>
+              Text Size: {zoom}%
             </Typography>
 
-            <Typography color="text.secondary" sx={{ mb: 1, fontSize: "0.9rem" }}>
-              Select a language from the dropdown.
-            </Typography>
+            <Stack direction="row" spacing={1}>
+              <Button fullWidth variant="outlined" onClick={zoomOut} disabled={zoom <= MIN_ZOOM}>
+                Zoom Out
+              </Button>
 
-            <div id="google_translate_element" />
+              <Button fullWidth variant="contained" onClick={zoomIn} disabled={zoom >= MAX_ZOOM}>
+                Zoom In
+              </Button>
+            </Stack>
           </Box>
 
-          <Button
-            fullWidth
-            color="error"
-            variant="outlined"
-            startIcon={<RestartAltIcon />}
-            onClick={resetSettings}
+          <Box>
+            <Typography fontWeight={700} sx={{ mb: 1 }}>
+              Reading Support
+            </Typography>
+
+            <Stack spacing={1}>
+              <Button
+                variant={readableFont ? "contained" : "outlined"}
+                startIcon={<TextFieldsIcon />}
+                onClick={() => setReadableFont((prev) => !prev)}
+              >
+                {readableFont ? "Readable Font On" : "Readable Font"}
+              </Button>
+
+              <Button
+                variant={isReading ? "contained" : "outlined"}
+                startIcon={<RecordVoiceOverIcon />}
+                onClick={readPage}
+              >
+                {isReading ? "Stop Reading" : "Read Page"}
+              </Button>
+            </Stack>
+          </Box>
+
+          <Box>
+            <Typography fontWeight={700} sx={{ mb: 1 }}>
+              Display Options
+            </Typography>
+
+            <Stack spacing={1}>
+              <Button
+                variant={highContrast ? "contained" : "outlined"}
+                startIcon={<ContrastIcon />}
+                onClick={() => setHighContrast((prev) => !prev)}
+              >
+                {highContrast ? "High Contrast On" : "High Contrast"}
+              </Button>
+
+              <Button
+                color="error"
+                variant="outlined"
+                startIcon={<RestartAltIcon />}
+                onClick={resetSettings}
+              >
+                Reset Settings
+              </Button>
+            </Stack>
+          </Box>
+        </Box>
+
+        <Box sx={{ maxWidth: 1200, mx: "auto", pt: 1 }}>
+          <Typography
+            color="text.secondary"
+            sx={{ fontSize: "0.85rem", display: "flex", alignItems: "center", gap: 1 }}
           >
-            Reset Settings
-          </Button>
-        </Paper>
-      )}
-    </>
+            <TranslateIcon fontSize="small" />
+            Translation uses Google Translate. It may load more reliably after deployment than on localhost.
+          </Typography>
+        </Box>
+      </Collapse>
+    </Box>
   );
 }

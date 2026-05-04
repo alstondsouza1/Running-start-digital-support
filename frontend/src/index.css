@@ -55,7 +55,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Readable font mode */
+/* Readable font */
 .readable-font-mode main,
 .readable-font-mode main * {
   font-family: Arial, Verdana, Helvetica, sans-serif !important;
@@ -63,7 +63,7 @@ body {
   letter-spacing: 0.02em;
 }
 
-/* High contrast mode */
+/* Better contrast */
 .high-contrast-mode,
 .high-contrast-mode #root,
 .high-contrast-mode main {
@@ -80,8 +80,7 @@ body {
 
 .high-contrast-mode .MuiPaper-root,
 .high-contrast-mode .MuiCard-root,
-.high-contrast-mode .MuiAccordion-root,
-.high-contrast-mode .MuiDrawer-paper {
+.high-contrast-mode .MuiAccordion-root {
   background-color: #111111 !important;
   color: #ffffff !important;
   border: 2px solid #ffffff !important;
@@ -100,9 +99,14 @@ body {
   color: #ffffff !important;
 }
 
-.high-contrast-mode a,
+.high-contrast-mode a {
+  color: #ffff00 !important;
+  text-decoration: underline !important;
+}
+
 .high-contrast-mode button {
   color: #ffff00 !important;
+  border-color: #ffff00 !important;
 }
 
 .high-contrast-mode .MuiButton-contained {
@@ -110,15 +114,7 @@ body {
   color: #000000 !important;
 }
 
-.high-contrast-mode input,
-.high-contrast-mode textarea,
-.high-contrast-mode select {
-  background-color: #000000 !important;
-  color: #ffffff !important;
-  border: 2px solid #ffffff !important;
-}
-
-/* Google Translate cleanup */
+/* Google Translate */
 .goog-te-gadget {
   font-family: inherit !important;
   font-size: 0 !important;
@@ -130,10 +126,10 @@ body {
 
 .goog-te-combo {
   width: 100%;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #777;
-  font-size: 1rem !important;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #006225;
+  font-size: 0.95rem !important;
   background-color: #ffffff;
   color: #000000;
 }
