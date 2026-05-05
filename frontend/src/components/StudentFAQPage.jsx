@@ -407,40 +407,80 @@ export default function StudentFAQPage({
         </Typography>
 
         <TableContainer component={Paper} elevation={0}>
-          <Table>
+          <Table sx={{ borderCollapse: "separate", borderSpacing: "0 12px" }}>
             <TableBody>
               <TableRow>
-                <TableCell sx={{ fontWeight: 600, verticalAlign: "top", width: 200 }}>
-                  Virtual Lobby
-                  <br />
-                  <Typography component="div" sx={{ mt: 1 }}>
+                
+                {/* Virtual Lobby */}
+                <TableCell
+                  sx={{
+                    verticalAlign: "top",
+                    width: 220,
+                    border: "none",
+                    backgroundColor: "#f9fafb",
+                    borderRadius: "12px",
+                    p: 2,
+                    textAlign: "center", 
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 700, mb: 1 }}>
+                    Virtual Lobby
+                  </Typography>
+
+                  <Typography variant="body2" color="text.secondary">
                     Zoom Virtual Lobby
-                    <br />
-                    Monday to Thursday: 2:00 PM to 4:30 PM
-                    <br />
-                    Friday: 2:00 PM to 4:00 PM
+                  </Typography>
+
+                  <Typography variant="body2" sx={{ mt: 1 }}>
+                    Mon–Thu: 2:00 PM – 4:30 PM <br />
+                    Fri: 2:00 PM – 4:00 PM
                   </Typography>
                 </TableCell>
 
-                <TableCell sx={{ fontWeight: 600, verticalAlign: "top", width: 200 }}>
-                  Hours
-                  <br />
-                  <Typography component="div" sx={{ mt: 1 }}>
-                    Monday to Thursday: 8:00 AM to 5:00 PM
-                    <br />
-                    Friday: 9:30 AM to 4:30 PM
+                {/* Hours */}
+                <TableCell
+                  sx={{
+                    verticalAlign: "top",
+                    width: 220,
+                    border: "none",
+                    backgroundColor: "#f9fafb",
+                    borderRadius: "12px",
+                    p: 2,
+                    textAlign: "center", 
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 700, mb: 1 }}>
+                    Hours
+                  </Typography>
+
+                  <Typography variant="body2">
+                    Mon–Thu: 8:00 AM – 5:00 PM <br />
+                    Fri: 9:30 AM – 4:30 PM
                   </Typography>
                 </TableCell>
 
-                <TableCell sx={{ fontWeight: 600, verticalAlign: "top", width: 200 }}>
-                  Social Media
-                  <br />
-                  <Typography component="div" sx={{ mt: 1 }}>
-                    Facebook
-                    <br />
+                {/* Social Media */}
+                <TableCell
+                  sx={{
+                    verticalAlign: "top",
+                    width: 220,
+                    border: "none",
+                    backgroundColor: "#f9fafb",
+                    borderRadius: "12px",
+                    p: 2,
+                    textAlign: "center", 
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 700, mb: 1 }}>
+                    Social Media
+                  </Typography>
+
+                  <Typography variant="body2">
+                    Facebook <br />
                     Instagram
                   </Typography>
                 </TableCell>
+
               </TableRow>
             </TableBody>
           </Table>
