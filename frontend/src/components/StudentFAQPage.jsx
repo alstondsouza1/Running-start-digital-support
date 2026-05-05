@@ -16,6 +16,7 @@ import {
   TableRow,
   TableContainer,
   Paper,
+  Link
 } from "@mui/material";
 
 import Categories from "./Categories";
@@ -428,12 +429,19 @@ export default function StudentFAQPage({
                   </Typography>
 
                   <Typography variant="body2" color="text.secondary">
-                    Zoom Virtual Lobby
+                    <Link
+                      href="https://zoom.us/j/92758435873?pwd=M2Z2cHQ5MWdVZm9WdHA2UEN3K3Mzdz09"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      underline="hover"
+                    >
+                      Zoom Virtual Lobby
+                    </Link>
                   </Typography>
 
                   <Typography variant="body2" sx={{ mt: 1 }}>
-                    Mon–Thu: 2:00 PM – 4:30 PM <br />
-                    Fri: 2:00 PM – 4:00 PM
+                    <strong>Mon–Thu:</strong> 2:00 PM – 4:30 PM <br />
+                    <strong>Fri:</strong> 2:00 PM – 4:00 PM
                   </Typography>
                 </TableCell>
 
@@ -443,7 +451,7 @@ export default function StudentFAQPage({
                     verticalAlign: "top",
                     width: 220,
                     border: "none",
-                    backgroundColor: "#f9fafb",
+                    backgroundColor: "#e5e7e4",
                     borderRadius: "12px",
                     p: 2,
                     textAlign: "center", 
@@ -454,12 +462,13 @@ export default function StudentFAQPage({
                   </Typography>
 
                   <Typography variant="body2">
-                    Mon–Thu: 8:00 AM – 5:00 PM <br />
-                    Fri: 9:30 AM – 4:30 PM
+                    <strong>Mon–Thu:</strong> 8:00 AM – 5:00 PM <br />
+                    <strong>Fri: </strong>9:30 AM – 4:30 PM <br />
+                    <strong>Visit:</strong> Student Affairs & Success Center (SA 135)
                   </Typography>
                 </TableCell>
 
-                {/* Social Media */}
+                {/* Contact */}
                 <TableCell
                   sx={{
                     verticalAlign: "top",
@@ -472,12 +481,18 @@ export default function StudentFAQPage({
                   }}
                 >
                   <Typography sx={{ fontWeight: 700, mb: 1 }}>
-                    Social Media
+                    Contact
                   </Typography>
 
                   <Typography variant="body2">
-                    Facebook <br />
-                    Instagram
+                    <strong>Phone:</strong> 253-288-3380 <br />
+                    <strong>Email:</strong>{" "}
+                    <Link
+                      href="mailto:runningstart@greenriver.edu"
+                      underline="hover"
+                    >
+                      runningstart@greenriver.edu
+                    </Link>
                   </Typography>
                 </TableCell>
 
