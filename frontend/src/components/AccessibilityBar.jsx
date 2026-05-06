@@ -4,9 +4,13 @@ import {
   Button,
   Collapse,
   Divider,
+  IconButton,
+  Paper,
   Stack,
   Typography,
 } from "@mui/material";
+import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
+import AccessibilityNewIcon from "@mui/icons-material/AccessibilityNew";
 import TranslateIcon from "@mui/icons-material/Translate";
 import TextFieldsIcon from "@mui/icons-material/TextFields";
 import ContrastIcon from "@mui/icons-material/Contrast";
@@ -19,20 +23,30 @@ const ZOOM_STEP = 10;
 
 export default function AccessibilityBar() {
   const [open, setOpen] = useState(false);
+  const [position, setPosition] = useState({ x: 20, y: 100 });
+  const [dragging, setDragging] = useState(false);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
 
-  const [zoom, setZoom] = useState(() => {
-    return Number(localStorage.getItem("accessibilityZoom")) || 100;
-  });
+  const [zoom, setZoom] = useState(
+    Number(localStorage.getItem("accessibilityZoom")) || 100
+  );
 
-  const [highContrast, setHighContrast] = useState(() => {
-    return localStorage.getItem("highContrast") === "true";
-  });
+  const [highContrast, setHighContrast] = useState(
+    localStorage.getItem("highContrast") === "true"
+  );
 
-  const [readableFont, setReadableFont] = useState(() => {
-    return localStorage.getItem("readableFont") === "true";
-  });
+  const [readableFont, setReadableFont] = useState(
+    localStorage.getItem("readableFont") === "true"
+  );
 
   const [isReading, setIsReading] = useState(false);
+
+  useEffect(() => {
+    const savedPosition = localStorage.getItem("accessibilityPosition");
+    if (savedPosition) {
+      setPosition(JSON.parse(savedPosition));
+    }
+  }, []);
 
   useEffect(() => {
     const scale = zoom / 100;
@@ -76,6 +90,40 @@ export default function AccessibilityBar() {
     document.body.appendChild(script);
   }, []);
 
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!dragging) return;
+
+      const nextPosition = {
+        x: e.clientX - offset.x,
+        y: e.clientY - offset.y,
+      };
+
+      setPosition(nextPosition);
+      localStorage.setItem("accessibilityPosition", JSON.stringify(nextPosition));
+    };
+
+    const handleMouseUp = () => {
+      setDragging(false);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [dragging, offset]);
+
+  const startDragging = (e) => {
+    setDragging(true);
+    setOffset({
+      x: e.clientX - position.x,
+      y: e.clientY - position.y,
+    });
+  };
+
   const zoomIn = () => {
     setZoom((prev) => Math.min(prev + ZOOM_STEP, MAX_ZOOM));
   };
@@ -118,12 +166,14 @@ export default function AccessibilityBar() {
     setHighContrast(false);
     setReadableFont(false);
     setIsReading(false);
+    setPosition({ x: 20, y: 100 });
 
     window.speechSynthesis?.cancel();
 
     localStorage.removeItem("accessibilityZoom");
     localStorage.removeItem("highContrast");
     localStorage.removeItem("readableFont");
+    localStorage.removeItem("accessibilityPosition");
 
     document.documentElement.style.setProperty("--accessibility-scale", 1);
     document.body.classList.remove("high-contrast-mode");
@@ -131,150 +181,119 @@ export default function AccessibilityBar() {
   };
 
   return (
-    <Box
-      component="section"
+    <Paper
+      role="region"
       aria-label="Accessibility and translation tools"
       sx={{
-        width: "100%",
+        position: "fixed",
+        left: position.x,
+        top: position.y,
+        zIndex: 9999,
+        width: open ? { xs: 320, sm: 390 } : "auto",
+        borderRadius: 3,
+        overflow: "hidden",
+        boxShadow: 6,
+        border: "1px solid #d0d0d0",
         backgroundColor: "#ffffff",
-        borderBottom: "1px solid #d0d0d0",
-        px: { xs: 1, sm: 2 },
-        py: 1,
-        position: "relative",
-        zIndex: 2000,
       }}
     >
       <Box
         sx={{
-          maxWidth: 1200,
-          mx: "auto",
+          backgroundColor: "#006225",
+          color: "white",
+          px: 1,
+          py: 1,
           display: "flex",
-          justifyContent: "space-between",
           alignItems: "center",
           gap: 1,
-          flexWrap: "wrap",
+          cursor: dragging ? "grabbing" : "grab",
+          userSelect: "none",
         }}
+        onMouseDown={startDragging}
       >
-        <Box
-          sx={{
-            minWidth: { xs: "100%", sm: 220 },
+        <DragIndicatorIcon aria-hidden="true" />
+
+        <Typography fontWeight={700} sx={{ flexGrow: 1 }}>
+          Accessibility
+        </Typography>
+
+        <IconButton
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpen((prev) => !prev);
           }}
+          aria-label={open ? "Close accessibility tools" : "Open accessibility tools"}
+          sx={{ color: "white" }}
         >
-          <Box id="google_translate_element" aria-label="Language translation selector" />
-        </Box>
-
-        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-          <Button size="small" variant="outlined" onClick={() => setOpen((prev) => !prev)}>
-            Accessibility Tools
-          </Button>
-
-          <Button size="small" variant="outlined" onClick={zoomOut} disabled={zoom <= MIN_ZOOM}>
-            A-
-          </Button>
-
-          <Button size="small" variant="outlined" onClick={zoomIn} disabled={zoom >= MAX_ZOOM}>
-            A+
-          </Button>
-
-          <Button
-            size="small"
-            variant={highContrast ? "contained" : "outlined"}
-            onClick={() => setHighContrast((prev) => !prev)}
-          >
-            Contrast
-          </Button>
-        </Stack>
+          <AccessibilityNewIcon />
+        </IconButton>
       </Box>
 
       <Collapse in={open}>
-        <Divider sx={{ my: 1.5 }} />
-
-        <Box
-          sx={{
-            maxWidth: 1200,
-            mx: "auto",
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "1fr 1fr 1fr" },
-            gap: 2,
-            py: 1,
-          }}
-        >
-          <Box>
+        <Box sx={{ p: 2 }}>
+          <Box sx={{ mb: 2 }}>
             <Typography fontWeight={700} sx={{ mb: 1 }}>
-              Text Size: {zoom}%
+              Translate Page
             </Typography>
-
-            <Stack direction="row" spacing={1}>
-              <Button fullWidth variant="outlined" onClick={zoomOut} disabled={zoom <= MIN_ZOOM}>
-                Zoom Out
-              </Button>
-
-              <Button fullWidth variant="contained" onClick={zoomIn} disabled={zoom >= MAX_ZOOM}>
-                Zoom In
-              </Button>
-            </Stack>
+            <Box id="google_translate_element" aria-label="Language translation selector" />
           </Box>
 
-          <Box>
-            <Typography fontWeight={700} sx={{ mb: 1 }}>
-              Reading Support
-            </Typography>
+          <Divider sx={{ my: 1.5 }} />
 
-            <Stack spacing={1}>
-              <Button
-                variant={readableFont ? "contained" : "outlined"}
-                startIcon={<TextFieldsIcon />}
-                onClick={() => setReadableFont((prev) => !prev)}
-              >
-                {readableFont ? "Readable Font On" : "Readable Font"}
-              </Button>
+          <Typography fontWeight={700} sx={{ mb: 1 }}>
+            Text Size: {zoom}%
+          </Typography>
 
-              <Button
-                variant={isReading ? "contained" : "outlined"}
-                startIcon={<RecordVoiceOverIcon />}
-                onClick={readPage}
-              >
-                {isReading ? "Stop Reading" : "Read Page"}
-              </Button>
-            </Stack>
-          </Box>
+          <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+            <Button fullWidth variant="outlined" onClick={zoomOut} disabled={zoom <= MIN_ZOOM}>
+              A-
+            </Button>
+            <Button fullWidth variant="outlined" onClick={zoomIn} disabled={zoom >= MAX_ZOOM}>
+              A+
+            </Button>
+          </Stack>
 
-          <Box>
-            <Typography fontWeight={700} sx={{ mb: 1 }}>
-              Display Options
-            </Typography>
+          <Stack spacing={1}>
+            <Button
+              variant={readableFont ? "contained" : "outlined"}
+              startIcon={<TextFieldsIcon />}
+              onClick={() => setReadableFont((prev) => !prev)}
+            >
+              {readableFont ? "Readable Font On" : "Readable Font"}
+            </Button>
 
-            <Stack spacing={1}>
-              <Button
-                variant={highContrast ? "contained" : "outlined"}
-                startIcon={<ContrastIcon />}
-                onClick={() => setHighContrast((prev) => !prev)}
-              >
-                {highContrast ? "High Contrast On" : "High Contrast"}
-              </Button>
+            <Button
+              variant={highContrast ? "contained" : "outlined"}
+              startIcon={<ContrastIcon />}
+              onClick={() => setHighContrast((prev) => !prev)}
+            >
+              {highContrast ? "High Contrast On" : "High Contrast"}
+            </Button>
 
-              <Button
-                color="error"
-                variant="outlined"
-                startIcon={<RestartAltIcon />}
-                onClick={resetSettings}
-              >
-                Reset Settings
-              </Button>
-            </Stack>
-          </Box>
-        </Box>
+            <Button
+              variant={isReading ? "contained" : "outlined"}
+              startIcon={<RecordVoiceOverIcon />}
+              onClick={readPage}
+            >
+              {isReading ? "Stop Reading" : "Read Page"}
+            </Button>
 
-        <Box sx={{ maxWidth: 1200, mx: "auto", pt: 1 }}>
-          <Typography
-            color="text.secondary"
-            sx={{ fontSize: "0.85rem", display: "flex", alignItems: "center", gap: 1 }}
-          >
-            <TranslateIcon fontSize="small" />
-            Translation uses Google Translate. It may load more reliably after deployment than on localhost.
+            <Button
+              color="error"
+              variant="outlined"
+              startIcon={<RestartAltIcon />}
+              onClick={resetSettings}
+            >
+              Reset Settings
+            </Button>
+          </Stack>
+
+          <Typography color="text.secondary" sx={{ fontSize: "0.8rem", mt: 1.5 }}>
+            Drag the green header to move this tool.
           </Typography>
         </Box>
       </Collapse>
-    </Box>
+    </Paper>
   );
 }
