@@ -16,6 +16,7 @@ import {
   TableRow,
   TableContainer,
   Paper,
+  Link
 } from "@mui/material";
 
 import Categories from "./Categories";
@@ -407,40 +408,94 @@ export default function StudentFAQPage({
         </Typography>
 
         <TableContainer component={Paper} elevation={0}>
-          <Table>
+          <Table sx={{ borderCollapse: "separate", borderSpacing: "0 12px" }}>
             <TableBody>
               <TableRow>
-                <TableCell sx={{ fontWeight: 600, verticalAlign: "top", width: 200 }}>
-                  Virtual Lobby
-                  <br />
-                  <Typography component="div" sx={{ mt: 1 }}>
-                    Zoom Virtual Lobby
-                    <br />
-                    Monday to Thursday: 2:00 PM to 4:30 PM
-                    <br />
-                    Friday: 2:00 PM to 4:00 PM
+                
+                {/* Virtual Lobby */}
+                <TableCell
+                  sx={{
+                    verticalAlign: "top",
+                    width: 220,
+                    border: "none",
+                    backgroundColor: "#f9fafb",
+                    borderRadius: "12px",
+                    p: 2,
+                    textAlign: "center", 
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 700, mb: 1 }}>
+                    Virtual Lobby
+                  </Typography>
+
+                  <Typography variant="body2" color="text.secondary">
+                    <Link
+                      href="https://zoom.us/j/92758435873?pwd=M2Z2cHQ5MWdVZm9WdHA2UEN3K3Mzdz09"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      underline="hover"
+                    >
+                      Zoom Virtual Lobby
+                    </Link>
+                  </Typography>
+
+                  <Typography variant="body2" sx={{ mt: 1 }}>
+                    <strong>Mon–Thu:</strong> 2:00 PM – 4:30 PM <br />
+                    <strong>Fri:</strong> 2:00 PM – 4:00 PM
                   </Typography>
                 </TableCell>
 
-                <TableCell sx={{ fontWeight: 600, verticalAlign: "top", width: 200 }}>
-                  Hours
-                  <br />
-                  <Typography component="div" sx={{ mt: 1 }}>
-                    Monday to Thursday: 8:00 AM to 5:00 PM
-                    <br />
-                    Friday: 9:30 AM to 4:30 PM
+                {/* Hours */}
+                <TableCell
+                  sx={{
+                    verticalAlign: "top",
+                    width: 220,
+                    border: "none",
+                    backgroundColor: "#e5e7e4",
+                    borderRadius: "12px",
+                    p: 2,
+                    textAlign: "center", 
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 700, mb: 1 }}>
+                    Hours
+                  </Typography>
+
+                  <Typography variant="body2">
+                    <strong>Mon–Thu:</strong> 8:00 AM – 5:00 PM <br />
+                    <strong>Fri: </strong>9:30 AM – 4:30 PM <br />
+                    <strong>Visit:</strong> Student Affairs & Success Center (SA 135)
                   </Typography>
                 </TableCell>
 
-                <TableCell sx={{ fontWeight: 600, verticalAlign: "top", width: 200 }}>
-                  Social Media
-                  <br />
-                  <Typography component="div" sx={{ mt: 1 }}>
-                    Facebook
-                    <br />
-                    Instagram
+                {/* Contact */}
+                <TableCell
+                  sx={{
+                    verticalAlign: "top",
+                    width: 220,
+                    border: "none",
+                    backgroundColor: "#f9fafb",
+                    borderRadius: "12px",
+                    p: 2,
+                    textAlign: "center", 
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 700, mb: 1 }}>
+                    Contact
+                  </Typography>
+
+                  <Typography variant="body2">
+                    <strong>Phone:</strong> 253-288-3380 <br />
+                    <strong>Email:</strong>{" "}
+                    <Link
+                      href="mailto:runningstart@greenriver.edu"
+                      underline="hover"
+                    >
+                      runningstart@greenriver.edu
+                    </Link>
                   </Typography>
                 </TableCell>
+
               </TableRow>
             </TableBody>
           </Table>
