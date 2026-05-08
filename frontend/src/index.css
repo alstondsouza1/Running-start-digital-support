@@ -6,6 +6,7 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  --accessibility-scale: 1;
 }
 
 * {
@@ -14,6 +15,7 @@
 
 html {
   scroll-behavior: smooth;
+  font-size: calc(16px * var(--accessibility-scale));
 }
 
 body {
@@ -21,7 +23,13 @@ body {
   min-width: 320px;
   min-height: 100vh;
   color: #213547;
-  background-color: #ffffff;
+  background-color: #f5f5f5;
+  overflow-x: hidden;
+  top: 0 !important;
+}
+
+#root {
+  min-height: 100vh;
 }
 
 a {
@@ -43,27 +51,15 @@ select:focus-visible {
   outline-offset: 3px;
 }
 
-:root {
-  --accessibility-scale: 1;
-}
-
-html {
-  font-size: calc(16px * var(--accessibility-scale));
-}
-
-body {
-  overflow-x: hidden;
-}
-
-/* Readable font */
+/* Readable font mode */
 .readable-font-mode main,
 .readable-font-mode main * {
   font-family: Arial, Verdana, Helvetica, sans-serif !important;
-  line-height: 1.7;
+  line-height: 1.7 !important;
   letter-spacing: 0.02em;
 }
 
-/* Better contrast */
+/* High contrast mode */
 .high-contrast-mode,
 .high-contrast-mode #root,
 .high-contrast-mode main {
@@ -80,9 +76,15 @@ body {
 
 .high-contrast-mode .MuiPaper-root,
 .high-contrast-mode .MuiCard-root,
-.high-contrast-mode .MuiAccordion-root {
+.high-contrast-mode .MuiAccordion-root,
+.high-contrast-mode .MuiBox-root {
   background-color: #111111 !important;
   color: #ffffff !important;
+}
+
+.high-contrast-mode .MuiCard-root,
+.high-contrast-mode .MuiAccordion-root,
+.high-contrast-mode .MuiPaper-root {
   border: 2px solid #ffffff !important;
 }
 
@@ -95,7 +97,9 @@ body {
 .high-contrast-mode h5,
 .high-contrast-mode h6,
 .high-contrast-mode li,
-.high-contrast-mode label {
+.high-contrast-mode label,
+.high-contrast-mode .MuiTypography-root,
+.high-contrast-mode .MuiFormHelperText-root {
   color: #ffffff !important;
 }
 
@@ -104,7 +108,8 @@ body {
   text-decoration: underline !important;
 }
 
-.high-contrast-mode button {
+.high-contrast-mode button,
+.high-contrast-mode .MuiButton-root {
   color: #ffff00 !important;
   border-color: #ffff00 !important;
 }
@@ -114,10 +119,19 @@ body {
   color: #000000 !important;
 }
 
-/* Google Translate */
+.high-contrast-mode input,
+.high-contrast-mode textarea,
+.high-contrast-mode select {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+}
+
+/* Google Translate styling similar to Green River */
 .goog-te-gadget {
   font-family: inherit !important;
   font-size: 0 !important;
+  width: 100%;
 }
 
 .goog-te-gadget span {
@@ -126,18 +140,24 @@ body {
 
 .goog-te-combo {
   width: 100%;
-  padding: 8px;
+  min-height: 42px;
+  padding: 8px 10px;
   border-radius: 6px;
   border: 1px solid #006225;
-  font-size: 0.95rem !important;
+  font-size: 1rem !important;
   background-color: #ffffff;
   color: #000000;
+}
+
+.goog-te-combo:focus-visible {
+  outline: 3px solid #d14900;
+  outline-offset: 2px;
 }
 
 body > .skiptranslate {
   display: none !important;
 }
 
-body {
-  top: 0 !important;
+iframe.skiptranslate {
+  display: none !important;
 }

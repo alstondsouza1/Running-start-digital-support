@@ -11,7 +11,6 @@ import {
 } from "@mui/material";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import AccessibilityNewIcon from "@mui/icons-material/AccessibilityNew";
-import TranslateIcon from "@mui/icons-material/Translate";
 import TextFieldsIcon from "@mui/icons-material/TextFields";
 import ContrastIcon from "@mui/icons-material/Contrast";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
@@ -20,10 +19,11 @@ import RecordVoiceOverIcon from "@mui/icons-material/RecordVoiceOver";
 const MIN_ZOOM = 90;
 const MAX_ZOOM = 140;
 const ZOOM_STEP = 10;
+const DEFAULT_POSITION = { x: 24, y: 160 };
 
 export default function AccessibilityBar() {
   const [open, setOpen] = useState(false);
-  const [position, setPosition] = useState({ x: 20, y: 100 });
+  const [position, setPosition] = useState(DEFAULT_POSITION);
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
 
@@ -43,8 +43,13 @@ export default function AccessibilityBar() {
 
   useEffect(() => {
     const savedPosition = localStorage.getItem("accessibilityPosition");
+
     if (savedPosition) {
-      setPosition(JSON.parse(savedPosition));
+      try {
+        setPosition(JSON.parse(savedPosition));
+      } catch {
+        setPosition(DEFAULT_POSITION);
+      }
     }
   }, []);
 
@@ -73,8 +78,6 @@ export default function AccessibilityBar() {
       new window.google.translate.TranslateElement(
         {
           pageLanguage: "en",
-          includedLanguages:
-            "en,es,ar,hi,zh-CN,ko,vi,fr,de,ja,pa,tl,so,ru,uk",
           layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
           autoDisplay: false,
         },
@@ -91,21 +94,24 @@ export default function AccessibilityBar() {
   }, []);
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
+    function handleMouseMove(e) {
       if (!dragging) return;
 
+      const maxX = window.innerWidth - 80;
+      const maxY = window.innerHeight - 60;
+
       const nextPosition = {
-        x: e.clientX - offset.x,
-        y: e.clientY - offset.y,
+        x: Math.max(8, Math.min(e.clientX - offset.x, maxX)),
+        y: Math.max(88, Math.min(e.clientY - offset.y, maxY)),
       };
 
       setPosition(nextPosition);
       localStorage.setItem("accessibilityPosition", JSON.stringify(nextPosition));
-    };
+    }
 
-    const handleMouseUp = () => {
+    function handleMouseUp() {
       setDragging(false);
-    };
+    }
 
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
@@ -116,23 +122,25 @@ export default function AccessibilityBar() {
     };
   }, [dragging, offset]);
 
-  const startDragging = (e) => {
+  function startDragging(e) {
+    if (e.target.closest("button")) return;
+
     setDragging(true);
     setOffset({
       x: e.clientX - position.x,
       y: e.clientY - position.y,
     });
-  };
+  }
 
-  const zoomIn = () => {
+  function zoomIn() {
     setZoom((prev) => Math.min(prev + ZOOM_STEP, MAX_ZOOM));
-  };
+  }
 
-  const zoomOut = () => {
+  function zoomOut() {
     setZoom((prev) => Math.max(prev - ZOOM_STEP, MIN_ZOOM));
-  };
+  }
 
-  const readPage = () => {
+  function readPage() {
     if (!("speechSynthesis" in window)) {
       alert("Your browser does not support read aloud.");
       return;
@@ -159,14 +167,14 @@ export default function AccessibilityBar() {
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(speech);
     setIsReading(true);
-  };
+  }
 
-  const resetSettings = () => {
+  function resetSettings() {
     setZoom(100);
     setHighContrast(false);
     setReadableFont(false);
     setIsReading(false);
-    setPosition({ x: 20, y: 100 });
+    setPosition(DEFAULT_POSITION);
 
     window.speechSynthesis?.cancel();
 
@@ -178,7 +186,7 @@ export default function AccessibilityBar() {
     document.documentElement.style.setProperty("--accessibility-scale", 1);
     document.body.classList.remove("high-contrast-mode");
     document.body.classList.remove("readable-font-mode");
-  };
+  }
 
   return (
     <Paper
@@ -190,6 +198,7 @@ export default function AccessibilityBar() {
         top: position.y,
         zIndex: 9999,
         width: open ? { xs: 320, sm: 390 } : "auto",
+        maxWidth: "calc(100vw - 16px)",
         borderRadius: 3,
         overflow: "hidden",
         boxShadow: 6,
@@ -198,6 +207,7 @@ export default function AccessibilityBar() {
       }}
     >
       <Box
+        onMouseDown={startDragging}
         sx={{
           backgroundColor: "#006225",
           color: "white",
@@ -209,7 +219,6 @@ export default function AccessibilityBar() {
           cursor: dragging ? "grabbing" : "grab",
           userSelect: "none",
         }}
-        onMouseDown={startDragging}
       >
         <DragIndicatorIcon aria-hidden="true" />
 
@@ -219,10 +228,7 @@ export default function AccessibilityBar() {
 
         <IconButton
           size="small"
-          onClick={(e) => {
-            e.stopPropagation();
-            setOpen((prev) => !prev);
-          }}
+          onClick={() => setOpen((prev) => !prev)}
           aria-label={open ? "Close accessibility tools" : "Open accessibility tools"}
           sx={{ color: "white" }}
         >
@@ -232,12 +238,15 @@ export default function AccessibilityBar() {
 
       <Collapse in={open}>
         <Box sx={{ p: 2 }}>
-          <Box sx={{ mb: 2 }}>
-            <Typography fontWeight={700} sx={{ mb: 1 }}>
-              Translate Page
-            </Typography>
-            <Box id="google_translate_element" aria-label="Language translation selector" />
-          </Box>
+          <Typography fontWeight={700} sx={{ mb: 1 }}>
+            Translate Page
+          </Typography>
+
+          <Box
+            id="google_translate_element"
+            aria-label="Language translation selector"
+            sx={{ mb: 2 }}
+          />
 
           <Divider sx={{ my: 1.5 }} />
 
@@ -246,10 +255,21 @@ export default function AccessibilityBar() {
           </Typography>
 
           <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-            <Button fullWidth variant="outlined" onClick={zoomOut} disabled={zoom <= MIN_ZOOM}>
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={zoomOut}
+              disabled={zoom <= MIN_ZOOM}
+            >
               A-
             </Button>
-            <Button fullWidth variant="outlined" onClick={zoomIn} disabled={zoom >= MAX_ZOOM}>
+
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={zoomIn}
+              disabled={zoom >= MAX_ZOOM}
+            >
               A+
             </Button>
           </Stack>
