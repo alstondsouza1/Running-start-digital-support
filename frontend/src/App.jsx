@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/react";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import SkipLink from "./components/SkipLink";
+import AccessibilityBar from "./components/AccessibilityBar";
 
 import Home from "./pages/Home";
 import CurrentStudent from "./pages/CurrentStudent";
@@ -60,17 +61,28 @@ export default function App() {
       <CssBaseline />
       <SkipLink />
       <RouteAnnouncer />
+      <AccessibilityBar />
       <Navbar />
 
-      <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-        <Toolbar />
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          backgroundColor: "#f5f5f5",
+        }}
+      >
+        <Toolbar sx={{ minHeight: { xs: 72, sm: 80 } }} />
 
         <Box
           component="main"
           id="main-content"
           role="main"
           tabIndex={-1}
-          sx={{ flexGrow: 1, backgroundColor: "#f5f5f5" }}
+          sx={{
+            flex: "1 0 auto",
+            backgroundColor: "#f5f5f5",
+          }}
         >
           <Routes>
             <Route path="/" element={<Home />} />
