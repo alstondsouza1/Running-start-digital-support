@@ -20,6 +20,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { categorySets } from "../data/categories.js";
 import AddFaqForm from "../components/admin/addFAQ.jsx";
 import { useAuth } from "../context/useAuth";
+
 const API_BASE = import.meta.env.VITE_API_BASE;
 
 function groupByType(questions) {
@@ -91,13 +92,10 @@ function SortableCard({ question, onEdit, onDelete }) {
           justifyContent: { xs: "flex-start", md: "flex-end" },
         }}
       >
-        <Button
-          size="small"
-          variant="outlined"
-          onClick={() => onEdit(question)}
-        >
+        <Button size="small" variant="outlined" onClick={() => onEdit(question)}>
           Edit
         </Button>
+
         <Button
           size="small"
           color="error"
@@ -184,9 +182,7 @@ export default function Admin() {
       return;
     }
 
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this FAQ?"
-    );
+    const confirmed = window.confirm("Are you sure you want to delete this FAQ?");
     if (!confirmed) return;
 
     try {
@@ -324,7 +320,7 @@ export default function Admin() {
   }
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 } }}>
+    <Box sx={{ p: { xs: 2, sm: 3 }, pt: { xs: 12, sm: 13 } }}>
       <Box
         sx={{
           position: "fixed",
@@ -332,58 +328,75 @@ export default function Admin() {
           left: 0,
           right: 0,
           zIndex: 3000,
-          backgroundColor: "white",
-          pointerEvents: "auto",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+          backgroundColor: "#ffffff",
+          borderBottom: "1px solid #d7d7d7",
+          boxShadow: "0 2px 5px rgba(0,0,0,0.08)",
         }}
       >
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: { xs: "flex-start", sm: "center" },
-          flexDirection: { xs: "column", sm: "row" },
-          justifyContent: "space-between",
-          gap: 2,
-          padding: 1,
-          backgroundColor: "#f5f5f5",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
-        }}
-      >
-
-      <Typography
-        variant="h4"
-        sx={{
-          fontFamily: "'Chiron GoRound TC', sans-serif",
-          fontWeight: 600
-        }}
-      >
-        Admin Dashboard
-      </Typography>
-
-
-        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", paddingRight: 3 }}>
-            <Button
-              variant="contained"
-              onClick={() => {
-                setEditingFaq(null);
-                setView("addFaq");
-              }}
+        <Box
+          sx={{
+            px: { xs: 2, sm: 3 },
+            py: 1.5,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 2,
+            flexWrap: "wrap",
+          }}
+        >
+          <Box>
+            <Typography
+              variant="h4"
+              component="h1"
               sx={{
-                backgroundColor: "#006225",
-                "&:hover": { backgroundColor: "#004d1a" },
+                fontFamily: "'Chiron GoRound TC', sans-serif",
+                fontWeight: 700,
+                color: "#222",
+                lineHeight: 1.1,
               }}
             >
-              + Add FAQ
-            </Button>
+              Admin Dashboard
+            </Typography>
+
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mt: 0.4 }}
+            >
+              Manage FAQs and student support content.
+            </Typography>
           </Box>
+
+          <Button
+            variant="contained"
+            onClick={() => {
+              setEditingFaq(null);
+              setView("addFaq");
+            }}
+            sx={{
+              backgroundColor: "#006225",
+              color: "white",
+              fontWeight: 700,
+              textTransform: "none",
+              borderRadius: 1.5,
+              px: 2.5,
+              py: 1,
+              boxShadow: "0 2px 5px rgba(0,0,0,0.14)",
+              "&:hover": {
+                backgroundColor: "#004d1a",
+                boxShadow: "0 3px 8px rgba(0,0,0,0.2)",
+              },
+            }}
+          >
+            + Add FAQ
+          </Button>
         </Box>
       </Box>
-
 
       <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
         <Tabs
           value={activeTab}
-          onChange={(e, v) => setActiveTab(v)}
+          onChange={(_e, v) => setActiveTab(v)}
           centered
           variant="scrollable"
           scrollButtons="auto"
@@ -393,14 +406,13 @@ export default function Admin() {
         </Tabs>
       </Box>
 
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
-      </Box>
       <Typography
         id="drag-help-text"
         color="text.secondary"
         sx={{ mt: 2, mb: 1, textAlign: "center" }}
       >
-        Drag and drop questions to reorder them within each category. Edit and Delete buttons are available on each item.
+        Drag and drop questions to reorder them within each category. Edit and
+        Delete buttons are available on each item.
       </Typography>
 
       {loadingFaqs && (
