@@ -1,7 +1,27 @@
 import { useEffect, useState } from "react";
-import { Box, Button, TextField, Typography, MenuItem } from "@mui/material";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  MenuItem,
+  Alert,
+  FormHelperText,
+} from "@mui/material";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
+
+function createEmptyForm() {
+  return {
+    audience: "",
+    type: "",
+    question: "",
+    answer: {
+      intro: "",
+      bullets: [{ text: "", url: "" }],
+    },
+  };
+}
 
 export default function AddFaqForm({
   initialData = null,
@@ -11,40 +31,36 @@ export default function AddFaqForm({
 }) {
   const token = localStorage.getItem("token");
 
-  const emptyForm = {
-    audience: "",
-    type: "",
-    question: "",
-    answer: {
-      intro: "",
-      bullets: [{ text: "", url: "" }],
-    },
-  };
-
-  const [formData, setFormData] = useState(emptyForm);
+  const [formData, setFormData] = useState(createEmptyForm());
   const [allCategories, setAllCategories] = useState({});
+  const [formError, setFormError] = useState("");
+  const [formSuccess, setFormSuccess] = useState("");
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    async function fetchCategories() {
       try {
         const res = await fetch(`${API_BASE}/categories`);
         const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to load categories.");
+        }
+
         setAllCategories(data);
       } catch (err) {
         console.error("Failed to fetch categories:", err);
+        setFormError("Failed to load categories. Please refresh and try again.");
       }
-    };
+    }
 
     fetchCategories();
   }, []);
 
   useEffect(() => {
     if (initialData) {
-      const audience = initialData.audience || "";
-      const type = initialData.type || "";
       setFormData({
-        audience,
-        type,
+        audience: initialData.audience || "",
+        type: initialData.type || "",
         question: initialData.question || "",
         answer: {
           intro: initialData.answer?.intro || "",
@@ -58,8 +74,11 @@ export default function AddFaqForm({
         },
       });
     } else {
-      setFormData(emptyForm);
+      setFormData(createEmptyForm());
     }
+
+    setFormError("");
+    setFormSuccess("");
   }, [initialData]);
 
   const categoriesForAudience = formData.audience
@@ -68,6 +87,8 @@ export default function AddFaqForm({
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setFormError("");
+    setFormSuccess("");
 
     if (name === "intro") {
       setFormData((prev) => ({
@@ -86,10 +107,20 @@ export default function AddFaqForm({
   };
 
   const handleBulletChange = (index, field, value) => {
+    setFormError("");
+    setFormSuccess("");
+
     setFormData((prev) => {
       const bullets = [...prev.answer.bullets];
       bullets[index] = { ...bullets[index], [field]: value };
-      return { ...prev, answer: { ...prev.answer, bullets } };
+
+      return {
+        ...prev,
+        answer: {
+          ...prev.answer,
+          bullets,
+        },
+      };
     });
   };
 
@@ -115,9 +146,11 @@ export default function AddFaqForm({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError("");
+    setFormSuccess("");
 
     if (!token) {
-      alert("You are not logged in. Please login as admin first.");
+      setFormError("You are not logged in. Please login as admin first.");
       return;
     }
 
@@ -128,13 +161,29 @@ export default function AddFaqForm({
         ...(b.url?.trim() ? { url: b.url.trim() } : {}),
       }));
 
+    if (!formData.audience.trim()) {
+      setFormError("Please select an audience.");
+      return;
+    }
+
+    if (!formData.type.trim()) {
+      setFormError("Please select a category.");
+      return;
+    }
+
+    if (!formData.question.trim()) {
+      setFormError("Please enter a question.");
+      return;
+    }
+
     if (cleanedBullets.length === 0) {
-      alert("Please add at least one bullet point before submitting.");
+      setFormError("Please add at least one bullet point before submitting.");
       return;
     }
 
     const payload = {
-      ...formData,
+      audience: formData.audience.trim(),
+      type: formData.type.trim(),
       question: formData.question.trim(),
       answer: {
         ...(formData.answer.intro?.trim()
@@ -167,22 +216,44 @@ export default function AddFaqForm({
         throw new Error(data.error || data.message || "Request failed");
       }
 
-      alert(mode === "edit" ? "FAQ updated successfully!" : "FAQ added successfully!");
+      setFormSuccess(
+        mode === "edit" ? "FAQ updated successfully." : "FAQ added successfully."
+      );
 
       if (!initialData) {
-        setFormData(emptyForm);
+        setFormData(createEmptyForm());
       }
 
       if (onSuccess) onSuccess();
     } catch (error) {
       console.error("Error:", error);
-      alert(error.message);
+      setFormError(error.message);
     }
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      <Typography variant="h5">{mode === "edit" ? "Edit FAQ" : "Add FAQ"}</Typography>
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      noValidate
+      aria-labelledby="faq-form-heading"
+      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+    >
+      <Typography id="faq-form-heading" variant="h5">
+        {mode === "edit" ? "Edit FAQ" : "Add FAQ"}
+      </Typography>
+
+      {formError && (
+        <Alert severity="error" role="alert">
+          {formError}
+        </Alert>
+      )}
+
+      {formSuccess && (
+        <Alert severity="success" role="status">
+          {formSuccess}
+        </Alert>
+      )}
 
       <TextField
         select
@@ -193,14 +264,17 @@ export default function AddFaqForm({
         required
       >
         <MenuItem value="">Select Audience</MenuItem>
-        <MenuItem value="current">Current</MenuItem>
-        <MenuItem value="future">Future</MenuItem>
+        {Object.keys(allCategories).map((audience) => (
+          <MenuItem key={audience} value={audience}>
+            {audience === "current" ? "Current" : "Future"}
+          </MenuItem>
+        ))}
       </TextField>
 
       <TextField
         select
         name="type"
-        label="Category (Type)"
+        label="Category"
         value={formData.type}
         onChange={handleChange}
         required
@@ -209,8 +283,8 @@ export default function AddFaqForm({
       >
         <MenuItem value="">Select a category</MenuItem>
         {categoriesForAudience.map((cat) => (
-          <MenuItem key={cat} value={cat}>
-            {cat}
+          <MenuItem key={cat.id} value={cat.id}>
+            {cat.name}
           </MenuItem>
         ))}
       </TextField>
@@ -232,46 +306,67 @@ export default function AddFaqForm({
         minRows={2}
       />
 
-      <Typography variant="h6">Bullet Points</Typography>
+      <Box
+        component="fieldset"
+        sx={{ border: "1px solid #d0d0d0", borderRadius: 2, p: 2 }}
+      >
+        <Typography component="legend" variant="h6" sx={{ px: 1 }}>
+          Bullet Points
+        </Typography>
 
-      {formData.answer.bullets.map((bullet, index) => (
-        <Box
-          key={index}
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "2fr 2fr auto" },
-            gap: 1,
-          }}
-        >
-          <TextField
-            label={`Bullet ${index + 1} text`}
-            value={bullet.text}
-            onChange={(e) => handleBulletChange(index, "text", e.target.value)}
-          />
-          <TextField
-            label="URL (optional)"
-            value={bullet.url}
-            onChange={(e) => handleBulletChange(index, "url", e.target.value)}
-          />
-          <Button
-            type="button"
-            onClick={() => removeBullet(index)}
-            disabled={formData.answer.bullets.length === 1}
+        <FormHelperText sx={{ mb: 2 }}>
+          Add at least one bullet point. URLs are optional.
+        </FormHelperText>
+
+        {formData.answer.bullets.map((bullet, index) => (
+          <Box
+            key={index}
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "2fr 2fr auto" },
+              gap: 1,
+              mb: 2,
+            }}
           >
-            Remove
-          </Button>
-        </Box>
-      ))}
+            <TextField
+              label={`Bullet ${index + 1} text`}
+              value={bullet.text}
+              onChange={(e) =>
+                handleBulletChange(index, "text", e.target.value)
+              }
+            />
 
-      <Button type="button" onClick={addBullet}>
-        Add Bullet
-      </Button>
+            <TextField
+              label={`Bullet ${index + 1} URL (optional)`}
+              value={bullet.url}
+              onChange={(e) =>
+                handleBulletChange(index, "url", e.target.value)
+              }
+            />
 
-      <Box sx={{ display: "flex", gap: 2 }}>
+            <Button
+              type="button"
+              onClick={() => removeBullet(index)}
+              disabled={formData.answer.bullets.length === 1}
+            >
+              Remove
+            </Button>
+          </Box>
+        ))}
+
+        <Button type="button" onClick={addBullet}>
+          Add Bullet
+        </Button>
+      </Box>
+
+      <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
         <Button
           type="submit"
           variant="contained"
-          sx={{ backgroundColor: "#006225", "&:hover": { backgroundColor: "#004d1a" } }}
+          sx={{
+            backgroundColor: "#006225",
+            "&:hover": { backgroundColor: "#004d1a" },
+          }}
         >
           {mode === "edit" ? "Update FAQ" : "Submit FAQ"}
         </Button>

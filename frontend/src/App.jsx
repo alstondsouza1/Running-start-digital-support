@@ -1,4 +1,5 @@
-import { Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { CssBaseline, Box, Toolbar } from "@mui/material";
 import { Analytics } from "@vercel/analytics/react";
 
@@ -14,11 +15,51 @@ import AdminLogin from "./components/admin/AdminLogin";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
+const srOnlyStyles = {
+  position: "absolute",
+  width: "1px",
+  height: "1px",
+  padding: 0,
+  margin: "-1px",
+  overflow: "hidden",
+  clip: "rect(0 0 0 0)",
+  whiteSpace: "nowrap",
+  border: 0,
+};
+
+function getPageTitle(pathname) {
+  const titles = {
+    "/": "Home",
+    "/current-student": "Current Running Start Students",
+    "/future-student": "Future Running Start Students",
+    "/admin-login": "Admin Login",
+    "/admin": "Admin Dashboard",
+  };
+
+  return titles[pathname] || "Page Not Found";
+}
+
+function RouteAnnouncer() {
+  const location = useLocation();
+  const pageTitle = getPageTitle(location.pathname);
+
+  useEffect(() => {
+    document.title = `${pageTitle} | Running Start Digital Portal`;
+  }, [pageTitle]);
+
+  return (
+    <Box aria-live="polite" aria-atomic="true" sx={srOnlyStyles}>
+      {pageTitle} page loaded
+    </Box>
+  );
+}
+
 export default function App() {
   return (
     <>
       <CssBaseline />
       <SkipLink />
+      <RouteAnnouncer />
       <Navbar />
 
       <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -35,7 +76,6 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/current-student" element={<CurrentStudent />} />
             <Route path="/future-student" element={<ProspectiveStudent />} />
-
             <Route path="/admin-login" element={<AdminLogin />} />
 
             <Route element={<ProtectedRoute />}>
@@ -48,6 +88,7 @@ export default function App() {
 
         <Footer />
       </Box>
+
       <Analytics />
     </>
   );
