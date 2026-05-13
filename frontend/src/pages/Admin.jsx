@@ -17,7 +17,6 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-import { categorySets } from "../data/categories.js";
 import AddFaqForm from "../components/admin/addFAQ.jsx";
 import AddCategoryForm from "../components/admin/addCategory.jsx";
 import { useAuth } from "../context/useAuth";
@@ -128,8 +127,8 @@ export default function Admin() {
   const [editingCategory, setEditingCategory] = useState(null);
 
   const activeCategories = useMemo(
-    () => (activeTab === 0 ? categorySets.current : categorySets.future),
-    [activeTab]
+    () => (activeTab === 0 ? categories.current : categories.future) ?? [],
+    [activeTab, categories]
   );
 
   const activeGrouped = useMemo(
@@ -142,7 +141,9 @@ export default function Admin() {
       const res = await fetch(`${API_BASE}/categories`);
       const data = await res.json();
       console.log("[loadCategories] status:", res.status, "data:", data);
-      if (res.ok) setCategories(data);
+      if (res.ok) {
+        setCategories(data);
+      }
     } catch (err) {
       console.error("[loadCategories] fetch error:", err);
     }
@@ -177,8 +178,12 @@ export default function Admin() {
         id: q.id ?? `future-${q.type}-${q.question}`,
       }));
 
-      setGroupedCurrent(groupByType(currentWithIds));
-      setGroupedFuture(groupByType(futureWithIds));
+      const gc = groupByType(currentWithIds);
+      const gf = groupByType(futureWithIds);
+      console.log("[loadFaqs] groupedCurrent keys:", Object.keys(gc));
+      console.log("[loadFaqs] groupedFuture keys:", Object.keys(gf));
+      setGroupedCurrent(gc);
+      setGroupedFuture(gf);
     } catch (err) {
       setFetchError(err?.message || "Unknown error");
     } finally {
@@ -650,6 +655,8 @@ export default function Admin() {
           {fetchError}
         </Typography>
       )}
+
+      {!loadingFaqs && !fetchError && console.log("[render] activeCategories ids:", activeCategories.map(c => c.id), "activeGrouped keys:", Object.keys(activeTab === 0 ? groupedCurrent : groupedFuture))}
 
       {!loadingFaqs &&
         !fetchError &&
