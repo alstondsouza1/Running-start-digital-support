@@ -19,6 +19,7 @@ import { CSS } from "@dnd-kit/utilities";
 
 import { categorySets } from "../data/categories.js";
 import AddFaqForm from "../components/admin/addFAQ.jsx";
+import AddCategoryForm from "../components/admin/addCategory.jsx";
 import { useAuth } from "../context/useAuth";
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -123,6 +124,9 @@ export default function Admin() {
   const [fetchError, setFetchError] = useState("");
   const [editingFaq, setEditingFaq] = useState(null);
 
+  const [categories, setCategories] = useState({ current: [], future: [] });
+  const [editingCategory, setEditingCategory] = useState(null);
+
   const activeCategories = useMemo(
     () => (activeTab === 0 ? categorySets.current : categorySets.future),
     [activeTab]
@@ -132,6 +136,17 @@ export default function Admin() {
     () => (activeTab === 0 ? groupedCurrent : groupedFuture),
     [activeTab, groupedCurrent, groupedFuture]
   );
+
+  async function loadCategories() {
+    try {
+      const res = await fetch(`${API_BASE}/categories`);
+      const data = await res.json();
+      console.log("[loadCategories] status:", res.status, "data:", data);
+      if (res.ok) setCategories(data);
+    } catch (err) {
+      console.error("[loadCategories] fetch error:", err);
+    }
+  }
 
   async function loadFaqs() {
     setLoadingFaqs(true);
@@ -174,6 +189,7 @@ export default function Admin() {
   useEffect(() => {
     if (!isAdmin) return;
     loadFaqs();
+    loadCategories();
   }, [isAdmin]);
 
   async function handleDelete(id) {
@@ -281,6 +297,215 @@ export default function Admin() {
     }
   }
 
+  async function handleDeleteCategory(id) {
+    const token = localStorage.getItem("token");
+    if (!token) { alert("Please login again."); return; }
+
+    const confirmed = window.confirm("Are you sure you want to delete this category? FAQs in it will become uncategorized.");
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/categories/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || "Delete failed");
+      alert("Category deleted successfully");
+      loadCategories();
+    } catch (err) {
+      alert(err.message || "Delete failed");
+    }
+  }
+
+  if (view === "addCategory") {
+    return (
+      <Box sx={{ p: { xs: 2, sm: 3 } }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+          <Button
+            variant="text"
+            onClick={() => { setView("manageCategories"); setEditingCategory(null); }}
+            sx={{ color: "#006225" }}
+          >
+            Back to Categories
+          </Button>
+        </Box>
+
+        <Paper sx={{ p: { xs: 2, sm: 3 } }}>
+          <AddCategoryForm
+            initialData={editingCategory}
+            mode={editingCategory ? "edit" : "add"}
+            onSuccess={() => {
+              setEditingCategory(null);
+              setView("manageCategories");
+              loadCategories();
+            }}
+            onCancel={() => {
+              setEditingCategory(null);
+              setView("manageCategories");
+            }}
+          />
+        </Paper>
+      </Box>
+    );
+  }
+
+  if (view === "manageCategories") {
+    return (
+      <Box sx={{ p: { xs: 2, sm: 3 } }}>
+        {/* fixed top bar — same structure as FAQ dashboard */}
+        <Box
+          sx={{
+            position: "fixed",
+            top: { xs: 56, sm: 64 },
+            left: 0,
+            right: 0,
+            zIndex: 3000,
+            backgroundColor: "white",
+            pointerEvents: "auto",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: { xs: "flex-start", sm: "center" },
+              flexDirection: { xs: "column", sm: "row" },
+              justifyContent: "space-between",
+              gap: 2,
+              padding: 1,
+              backgroundColor: "#f5f5f5",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+            }}
+          >
+            <Typography
+              variant="h4"
+              sx={{ fontFamily: "'Chiron GoRound TC', sans-serif", fontWeight: 600 }}
+            >
+              Manage Categories
+            </Typography>
+
+            <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", paddingRight: 3 }}>
+              <Button
+                variant="outlined"
+                onClick={() => setView("dashboard")}
+                sx={{
+                  borderColor: "#006225",
+                  color: "#006225",
+                  "&:hover": { borderColor: "#004d1a", color: "#004d1a" },
+                }}
+              >
+                Back to Dashboard
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => { setEditingCategory(null); setView("addCategory"); }}
+                sx={{ backgroundColor: "#006225", "&:hover": { backgroundColor: "#004d1a" } }}
+              >
+                + Add Category
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+
+        {["current", "future"].map((audience) => (
+          <Box
+            key={audience}
+            sx={{ mt: 10, maxWidth: "1200px", mx: "auto", width: "100%" }}
+          >
+            <Typography variant="h6" gutterBottom>
+              {audience === "current" ? "Current Students" : "Future Students"}
+            </Typography>
+
+            <Box
+              sx={{
+                display: { xs: "none", sm: "flex" },
+                justifyContent: "space-between",
+                alignItems: "center",
+                px: 2,
+                py: 1,
+                fontWeight: "bold",
+                borderBottom: 1,
+                borderColor: "divider",
+                mt: 2,
+              }}
+            >
+              <Typography>Category Name</Typography>
+              <Typography>Description</Typography>
+            </Box>
+
+            <Paper sx={{ p: { xs: 1.25, sm: 2 }, mt: 1, overflow: "hidden" }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {(categories[audience] || []).length === 0 ? (
+                  <Typography color="text.secondary">No categories yet.</Typography>
+                ) : (
+                  (categories[audience] || []).map((cat) => (
+                    <Paper
+                      key={cat.id}
+                      sx={{
+                        p: { xs: 1.25, sm: 1.5 },
+                        borderRadius: 1,
+                        border: 1,
+                        borderColor: "divider",
+                        backgroundColor: "background.paper",
+                        display: "flex",
+                        flexDirection: { xs: "column", md: "row" },
+                        justifyContent: "space-between",
+                        alignItems: { xs: "stretch", md: "center" },
+                        gap: 1.5,
+                        overflow: "hidden",
+                      }}
+                    >
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography sx={{ wordBreak: "break-word" }}>{cat.name}</Typography>
+                      </Box>
+
+                      <Typography
+                        color="text.secondary"
+                        sx={{
+                          whiteSpace: { xs: "normal", md: "nowrap" },
+                          wordBreak: "break-word",
+                          fontSize: { xs: "0.9rem", sm: "1rem" },
+                        }}
+                      >
+                        {cat.description || "—"}
+                      </Typography>
+
+                      <Box
+                        sx={{
+                          display: "flex",
+                          gap: 1,
+                          flexWrap: "wrap",
+                          justifyContent: { xs: "flex-start", md: "flex-end" },
+                        }}
+                      >
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => { setEditingCategory({ ...cat, audience }); setView("addCategory"); }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size="small"
+                          color="error"
+                          variant="outlined"
+                          onClick={() => handleDeleteCategory(cat.id)}
+                        >
+                          Delete
+                        </Button>
+                      </Box>
+                    </Paper>
+                  ))
+                )}
+              </Box>
+            </Paper>
+          </Box>
+        ))}
+      </Box>
+    );
+  }
+
   if (view === "addFaq") {
     return (
       <Box sx={{ p: { xs: 2, sm: 3 } }}>
@@ -362,6 +587,17 @@ export default function Admin() {
 
 
         <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", paddingRight: 3 }}>
+            <Button
+              variant="outlined"
+              onClick={() => setView("manageCategories")}
+              sx={{
+                borderColor: "#006225",
+                color: "#006225",
+                "&:hover": { borderColor: "#004d1a", color: "#004d1a" },
+              }}
+            >
+              Manage Categories
+            </Button>
             <Button
               variant="contained"
               onClick={() => {
