@@ -393,19 +393,25 @@ async function ensureCategoriesTable() {
     `);
   }
 
-  const [existing] = await pool.query("SELECT COUNT(*) AS cnt FROM categories");
-  if (existing[0].cnt === 0) {
-    const seeds = [];
+  // remove any rows with numeric-looking IDs left over from when the column was INT
+  await pool.query("DELETE FROM categories WHERE id REGEXP '^[0-9]+$'");
+
+  // seed default categories if none of the expected slugs exist
+  const allDefaultIds = Object.values(ALLOWED_CATEGORIES).flat().map((c) => c.id);
+  const placeholders = allDefaultIds.map(() => "?").join(",");
+  const [found] = await pool.query(
+    `SELECT COUNT(*) AS cnt FROM categories WHERE id IN (${placeholders})`,
+    allDefaultIds
+  );
+
+  if (found[0].cnt === 0) {
     for (const [audience, cats] of Object.entries(ALLOWED_CATEGORIES)) {
       for (const cat of cats) {
-        seeds.push([cat.id, audience, cat.name, cat.description || ""]);
+        await pool.query(
+          "INSERT IGNORE INTO categories (id, audience, name, description) VALUES (?, ?, ?, ?)",
+          [cat.id, audience, cat.name, cat.description || ""]
+        );
       }
-    }
-    for (const seed of seeds) {
-      await pool.query(
-        "INSERT IGNORE INTO categories (id, audience, name, description) VALUES (?, ?, ?, ?)",
-        seed
-      );
     }
   }
 }
