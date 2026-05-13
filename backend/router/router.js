@@ -18,4 +18,9 @@ router.put("/faq/order", requireAdmin, adminController.updateFaqOrder);
 router.put("/faq/:id", requireAdmin, adminController.updateFaq);
 router.delete("/faq/:id", requireAdmin, adminController.deleteFaq);
 
+// category CRUD
+router.post("/categories", requireAdmin, adminController.addCategory);
+router.put("/categories/:id", requireAdmin, adminController.updateCategory);
+router.delete("/categories/:id", requireAdmin, adminController.deleteCategory);
+
 export default router;

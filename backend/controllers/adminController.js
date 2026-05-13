@@ -146,7 +146,20 @@ function normalizeAnswer(answer) {
   };
 }
 
-function validateFaqInput({ audience, type, question, answer }) {
+async function getValidCategoryIds(audience) {
+  try {
+    const [rows] = await pool.query(
+      "SELECT id FROM categories WHERE audience = ?",
+      [audience]
+    );
+    if (rows.length > 0) return rows.map((r) => r.id);
+  } catch {
+    // fall through to hardcoded
+  }
+  return getAllowedCategoryIds(audience);
+}
+
+async function validateFaqInput({ audience, type, question, answer }) {
   const trimmedAudience = typeof audience === "string" ? audience.trim() : "";
   const trimmedType = typeof type === "string" ? type.trim() : "";
   const trimmedQuestion = typeof question === "string" ? question.trim() : "";
@@ -157,11 +170,12 @@ function validateFaqInput({ audience, type, question, answer }) {
     };
   }
 
-  if (!Object.hasOwn(ALLOWED_CATEGORIES, trimmedAudience)) {
+  const validAudiences = ["current", "future"];
+  if (!validAudiences.includes(trimmedAudience)) {
     return { error: "Invalid audience value" };
   }
 
-  const allowedCategoryIds = getAllowedCategoryIds(trimmedAudience);
+  const allowedCategoryIds = await getValidCategoryIds(trimmedAudience);
 
   if (!allowedCategoryIds.includes(trimmedType)) {
     return { error: "Invalid category for the selected audience" };
@@ -225,7 +239,7 @@ export const getFaqs = async (req, res) => {
 
 export const addFaq = async (req, res) => {
   try {
-    const validated = validateFaqInput(req.body);
+    const validated = await validateFaqInput(req.body);
 
     if (validated.error) {
       return res.status(400).json({ error: validated.error });
@@ -264,7 +278,7 @@ export const updateFaq = async (req, res) => {
       return res.status(400).json({ error: "Valid FAQ id is required" });
     }
 
-    const validated = validateFaqInput(req.body);
+    const validated = await validateFaqInput(req.body);
 
     if (validated.error) {
       return res.status(400).json({ error: validated.error });
@@ -344,11 +358,164 @@ export const deleteFaq = async (req, res) => {
   }
 };
 
+async function ensureCategoriesTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS categories (
+      id VARCHAR(100) NOT NULL,
+      audience VARCHAR(20) NOT NULL,
+      name VARCHAR(255) NOT NULL,
+      description TEXT,
+      PRIMARY KEY (id, audience)
+    )
+  `);
+
+  // fix description column if missing
+  const [cols] = await pool.query(
+    `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'categories' AND COLUMN_NAME = 'description'`
+  );
+  if (cols.length === 0) {
+    await pool.query("ALTER TABLE categories ADD COLUMN description TEXT");
+  }
+
+  // fix id column if it was created as INT instead of VARCHAR
+  const [idCol] = await pool.query(
+    `SELECT DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'categories' AND COLUMN_NAME = 'id'`
+  );
+  if (idCol.length > 0 && idCol[0].DATA_TYPE !== 'varchar') {
+    // drop old PK and change column type in one statement to satisfy sql_require_primary_key
+    await pool.query(`
+      ALTER TABLE categories
+        DROP PRIMARY KEY,
+        MODIFY COLUMN id VARCHAR(100) NOT NULL,
+        ADD PRIMARY KEY (id, audience)
+    `);
+  }
+
+  const [existing] = await pool.query("SELECT COUNT(*) AS cnt FROM categories");
+  if (existing[0].cnt === 0) {
+    const seeds = [];
+    for (const [audience, cats] of Object.entries(ALLOWED_CATEGORIES)) {
+      for (const cat of cats) {
+        seeds.push([cat.id, audience, cat.name, cat.description || ""]);
+      }
+    }
+    for (const seed of seeds) {
+      await pool.query(
+        "INSERT IGNORE INTO categories (id, audience, name, description) VALUES (?, ?, ?, ?)",
+        seed
+      );
+    }
+  }
+}
+
 export const getFaqCategories = async (_req, res) => {
   try {
-    return res.json(ALLOWED_CATEGORIES);
+    await ensureCategoriesTable();
+
+    const [rows] = await pool.query(
+      "SELECT id, audience, name, description FROM categories ORDER BY audience, name"
+    );
+
+    const grouped = {};
+    for (const row of rows) {
+      if (!grouped[row.audience]) grouped[row.audience] = [];
+      grouped[row.audience].push({
+        id: row.id,
+        name: row.name,
+        description: row.description || "",
+      });
+    }
+
+    return res.json(grouped);
   } catch (err) {
     console.error("Get FAQ categories error:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const addCategory = async (req, res) => {
+  try {
+    await ensureCategoriesTable();
+    const audience = typeof req.body.audience === "string" ? req.body.audience.trim() : "";
+    const name = typeof req.body.name === "string" ? req.body.name.trim() : "";
+    const description = typeof req.body.description === "string" ? req.body.description.trim() : "";
+
+    if (!audience || !name) {
+      return res.status(400).json({ error: "audience and name are required" });
+    }
+
+    if (!Object.hasOwn(ALLOWED_CATEGORIES, audience) && !["current", "future"].includes(audience)) {
+      return res.status(400).json({ error: "Invalid audience value" });
+    }
+
+    const id = name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+
+    const [existing] = await pool.query(
+      "SELECT id FROM categories WHERE id = ? AND audience = ?",
+      [id, audience]
+    );
+
+    if (existing.length > 0) {
+      return res.status(409).json({ error: "A category with that name already exists for this audience" });
+    }
+
+    await pool.query(
+      "INSERT INTO categories (id, audience, name, description) VALUES (?, ?, ?, ?)",
+      [id, audience, name, description]
+    );
+
+    return res.status(201).json({ message: "Category added successfully", id });
+  } catch (err) {
+    console.error("Add category error:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const updateCategory = async (req, res) => {
+  try {
+    await ensureCategoriesTable();
+    const categoryId = req.params.id;
+    const name = typeof req.body.name === "string" ? req.body.name.trim() : "";
+    const description = typeof req.body.description === "string" ? req.body.description.trim() : "";
+
+    if (!name) {
+      return res.status(400).json({ error: "name is required" });
+    }
+
+    const [existing] = await pool.query("SELECT id FROM categories WHERE id = ?", [categoryId]);
+    if (existing.length === 0) {
+      return res.status(404).json({ error: "Category not found" });
+    }
+
+    await pool.query(
+      "UPDATE categories SET name = ?, description = ? WHERE id = ?",
+      [name, description, categoryId]
+    );
+
+    return res.json({ message: "Category updated successfully" });
+  } catch (err) {
+    console.error("Update category error:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const deleteCategory = async (req, res) => {
+  try {
+    await ensureCategoriesTable();
+    const categoryId = req.params.id;
+
+    const [existing] = await pool.query("SELECT id FROM categories WHERE id = ?", [categoryId]);
+    if (existing.length === 0) {
+      return res.status(404).json({ error: "Category not found" });
+    }
+
+    await pool.query("DELETE FROM categories WHERE id = ?", [categoryId]);
+
+    return res.json({ message: "Category deleted successfully" });
+  } catch (err) {
+    console.error("Delete category error:", err);
     return res.status(500).json({ error: "Server error" });
   }
 };
@@ -359,11 +526,12 @@ export const updateFaqOrder = async (req, res) => {
       typeof req.body.audience === "string" ? req.body.audience.trim() : "";
     const type = typeof req.body.type === "string" ? req.body.type.trim() : "";
 
-    if (!Object.hasOwn(ALLOWED_CATEGORIES, audience)) {
+    const validAudiences = ["current", "future"];
+    if (!validAudiences.includes(audience)) {
       return res.status(400).json({ error: "Invalid audience value" });
     }
 
-    const allowedCategoryIds = getAllowedCategoryIds(audience);
+    const allowedCategoryIds = await getValidCategoryIds(audience);
 
     if (!allowedCategoryIds.includes(type)) {
       return res
@@ -424,6 +592,9 @@ export default {
   addFaq,
   getFaqs,
   getFaqCategories,
+  addCategory,
+  updateCategory,
+  deleteCategory,
   updateFaq,
   deleteFaq,
   updateFaqOrder,
