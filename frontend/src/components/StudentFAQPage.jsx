@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Box,
   Typography,
@@ -10,17 +10,11 @@ import {
   AccordionSummary,
   AccordionDetails,
   Chip,
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-  TableContainer,
-  Paper,
-  Link
 } from "@mui/material";
 
 import Categories from "./Categories";
 import QuestionSearchBar from "./QuestionSearchBar";
+import NeedMoreHelp from "./NeedMoreHelp";
 import { normalize, tokenize, scoreText } from "../utils/search";
 import normalizeUrl from "../utils/normalizeURL.js";
 import {
@@ -90,6 +84,7 @@ export default function StudentFAQPage({
 }) {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const questionsSectionRef = useRef(null);
 
   const isSearching = normalize(searchTerm).length > 0;
 
@@ -138,6 +133,17 @@ export default function StudentFAQPage({
     return () => clearTimeout(timer);
   }, [isSearching, searchTerm, searchResults.length]);
 
+  const scrollToQuestions = () => {
+    setTimeout(() => {
+      questionsSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+
+      questionsSectionRef.current?.focus({ preventScroll: true });
+    }, 100);
+  };
+
   const handleSelectCategory = (id) => {
     setSearchTerm("");
 
@@ -152,6 +158,7 @@ export default function StudentFAQPage({
     }
 
     setSelectedCategoryId((prev) => (prev === id ? null : id));
+    scrollToQuestions();
   };
 
   const handleSearchChange = (value) => {
@@ -367,8 +374,10 @@ export default function StudentFAQPage({
 
             {selectedCategory ? (
               <Box
+                ref={questionsSectionRef}
                 component="section"
                 aria-labelledby="selected-category-heading"
+                tabIndex={-1}
                 sx={{
                   mt: 4,
                   p: 3,
@@ -378,6 +387,10 @@ export default function StudentFAQPage({
                   textAlign: "left",
                   maxWidth: 980,
                   mx: "auto",
+                  scrollMarginTop: "100px",
+                  "&:focus": {
+                    outline: "none",
+                  },
                 }}
               >
                 <Typography
@@ -405,8 +418,17 @@ export default function StudentFAQPage({
               </Box>
             ) : (
               <Typography
+                ref={questionsSectionRef}
+                tabIndex={-1}
                 color="text.secondary"
-                sx={{ mt: 3, textAlign: "center" }}
+                sx={{
+                  mt: 3,
+                  textAlign: "center",
+                  scrollMarginTop: "100px",
+                  "&:focus": {
+                    outline: "none",
+                  },
+                }}
               >
                 Select a category to view questions.
               </Typography>
@@ -415,121 +437,7 @@ export default function StudentFAQPage({
         )}
       </Box>
 
-      <Box
-        sx={{
-          mt: 6,
-          p: 3,
-          backgroundColor: "#f9fafb",
-          borderRadius: 2,
-          textAlign: "center",
-          maxWidth: 800,
-          mx: "auto",
-          boxShadow: 1,
-        }}
-      >
-        <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
-          Need more help?
-        </Typography>
-
-        <Typography color="text.secondary" sx={{ mb: 2 }}>
-          If you couldn’t find your answer, reach out to the Running Start office
-          during normal hours or use the virtual lobby when available.
-        </Typography>
-
-        <TableContainer component={Paper} elevation={0}>
-          <Table sx={{ borderCollapse: "separate", borderSpacing: "0 12px" }}>
-            <TableBody>
-              <TableRow>
-                
-                {/* Virtual Lobby */}
-                <TableCell
-                  sx={{
-                    verticalAlign: "top",
-                    width: 220,
-                    border: "none",
-                    backgroundColor: "#f9fafb",
-                    borderRadius: "12px",
-                    p: 2,
-                    textAlign: "center", 
-                  }}
-                >
-                  <Typography sx={{ fontWeight: 700, mb: 1 }}>
-                    Virtual Lobby
-                  </Typography>
-
-                  <Typography variant="body2" color="text.secondary">
-                    <Link
-                      href="https://zoom.us/j/92758435873?pwd=M2Z2cHQ5MWdVZm9WdHA2UEN3K3Mzdz09"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      underline="hover"
-                    >
-                      Zoom Virtual Lobby
-                    </Link>
-                  </Typography>
-
-                  <Typography variant="body2" sx={{ mt: 1 }}>
-                    <strong>Mon–Thu:</strong> 2:00 PM – 4:30 PM <br />
-                    <strong>Fri:</strong> 2:00 PM – 4:00 PM
-                  </Typography>
-                </TableCell>
-
-                {/* Hours */}
-                <TableCell
-                  sx={{
-                    verticalAlign: "top",
-                    width: 220,
-                    border: "none",
-                    backgroundColor: "#e5e7e4",
-                    borderRadius: "12px",
-                    p: 2,
-                    textAlign: "center", 
-                  }}
-                >
-                  <Typography sx={{ fontWeight: 700, mb: 1 }}>
-                    Hours
-                  </Typography>
-
-                  <Typography variant="body2">
-                    <strong>Mon–Thu:</strong> 8:00 AM – 5:00 PM <br />
-                    <strong>Fri: </strong>9:30 AM – 4:30 PM <br />
-                    <strong>Visit:</strong> Student Affairs & Success Center (SA 135)
-                  </Typography>
-                </TableCell>
-
-                {/* Contact */}
-                <TableCell
-                  sx={{
-                    verticalAlign: "top",
-                    width: 220,
-                    border: "none",
-                    backgroundColor: "#f9fafb",
-                    borderRadius: "12px",
-                    p: 2,
-                    textAlign: "center", 
-                  }}
-                >
-                  <Typography sx={{ fontWeight: 700, mb: 1 }}>
-                    Contact
-                  </Typography>
-
-                  <Typography variant="body2">
-                    <strong>Phone:</strong> 253-288-3380 <br />
-                    <strong>Email:</strong>{" "}
-                    <Link
-                      href="mailto:runningstart@greenriver.edu"
-                      underline="hover"
-                    >
-                      runningstart@greenriver.edu
-                    </Link>
-                  </Typography>
-                </TableCell>
-
-              </TableRow>
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Box>
+      <NeedMoreHelp />
     </Box>
   );
 }

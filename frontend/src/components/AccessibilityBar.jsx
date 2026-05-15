@@ -7,38 +7,38 @@ import {
   IconButton,
   Paper,
   Stack,
+  Tooltip,
   Typography,
 } from "@mui/material";
-import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
+
 import AccessibilityNewIcon from "@mui/icons-material/AccessibilityNew";
 import TextFieldsIcon from "@mui/icons-material/TextFields";
 import ContrastIcon from "@mui/icons-material/Contrast";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import RecordVoiceOverIcon from "@mui/icons-material/RecordVoiceOver";
+import CloseIcon from "@mui/icons-material/Close";
+import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 
 const MIN_ZOOM = 90;
 const MAX_ZOOM = 140;
 const ZOOM_STEP = 10;
-const DEFAULT_POSITION = { x: 24, y: 160 };
+const DEFAULT_POSITION = { x: 16, y: 120 };
 
 export default function AccessibilityBar() {
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState(DEFAULT_POSITION);
   const [dragging, setDragging] = useState(false);
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
   const [zoom, setZoom] = useState(
     Number(localStorage.getItem("accessibilityZoom")) || 100
   );
-
   const [highContrast, setHighContrast] = useState(
     localStorage.getItem("highContrast") === "true"
   );
-
   const [readableFont, setReadableFont] = useState(
     localStorage.getItem("readableFont") === "true"
   );
-
   const [isReading, setIsReading] = useState(false);
 
   useEffect(() => {
@@ -54,8 +54,10 @@ export default function AccessibilityBar() {
   }, []);
 
   useEffect(() => {
-    const scale = zoom / 100;
-    document.documentElement.style.setProperty("--accessibility-scale", scale);
+    document.documentElement.style.setProperty(
+      "--accessibility-scale",
+      zoom / 100
+    );
     localStorage.setItem("accessibilityZoom", String(zoom));
   }, [zoom]);
 
@@ -97,12 +99,18 @@ export default function AccessibilityBar() {
     function handleMouseMove(e) {
       if (!dragging) return;
 
-      const maxX = window.innerWidth - 80;
-      const maxY = window.innerHeight - 60;
+      const widgetWidth = open ? 360 : 320;
+      const widgetHeight = open ? 390 : 56;
 
       const nextPosition = {
-        x: Math.max(8, Math.min(e.clientX - offset.x, maxX)),
-        y: Math.max(88, Math.min(e.clientY - offset.y, maxY)),
+        x: Math.max(
+          8,
+          Math.min(e.clientX - dragOffset.x, window.innerWidth - widgetWidth)
+        ),
+        y: Math.max(
+          8,
+          Math.min(e.clientY - dragOffset.y, window.innerHeight - widgetHeight)
+        ),
       };
 
       setPosition(nextPosition);
@@ -120,29 +128,21 @@ export default function AccessibilityBar() {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [dragging, offset]);
+  }, [dragging, dragOffset, open]);
 
   function startDragging(e) {
     if (e.target.closest("button")) return;
 
     setDragging(true);
-    setOffset({
+    setDragOffset({
       x: e.clientX - position.x,
       y: e.clientY - position.y,
     });
   }
 
-  function zoomIn() {
-    setZoom((prev) => Math.min(prev + ZOOM_STEP, MAX_ZOOM));
-  }
-
-  function zoomOut() {
-    setZoom((prev) => Math.max(prev - ZOOM_STEP, MIN_ZOOM));
-  }
-
   function readPage() {
     if (!("speechSynthesis" in window)) {
-      alert("Your browser does not support read aloud.");
+      alert("Read aloud is not supported in this browser.");
       return;
     }
 
@@ -153,14 +153,13 @@ export default function AccessibilityBar() {
     }
 
     const main = document.getElementById("main-content");
-    const text = main?.innerText || "";
+    const text = main?.innerText || document.body.innerText || "";
 
     if (!text.trim()) return;
 
     const speech = new SpeechSynthesisUtterance(text);
     speech.rate = 0.95;
     speech.pitch = 1;
-
     speech.onend = () => setIsReading(false);
     speech.onerror = () => setIsReading(false);
 
@@ -183,9 +182,9 @@ export default function AccessibilityBar() {
     localStorage.removeItem("readableFont");
     localStorage.removeItem("accessibilityPosition");
 
-    document.documentElement.style.setProperty("--accessibility-scale", 1);
     document.body.classList.remove("high-contrast-mode");
     document.body.classList.remove("readable-font-mode");
+    document.documentElement.style.setProperty("--accessibility-scale", 1);
   }
 
   return (
@@ -197,49 +196,66 @@ export default function AccessibilityBar() {
         left: position.x,
         top: position.y,
         zIndex: 9999,
-        width: open ? { xs: 320, sm: 390 } : "auto",
+        width: open ? { xs: "calc(100vw - 32px)", sm: 360 } : 320,
         maxWidth: "calc(100vw - 16px)",
-        borderRadius: 3,
+        borderRadius: 1,
         overflow: "hidden",
-        boxShadow: 6,
+        boxShadow: "0 3px 10px rgba(0,0,0,0.18)",
         border: "1px solid #d0d0d0",
-        backgroundColor: "#ffffff",
+        backgroundColor: "white",
       }}
     >
       <Box
         onMouseDown={startDragging}
         sx={{
-          backgroundColor: "#006225",
-          color: "white",
-          px: 1,
-          py: 1,
+          backgroundColor: "#ffffff",
+          color: "#222",
+          px: 1.5,
+          py: 1.25,
           display: "flex",
           alignItems: "center",
           gap: 1,
           cursor: dragging ? "grabbing" : "grab",
           userSelect: "none",
+          borderBottom: open ? "1px solid #dddddd" : "none",
         }}
       >
-        <DragIndicatorIcon aria-hidden="true" />
+        <DragIndicatorIcon sx={{ color: "#006225" }} aria-hidden="true" />
 
-        <Typography fontWeight={700} sx={{ flexGrow: 1 }}>
-          Accessibility
-        </Typography>
+        <Box sx={{ flexGrow: 1 }}>
+          <Typography fontWeight={700} sx={{ lineHeight: 1.2 }}>
+            Accessibility
+          </Typography>
 
-        <IconButton
-          size="small"
-          onClick={() => setOpen((prev) => !prev)}
-          aria-label={open ? "Close accessibility tools" : "Open accessibility tools"}
-          sx={{ color: "white" }}
-        >
-          <AccessibilityNewIcon />
-        </IconButton>
+          {!open && (
+            <Typography variant="body2" color="text.secondary">
+              Translate, text size, contrast
+            </Typography>
+          )}
+        </Box>
+
+        <Tooltip title={open ? "Close tools" : "Open tools"}>
+          <IconButton
+            size="small"
+            onClick={() => setOpen((prev) => !prev)}
+            aria-label={open ? "Close accessibility tools" : "Open accessibility tools"}
+            sx={{
+              color: "#006225",
+              border: "1px solid #006225",
+              "&:hover": {
+                backgroundColor: "#eef7ef",
+              },
+            }}
+          >
+            {open ? <CloseIcon /> : <AccessibilityNewIcon />}
+          </IconButton>
+        </Tooltip>
       </Box>
 
       <Collapse in={open}>
         <Box sx={{ p: 2 }}>
           <Typography fontWeight={700} sx={{ mb: 1 }}>
-            Translate Page
+            Select Language
           </Typography>
 
           <Box
@@ -248,27 +264,38 @@ export default function AccessibilityBar() {
             sx={{ mb: 2 }}
           />
 
-          <Divider sx={{ my: 1.5 }} />
+          <Divider sx={{ my: 2 }} />
 
           <Typography fontWeight={700} sx={{ mb: 1 }}>
-            Text Size: {zoom}%
+            Text Size
           </Typography>
 
-          <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
             <Button
-              fullWidth
               variant="outlined"
-              onClick={zoomOut}
+              onClick={() =>
+                setZoom((prev) => Math.max(prev - ZOOM_STEP, MIN_ZOOM))
+              }
               disabled={zoom <= MIN_ZOOM}
+              sx={smallButtonSx}
             >
               A-
             </Button>
 
+            <Typography
+              aria-live="polite"
+              sx={{ minWidth: 60, textAlign: "center" }}
+            >
+              {zoom}%
+            </Typography>
+
             <Button
-              fullWidth
               variant="outlined"
-              onClick={zoomIn}
+              onClick={() =>
+                setZoom((prev) => Math.min(prev + ZOOM_STEP, MAX_ZOOM))
+              }
               disabled={zoom >= MAX_ZOOM}
+              sx={smallButtonSx}
             >
               A+
             </Button>
@@ -276,44 +303,80 @@ export default function AccessibilityBar() {
 
           <Stack spacing={1}>
             <Button
+              fullWidth
               variant={readableFont ? "contained" : "outlined"}
               startIcon={<TextFieldsIcon />}
               onClick={() => setReadableFont((prev) => !prev)}
+              sx={buttonSx}
             >
               {readableFont ? "Readable Font On" : "Readable Font"}
             </Button>
 
             <Button
+              fullWidth
               variant={highContrast ? "contained" : "outlined"}
               startIcon={<ContrastIcon />}
               onClick={() => setHighContrast((prev) => !prev)}
+              sx={buttonSx}
             >
               {highContrast ? "High Contrast On" : "High Contrast"}
             </Button>
 
             <Button
+              fullWidth
               variant={isReading ? "contained" : "outlined"}
               startIcon={<RecordVoiceOverIcon />}
               onClick={readPage}
+              sx={buttonSx}
             >
-              {isReading ? "Stop Reading" : "Read Page"}
+              {isReading ? "Stop Reading" : "Read Page Aloud"}
             </Button>
 
             <Button
-              color="error"
-              variant="outlined"
+              fullWidth
+              variant="text"
               startIcon={<RestartAltIcon />}
               onClick={resetSettings}
+              sx={{
+                color: "#006225",
+                fontWeight: 700,
+                textTransform: "none",
+              }}
             >
               Reset Settings
             </Button>
           </Stack>
-
-          <Typography color="text.secondary" sx={{ fontSize: "0.8rem", mt: 1.5 }}>
-            Drag the green header to move this tool.
-          </Typography>
         </Box>
       </Collapse>
     </Paper>
   );
 }
+
+const smallButtonSx = {
+  borderColor: "#006225",
+  color: "#006225",
+  textTransform: "none",
+  "&:hover": {
+    borderColor: "#004d1a",
+    backgroundColor: "#eef7ef",
+  },
+};
+
+const buttonSx = {
+  borderRadius: 1,
+  fontWeight: 700,
+  borderColor: "#006225",
+  color: "#006225",
+  textTransform: "none",
+  "&.MuiButton-contained": {
+    backgroundColor: "#006225",
+    color: "white",
+  },
+  "&:hover": {
+    borderColor: "#004d1a",
+    backgroundColor: "#eef7ef",
+  },
+  "&.MuiButton-contained:hover": {
+    backgroundColor: "#004d1a",
+  },
+};

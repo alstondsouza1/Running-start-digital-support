@@ -47,8 +47,8 @@ button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: 3px solid #d14900;
-  outline-offset: 3px;
+  outline: 3px solid #d14900 !important;
+  outline-offset: 3px !important;
 }
 
 /* Readable font mode */
@@ -76,15 +76,9 @@ select:focus-visible {
 
 .high-contrast-mode .MuiPaper-root,
 .high-contrast-mode .MuiCard-root,
-.high-contrast-mode .MuiAccordion-root,
-.high-contrast-mode .MuiBox-root {
+.high-contrast-mode .MuiAccordion-root {
   background-color: #111111 !important;
   color: #ffffff !important;
-}
-
-.high-contrast-mode .MuiCard-root,
-.high-contrast-mode .MuiAccordion-root,
-.high-contrast-mode .MuiPaper-root {
   border: 2px solid #ffffff !important;
 }
 
@@ -99,7 +93,9 @@ select:focus-visible {
 .high-contrast-mode li,
 .high-contrast-mode label,
 .high-contrast-mode .MuiTypography-root,
-.high-contrast-mode .MuiFormHelperText-root {
+.high-contrast-mode .MuiFormHelperText-root,
+.high-contrast-mode .MuiInputLabel-root,
+.high-contrast-mode .MuiInputBase-input {
   color: #ffffff !important;
 }
 
@@ -121,13 +117,23 @@ select:focus-visible {
 
 .high-contrast-mode input,
 .high-contrast-mode textarea,
-.high-contrast-mode select {
+.high-contrast-mode select,
+.high-contrast-mode .MuiOutlinedInput-root {
   background-color: #000000 !important;
   color: #ffffff !important;
   border-color: #ffffff !important;
 }
 
-/* Google Translate styling similar to Green River */
+.high-contrast-mode .MuiOutlinedInput-notchedOutline {
+  border-color: #ffffff !important;
+}
+
+.high-contrast-mode mark {
+  background-color: #ffff00 !important;
+  color: #000000 !important;
+}
+
+/* Google Translate styling */
 .goog-te-gadget {
   font-family: inherit !important;
   font-size: 0 !important;
@@ -150,8 +156,8 @@ select:focus-visible {
 }
 
 .goog-te-combo:focus-visible {
-  outline: 3px solid #d14900;
-  outline-offset: 2px;
+  outline: 3px solid #d14900 !important;
+  outline-offset: 2px !important;
 }
 
 body > .skiptranslate {
