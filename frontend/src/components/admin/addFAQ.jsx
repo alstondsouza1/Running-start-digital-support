@@ -9,7 +9,7 @@ import {
   FormHelperText,
 } from "@mui/material";
 
-const API_BASE = import.meta.env.VITE_API_BASE;
+import { API_BASE } from "../../utils/api.js";
 
 function createEmptyForm() {
   return {

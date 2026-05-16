@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import StudentFAQPage from "../components/StudentFAQPage";
 
-const API_BASE = import.meta.env.VITE_API_BASE;
+import { API_BASE } from "../utils/api.js";
 
 export default function ProspectiveStudent() {
   const [questions, setQuestions] = useState([]);

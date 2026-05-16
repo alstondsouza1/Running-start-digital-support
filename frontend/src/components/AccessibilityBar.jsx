@@ -24,15 +24,37 @@ const MAX_ZOOM = 140;
 const ZOOM_STEP = 10;
 const DEFAULT_POSITION = { x: 16, y: 120 };
 
+function getSavedPosition() {
+  const savedPosition = localStorage.getItem("accessibilityPosition");
+
+  if (!savedPosition) return DEFAULT_POSITION;
+
+  try {
+    const parsed = JSON.parse(savedPosition);
+    const hasValidCoordinates =
+      Number.isFinite(parsed?.x) && Number.isFinite(parsed?.y);
+
+    return hasValidCoordinates ? parsed : DEFAULT_POSITION;
+  } catch {
+    return DEFAULT_POSITION;
+  }
+}
+
+function getSavedZoom() {
+  const savedZoom = Number(localStorage.getItem("accessibilityZoom"));
+
+  if (!Number.isFinite(savedZoom)) return 100;
+
+  return Math.min(Math.max(savedZoom, MIN_ZOOM), MAX_ZOOM);
+}
+
 export default function AccessibilityBar() {
   const [open, setOpen] = useState(false);
-  const [position, setPosition] = useState(DEFAULT_POSITION);
+  const [position, setPosition] = useState(getSavedPosition);
   const [dragging, setDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
-  const [zoom, setZoom] = useState(
-    Number(localStorage.getItem("accessibilityZoom")) || 100
-  );
+  const [zoom, setZoom] = useState(getSavedZoom);
   const [highContrast, setHighContrast] = useState(
     localStorage.getItem("highContrast") === "true"
   );
@@ -40,18 +62,6 @@ export default function AccessibilityBar() {
     localStorage.getItem("readableFont") === "true"
   );
   const [isReading, setIsReading] = useState(false);
-
-  useEffect(() => {
-    const savedPosition = localStorage.getItem("accessibilityPosition");
-
-    if (savedPosition) {
-      try {
-        setPosition(JSON.parse(savedPosition));
-      } catch {
-        setPosition(DEFAULT_POSITION);
-      }
-    }
-  }, []);
 
   useEffect(() => {
     document.documentElement.style.setProperty(

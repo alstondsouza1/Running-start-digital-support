@@ -21,7 +21,7 @@ import { categorySets } from "../data/categories.js";
 import AddFaqForm from "../components/admin/addFAQ.jsx";
 import { useAuth } from "../context/useAuth";
 
-const API_BASE = import.meta.env.VITE_API_BASE;
+import { API_BASE } from "../utils/api.js";
 
 function groupByType(questions) {
   return questions.reduce((acc, q) => {
