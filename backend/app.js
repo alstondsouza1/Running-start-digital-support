@@ -3,6 +3,9 @@ dotenv.config();
 
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+
 import { testConnection } from "./db/db.js";
 import router from "./router/router.js";
 import authenticateRoutes from "./router/authenticateRoutes.js";
@@ -19,6 +22,12 @@ const allowedOrigins = (
   .filter(Boolean);
 
 app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+  })
+);
+
+app.use(
   cors({
     origin(origin, callback) {
       if (!origin) return callback(null, true);
@@ -33,21 +42,32 @@ app.use(
   })
 );
 
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    message: "Too many login attempts. Please wait and try again.",
+  },
+});
 
 app.get("/", (_req, res) => {
   res.send("Running Start backend is working");
 });
 
+app.use("/api/auth", loginLimiter, authenticateRoutes);
 app.use("/api", router);
-app.use("/api/auth", authenticateRoutes);
 
 app.use((err, _req, res, next) => {
   if (err?.message?.startsWith("CORS blocked for origin:")) {
     return res.status(403).json({ error: "Origin not allowed by CORS" });
   }
 
-  return next(err);
+  console.error("Unhandled server error:", err);
+  return res.status(500).json({ error: "Server error" });
 });
 
 app.listen(PORT, async () => {
