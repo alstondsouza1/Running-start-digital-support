@@ -62,7 +62,11 @@ function matchesSearch(question, searchTerm) {
   );
 }
 
-function SortableCard({ question, onEdit, onDelete }) {
+function faqCountLabel(count) {
+  return `Showing ${count} matching FAQ${count === 1 ? "" : "s"}.`;
+}
+
+function SortableCard({ question, onEdit, onDeleteQuestion }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({
       id: question.id,
@@ -131,7 +135,7 @@ function SortableCard({ question, onEdit, onDelete }) {
           size="small"
           color="error"
           variant="outlined"
-          onClick={() => onDelete(question)}
+          onClick={() => onDeleteQuestion(question)}
         >
           Delete
         </Button>
@@ -855,9 +859,9 @@ export default function Admin() {
           onChange={(e) => setSearchTerm(e.target.value)}
           helperText={
             searchTerm.trim()
-              ? `Showing ${visibleTotal} matching FAQ${
-                  visibleTotal === 1 ? "" : "s"
-                }. Clear search before dragging to reorder.`
+              ? `${faqCountLabel(
+                  visibleTotal
+                )} Clear search before dragging to reorder.`
               : "Search helps you quickly find FAQs before editing or deleting."
           }
           InputProps={{
@@ -884,7 +888,7 @@ export default function Admin() {
       <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
         <Tabs
           value={activeTab}
-          onChange={(_e, v) => setActiveTab(v)}
+          onChange={(_e, newTab) => setActiveTab(newTab)}
           centered
           variant="scrollable"
           scrollButtons="auto"
@@ -978,7 +982,7 @@ export default function Admin() {
                               setEditingFaq(faq);
                               setView("addFaq");
                             }}
-                            onDelete={handleDelete}
+                            onDeleteQuestion={handleDelete}
                           />
                         ))
                       ) : (
