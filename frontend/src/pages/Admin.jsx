@@ -62,8 +62,10 @@ function matchesSearch(question, searchTerm) {
   );
 }
 
-function faqCountLabel(count) {
-  return `Showing ${count} matching FAQ${count === 1 ? "" : "s"}.`;
+function faqCountLabel(count, includeInstruction = false) {
+  const base = `Showing ${count} matching FAQ${count === 1 ? "" : "s"}.`;
+  if (!includeInstruction) return base;
+  return `${base} Clear search before dragging to reorder.`;
 }
 
 function SortableCard({ question, onEdit, onDeleteQuestion }) {
@@ -859,9 +861,7 @@ export default function Admin() {
           onChange={(e) => setSearchTerm(e.target.value)}
           helperText={
             searchTerm.trim()
-              ? `${faqCountLabel(
-                  visibleTotal
-                )} Clear search before dragging to reorder.`
+              ? faqCountLabel(visibleTotal, true)
               : "Search helps you quickly find FAQs before editing or deleting."
           }
           InputProps={{
@@ -888,7 +888,7 @@ export default function Admin() {
       <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
         <Tabs
           value={activeTab}
-          onChange={(_e, newTab) => setActiveTab(newTab)}
+          onChange={(_event, value) => setActiveTab(value)}
           centered
           variant="scrollable"
           scrollButtons="auto"
@@ -922,7 +922,7 @@ export default function Admin() {
       {!loadingFaqs &&
         !fetchError &&
         activeCategories.map((cat) => {
-          const originalQuestions = activeGrouped[cat.id] || [];
+          const allQuestions = activeGrouped[cat.id] || [];
           const questions = filteredGrouped[cat.id] || [];
           const ids = questions.map((q) => q.id);
 
@@ -937,7 +937,7 @@ export default function Admin() {
               }}
             >
               <Typography variant="h6" gutterBottom>
-                {cat.name} ({originalQuestions.length})
+                {cat.name} ({allQuestions.length})
               </Typography>
 
               {cat.description && (
