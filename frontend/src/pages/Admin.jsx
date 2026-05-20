@@ -68,6 +68,14 @@ function faqCountLabel(count, includeInstruction = false) {
   return `${base} Clear search before dragging to reorder.`;
 }
 
+function sanitizeConfirmText(text) {
+  return String(text || "")
+    .replace(/[\r\n\t]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 180);
+}
+
 function SortableCard({ question, onEdit, onDelete }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({
@@ -137,7 +145,7 @@ function SortableCard({ question, onEdit, onDelete }) {
           size="small"
           color="error"
           variant="outlined"
-          onClick={() => onDelete(question)}
+          onClick={() => onDelete(question.id, question.question)}
         >
           Delete
         </Button>
@@ -218,13 +226,13 @@ export default function Admin() {
     [filteredGrouped]
   );
 
-  function showMessage(message, severity = "success") {
+  const showMessage = useCallback((message, severity = "success") => {
     setSnackbar({
       open: true,
       severity,
       message,
     });
-  }
+  }, []);
 
   const loadCategories = useCallback(async () => {
     try {
@@ -242,7 +250,7 @@ export default function Admin() {
     } catch (err) {
       showMessage(err?.message || "Failed to load categories", "error");
     }
-  }, []);
+  }, [showMessage]);
 
   const loadFaqs = useCallback(async () => {
     setLoadingFaqs(true);
@@ -288,7 +296,7 @@ export default function Admin() {
     loadCategories();
   }, [isAdmin, loadFaqs, loadCategories]);
 
-  async function handleDelete(question) {
+  async function handleDelete(id, questionText) {
     const token = localStorage.getItem("token");
 
     if (!token) {
@@ -297,13 +305,15 @@ export default function Admin() {
     }
 
     const confirmed = window.confirm(
-      `Are you sure you want to delete this FAQ?\n\n"${question.question}"`
+      `Are you sure you want to delete this FAQ?\n\n"${sanitizeConfirmText(
+        questionText
+      )}"`
     );
 
     if (!confirmed) return;
 
     try {
-      const res = await fetch(`${API_BASE}/faq/${question.id}`, {
+      const res = await fetch(`${API_BASE}/faq/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -855,7 +865,7 @@ export default function Admin() {
       <Box sx={{ maxWidth: "1200px", mx: "auto", mt: 3 }}>
         <TextField
           fullWidth
-          label="Search admin FAQs"
+          label="Search FAQs"
           placeholder="Search by question, category, or answer text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
