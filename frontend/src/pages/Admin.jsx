@@ -154,6 +154,91 @@ function SortableCard({ question, onEdit, onDelete }) {
   );
 }
 
+function SortableCategoryCard({ category, audience, onEdit, onDelete }) {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({
+      id: category.id,
+    });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    cursor: "grab",
+  };
+
+  return (
+    <Paper
+      ref={setNodeRef}
+      sx={{
+        p: { xs: 1.25, sm: 1.5 },
+        borderRadius: 1,
+        border: 1,
+        borderColor: "divider",
+        backgroundColor: "background.paper",
+        display: "flex",
+        flexDirection: { xs: "column", md: "row" },
+        justifyContent: "space-between",
+        alignItems: { xs: "stretch", md: "center" },
+        gap: 1.5,
+        overflow: "hidden",
+        ...style,
+      }}
+    >
+      <Box
+        {...attributes}
+        {...listeners}
+        aria-label={`Drag to reorder category: ${category.name}`}
+        sx={{ flex: 1, cursor: "grab", minWidth: 0 }}
+      >
+        <Typography sx={{ wordBreak: "break-word", fontWeight: 600 }}>
+          {category.name}
+        </Typography>
+
+        <Typography variant="body2" color="text.secondary">
+          {category.id}
+        </Typography>
+      </Box>
+
+      <Typography
+        color="text.secondary"
+        sx={{
+          flex: 1,
+          wordBreak: "break-word",
+          fontSize: { xs: "0.9rem", sm: "1rem" },
+        }}
+      >
+        {category.description || "—"}
+      </Typography>
+
+      <Box
+        sx={{
+          display: "flex",
+          gap: 1,
+          flexWrap: "wrap",
+          justifyContent: { xs: "flex-start", md: "flex-end" },
+        }}
+      >
+        <Button
+          size="small"
+          variant="outlined"
+          onClick={() => onEdit({ ...category, audience })}
+        >
+          Edit
+        </Button>
+
+        <Button
+          size="small"
+          color="error"
+          variant="outlined"
+          onClick={() => onDelete(audience, category.id)}
+        >
+          Delete
+        </Button>
+      </Box>
+    </Paper>
+  );
+}
+
 export default function Admin() {
   const { isAdmin } = useAuth();
 
@@ -410,7 +495,70 @@ export default function Admin() {
     }
   }
 
-  async function handleDeleteCategory(id) {
+  async function saveCategoryOrderToBackend(audience, reorderedList) {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      showMessage("Please login again.", "error");
+      return false;
+    }
+
+    try {
+      const orderedIds = reorderedList.map((cat) => cat.id);
+
+      const res = await fetch(`${API_BASE}/categories/order`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          audience,
+          orderedIds,
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to save category order");
+      }
+
+      showMessage("Category order updated successfully.", "success");
+      return true;
+    } catch (err) {
+      showMessage(err.message || "Failed to save category order.", "error");
+      return false;
+    }
+  }
+
+  async function handleCategoryDragEnd(event, audience) {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) return;
+
+    const list = categories[audience] || [];
+
+    const oldIndex = list.findIndex((cat) => String(cat.id) === String(active.id));
+    const newIndex = list.findIndex((cat) => String(cat.id) === String(over.id));
+
+    if (oldIndex < 0 || newIndex < 0) return;
+
+    const reordered = arrayMove(list, oldIndex, newIndex);
+
+    setCategories((prev) => ({
+      ...prev,
+      [audience]: reordered,
+    }));
+
+    const success = await saveCategoryOrderToBackend(audience, reordered);
+
+    if (!success) {
+      loadCategories();
+    }
+  }
+
+  async function handleDeleteCategory(audience, id) {
     const token = localStorage.getItem("token");
 
     if (!token) {
@@ -419,16 +567,17 @@ export default function Admin() {
     }
 
     const confirmed = window.confirm(
-      "Are you sure you want to delete this category? FAQs in it will become uncategorized."
+      "Are you sure you want to delete this category? You can only delete it if there are no FAQs inside it."
     );
 
     if (!confirmed) return;
 
     try {
-      const res = await fetch(`${API_BASE}/categories/${id}`, {
+      const res = await fetch(`${API_BASE}/categories/${audience}/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
+
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
@@ -437,6 +586,7 @@ export default function Admin() {
 
       showMessage("Category deleted successfully.", "success");
       loadCategories();
+      loadFaqs();
     } catch (err) {
       showMessage(err.message || "Delete failed.", "error");
     }
@@ -531,7 +681,7 @@ export default function Admin() {
               </Typography>
 
               <Typography variant="body2" color="text.secondary" sx={{ mt: 0.4 }}>
-                Maintain categories for current and future students.
+                Drag categories to control the order students see them.
               </Typography>
             </Box>
 
@@ -547,6 +697,7 @@ export default function Admin() {
               >
                 Back to Dashboard
               </Button>
+
               <Button
                 variant="contained"
                 onClick={() => {
@@ -583,6 +734,10 @@ export default function Admin() {
               {audience === "current" ? "Current Students" : "Future Students"}
             </Typography>
 
+            <Typography color="text.secondary" sx={{ mb: 1 }}>
+              Drag categories to reorder them.
+            </Typography>
+
             <Box
               sx={{
                 display: { xs: "none", sm: "flex" },
@@ -601,75 +756,36 @@ export default function Admin() {
             </Box>
 
             <Paper sx={{ p: { xs: 1.25, sm: 2 }, mt: 1, overflow: "hidden" }}>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {(categories[audience] || []).length === 0 ? (
-                  <Typography color="text.secondary">No categories yet.</Typography>
-                ) : (
-                  (categories[audience] || []).map((cat) => (
-                    <Paper
-                      key={cat.id}
-                      sx={{
-                        p: { xs: 1.25, sm: 1.5 },
-                        borderRadius: 1,
-                        border: 1,
-                        borderColor: "divider",
-                        backgroundColor: "background.paper",
-                        display: "flex",
-                        flexDirection: { xs: "column", md: "row" },
-                        justifyContent: "space-between",
-                        alignItems: { xs: "stretch", md: "center" },
-                        gap: 1.5,
-                        overflow: "hidden",
-                      }}
-                    >
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography sx={{ wordBreak: "break-word" }}>
-                          {cat.name}
-                        </Typography>
-                      </Box>
-
-                      <Typography
-                        color="text.secondary"
-                        sx={{
-                          whiteSpace: { xs: "normal", md: "nowrap" },
-                          wordBreak: "break-word",
-                          fontSize: { xs: "0.9rem", sm: "1rem" },
-                        }}
-                      >
-                        {cat.description || "—"}
+              <DndContext
+                collisionDetection={closestCenter}
+                onDragEnd={(evt) => handleCategoryDragEnd(evt, audience)}
+              >
+                <SortableContext
+                  items={(categories[audience] || []).map((cat) => cat.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                    {(categories[audience] || []).length === 0 ? (
+                      <Typography color="text.secondary">
+                        No categories yet.
                       </Typography>
-
-                      <Box
-                        sx={{
-                          display: "flex",
-                          gap: 1,
-                          flexWrap: "wrap",
-                          justifyContent: { xs: "flex-start", md: "flex-end" },
-                        }}
-                      >
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={() => {
-                            setEditingCategory({ ...cat, audience });
+                    ) : (
+                      (categories[audience] || []).map((cat) => (
+                        <SortableCategoryCard
+                          key={cat.id}
+                          category={cat}
+                          audience={audience}
+                          onEdit={(categoryToEdit) => {
+                            setEditingCategory(categoryToEdit);
                             setView("addCategory");
                           }}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          size="small"
-                          color="error"
-                          variant="outlined"
-                          onClick={() => handleDeleteCategory(cat.id)}
-                        >
-                          Delete
-                        </Button>
-                      </Box>
-                    </Paper>
-                  ))
-                )}
-              </Box>
+                          onDelete={handleDeleteCategory}
+                        />
+                      ))
+                    )}
+                  </Box>
+                </SortableContext>
+              </DndContext>
             </Paper>
           </Box>
         ))}
@@ -898,7 +1014,7 @@ export default function Admin() {
       <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
         <Tabs
           value={activeTab}
-          onChange={(event, value) => setActiveTab(value)}
+          onChange={(_event, value) => setActiveTab(value)}
           centered
           variant="scrollable"
           scrollButtons="auto"

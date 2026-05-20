@@ -25,6 +25,7 @@ export default function AddCategoryForm({
   const [formData, setFormData] = useState(createEmptyForm());
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (initialData) {
@@ -75,9 +76,11 @@ export default function AddCategoryForm({
     };
 
     try {
+      setIsSaving(true);
+
       const url =
         mode === "edit" && initialData?.id
-          ? `${API_BASE}/categories/${initialData.id}`
+          ? `${API_BASE}/categories/${initialData.audience}/${initialData.id}`
           : `${API_BASE}/categories`;
 
       const method = mode === "edit" ? "PUT" : "POST";
@@ -111,6 +114,8 @@ export default function AddCategoryForm({
     } catch (error) {
       console.error("Error:", error);
       setFormError(error.message);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -145,7 +150,7 @@ export default function AddCategoryForm({
         value={formData.audience}
         onChange={handleChange}
         required
-        disabled={mode === "edit"}
+        disabled={mode === "edit" || isSaving}
         helperText={mode === "edit" ? "Audience cannot be changed" : undefined}
       >
         <MenuItem value="">Select Audience</MenuItem>
@@ -159,6 +164,7 @@ export default function AddCategoryForm({
         value={formData.name}
         onChange={handleChange}
         required
+        disabled={isSaving}
       />
 
       <TextField
@@ -168,22 +174,35 @@ export default function AddCategoryForm({
         onChange={handleChange}
         multiline
         minRows={2}
+        disabled={isSaving}
       />
 
       <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
         <Button
           type="submit"
           variant="contained"
+          disabled={isSaving}
           sx={{
             backgroundColor: "#006225",
             "&:hover": { backgroundColor: "#004d1a" },
           }}
         >
-          {mode === "edit" ? "Update Category" : "Submit Category"}
+          {isSaving
+            ? mode === "edit"
+              ? "Updating..."
+              : "Saving..."
+            : mode === "edit"
+            ? "Update Category"
+            : "Submit Category"}
         </Button>
 
         {onCancel && (
-          <Button type="button" variant="outlined" onClick={onCancel}>
+          <Button
+            type="button"
+            variant="outlined"
+            onClick={onCancel}
+            disabled={isSaving}
+          >
             Cancel
           </Button>
         )}
