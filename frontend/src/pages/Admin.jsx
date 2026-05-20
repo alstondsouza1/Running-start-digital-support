@@ -1,13 +1,21 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  Alert,
   Box,
   Button,
   CircularProgress,
+  IconButton,
+  InputAdornment,
   Paper,
+  Snackbar,
   Tab,
   Tabs,
+  TextField,
   Typography,
 } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import ClearIcon from "@mui/icons-material/Clear";
+
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -20,6 +28,7 @@ import { CSS } from "@dnd-kit/utilities";
 import AddFaqForm from "../components/admin/addFAQ.jsx";
 import AddCategoryForm from "../components/admin/addCategory.jsx";
 import { useAuth } from "../context/useAuth";
+
 const API_BASE = import.meta.env.VITE_API_BASE;
 
 function groupByType(questions) {
@@ -28,6 +37,29 @@ function groupByType(questions) {
     acc[q.type].push(q);
     return acc;
   }, {});
+}
+
+function answerText(answer) {
+  if (!answer) return "";
+
+  const intro = answer.intro || "";
+  const bullets = Array.isArray(answer.bullets)
+    ? answer.bullets.map((bullet) => bullet?.text || "").join(" ")
+    : "";
+
+  return `${intro} ${bullets}`.toLowerCase();
+}
+
+function matchesSearch(question, searchTerm) {
+  const term = searchTerm.trim().toLowerCase();
+
+  if (!term) return true;
+
+  return (
+    String(question.question || "").toLowerCase().includes(term) ||
+    String(question.type || "").toLowerCase().includes(term) ||
+    answerText(question.answer).includes(term)
+  );
 }
 
 function SortableCard({ question, onEdit, onDelete }) {
@@ -67,7 +99,7 @@ function SortableCard({ question, onEdit, onDelete }) {
         aria-label={`Drag to reorder question: ${question.question}`}
         sx={{ flex: 1, cursor: "grab", minWidth: 0 }}
       >
-        <Typography sx={{ wordBreak: "break-word" }}>
+        <Typography sx={{ wordBreak: "break-word", fontWeight: 600 }}>
           {question.question}
         </Typography>
       </Box>
@@ -91,18 +123,15 @@ function SortableCard({ question, onEdit, onDelete }) {
           justifyContent: { xs: "flex-start", md: "flex-end" },
         }}
       >
-        <Button
-          size="small"
-          variant="outlined"
-          onClick={() => onEdit(question)}
-        >
+        <Button size="small" variant="outlined" onClick={() => onEdit(question)}>
           Edit
         </Button>
+
         <Button
           size="small"
           color="error"
           variant="outlined"
-          onClick={() => onDelete(question.id)}
+          onClick={() => onDelete(question)}
         >
           Delete
         </Button>
@@ -116,6 +145,7 @@ export default function Admin() {
 
   const [view, setView] = useState("dashboard");
   const [activeTab, setActiveTab] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [groupedCurrent, setGroupedCurrent] = useState({});
   const [groupedFuture, setGroupedFuture] = useState({});
@@ -125,6 +155,12 @@ export default function Admin() {
 
   const [categories, setCategories] = useState({ current: [], future: [] });
   const [editingCategory, setEditingCategory] = useState(null);
+
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    severity: "success",
+    message: "",
+  });
 
   const activeCategories = useMemo(
     () => (activeTab === 0 ? categories.current : categories.future) ?? [],
@@ -136,20 +172,73 @@ export default function Admin() {
     [activeTab, groupedCurrent, groupedFuture]
   );
 
-  async function loadCategories() {
+  const currentTotal = useMemo(
+    () =>
+      Object.values(groupedCurrent).reduce(
+        (total, list) => total + list.length,
+        0
+      ),
+    [groupedCurrent]
+  );
+
+  const futureTotal = useMemo(
+    () =>
+      Object.values(groupedFuture).reduce(
+        (total, list) => total + list.length,
+        0
+      ),
+    [groupedFuture]
+  );
+
+  const filteredGrouped = useMemo(() => {
+    const result = {};
+
+    for (const category of activeCategories) {
+      const questions = activeGrouped[category.id] || [];
+      result[category.id] = questions.filter((question) =>
+        matchesSearch(question, searchTerm)
+      );
+    }
+
+    return result;
+  }, [activeCategories, activeGrouped, searchTerm]);
+
+  const visibleTotal = useMemo(
+    () =>
+      Object.values(filteredGrouped).reduce(
+        (total, list) => total + list.length,
+        0
+      ),
+    [filteredGrouped]
+  );
+
+  function showMessage(message, severity = "success") {
+    setSnackbar({
+      open: true,
+      severity,
+      message,
+    });
+  }
+
+  const loadCategories = useCallback(async () => {
     try {
       const res = await fetch(`${API_BASE}/categories`);
       const data = await res.json();
-      console.log("[loadCategories] status:", res.status, "data:", data);
-      if (res.ok) {
-        setCategories(data);
-      }
-    } catch (err) {
-      console.error("[loadCategories] fetch error:", err);
-    }
-  }
 
-  async function loadFaqs() {
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to load categories");
+      }
+
+      setCategories({
+        current: Array.isArray(data.current) ? data.current : [],
+        future: Array.isArray(data.future) ? data.future : [],
+      });
+    } catch (err) {
+      showMessage(err?.message || "Failed to load categories", "error");
+    }
+  }, []);
+
+  const loadFaqs = useCallback(async () => {
     setLoadingFaqs(true);
     setFetchError("");
 
@@ -178,40 +267,37 @@ export default function Admin() {
         id: q.id ?? `future-${q.type}-${q.question}`,
       }));
 
-      const gc = groupByType(currentWithIds);
-      const gf = groupByType(futureWithIds);
-      console.log("[loadFaqs] groupedCurrent keys:", Object.keys(gc));
-      console.log("[loadFaqs] groupedFuture keys:", Object.keys(gf));
-      setGroupedCurrent(gc);
-      setGroupedFuture(gf);
+      setGroupedCurrent(groupByType(currentWithIds));
+      setGroupedFuture(groupByType(futureWithIds));
     } catch (err) {
       setFetchError(err?.message || "Unknown error");
     } finally {
       setLoadingFaqs(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     if (!isAdmin) return;
     loadFaqs();
     loadCategories();
-  }, [isAdmin]);
+  }, [isAdmin, loadFaqs, loadCategories]);
 
-  async function handleDelete(id) {
+  async function handleDelete(question) {
     const token = localStorage.getItem("token");
 
     if (!token) {
-      alert("Please login again.");
+      showMessage("Please login again.", "error");
       return;
     }
 
     const confirmed = window.confirm(
-      "Are you sure you want to delete this FAQ?"
+      `Are you sure you want to delete this FAQ?\n\n"${question.question}"`
     );
+
     if (!confirmed) return;
 
     try {
-      const res = await fetch(`${API_BASE}/faq/${id}`, {
+      const res = await fetch(`${API_BASE}/faq/${question.id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -224,10 +310,10 @@ export default function Admin() {
         throw new Error(data?.error || data?.message || "Delete failed");
       }
 
-      alert("FAQ deleted successfully");
+      showMessage("FAQ deleted successfully.", "success");
       loadFaqs();
     } catch (err) {
-      alert(err.message || "Delete failed");
+      showMessage(err.message || "Delete failed.", "error");
     }
   }
 
@@ -235,7 +321,7 @@ export default function Admin() {
     const token = localStorage.getItem("token");
 
     if (!token) {
-      alert("Please login again.");
+      showMessage("Please login again.", "error");
       return false;
     }
 
@@ -262,9 +348,10 @@ export default function Admin() {
         throw new Error(data?.error || data?.message || "Failed to save order");
       }
 
+      showMessage("FAQ order updated successfully.", "success");
       return true;
     } catch (err) {
-      alert(err.message || "Failed to save order");
+      showMessage(err.message || "Failed to save order.", "error");
       return false;
     }
   }
@@ -272,6 +359,11 @@ export default function Admin() {
   async function handleDragEnd(event, catId) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
+
+    if (searchTerm.trim()) {
+      showMessage("Clear search before reordering FAQs.", "info");
+      return;
+    }
 
     const currentGroups = activeTab === 0 ? groupedCurrent : groupedFuture;
     const list = currentGroups[catId] || [];
@@ -304,9 +396,16 @@ export default function Admin() {
 
   async function handleDeleteCategory(id) {
     const token = localStorage.getItem("token");
-    if (!token) { alert("Please login again."); return; }
 
-    const confirmed = window.confirm("Are you sure you want to delete this category? FAQs in it will become uncategorized.");
+    if (!token) {
+      showMessage("Please login again.", "error");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this category? FAQs in it will become uncategorized."
+    );
+
     if (!confirmed) return;
 
     try {
@@ -315,21 +414,35 @@ export default function Admin() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.error || "Delete failed");
-      alert("Category deleted successfully");
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Delete failed");
+      }
+
+      showMessage("Category deleted successfully.", "success");
       loadCategories();
     } catch (err) {
-      alert(err.message || "Delete failed");
+      showMessage(err.message || "Delete failed.", "error");
     }
   }
 
   if (view === "addCategory") {
     return (
       <Box sx={{ p: { xs: 2, sm: 3 } }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+          }}
+        >
           <Button
             variant="text"
-            onClick={() => { setView("manageCategories"); setEditingCategory(null); }}
+            onClick={() => {
+              setView("manageCategories");
+              setEditingCategory(null);
+            }}
             sx={{ color: "#006225" }}
           >
             Back to Categories
@@ -343,6 +456,12 @@ export default function Admin() {
             onSuccess={() => {
               setEditingCategory(null);
               setView("manageCategories");
+              showMessage(
+                editingCategory
+                  ? "Category updated successfully."
+                  : "Category added successfully.",
+                "success"
+              );
               loadCategories();
             }}
             onCancel={() => {
@@ -357,8 +476,7 @@ export default function Admin() {
 
   if (view === "manageCategories") {
     return (
-      <Box sx={{ p: { xs: 2, sm: 3 } }}>
-        {/* fixed top bar — same structure as FAQ dashboard */}
+      <Box sx={{ p: { xs: 2, sm: 3 }, pt: { xs: 12, sm: 13 } }}>
         <Box
           sx={{
             position: "fixed",
@@ -366,31 +484,42 @@ export default function Admin() {
             left: 0,
             right: 0,
             zIndex: 3000,
-            backgroundColor: "white",
-            pointerEvents: "auto",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+            backgroundColor: "#ffffff",
+            borderBottom: "1px solid #d7d7d7",
+            boxShadow: "0 2px 5px rgba(0,0,0,0.08)",
           }}
         >
           <Box
             sx={{
+              px: { xs: 2, sm: 3 },
+              py: 1.5,
               display: "flex",
-              alignItems: { xs: "flex-start", sm: "center" },
-              flexDirection: { xs: "column", sm: "row" },
+              alignItems: "center",
               justifyContent: "space-between",
               gap: 2,
-              padding: 1,
-              backgroundColor: "#f5f5f5",
-              boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+              flexWrap: "wrap",
             }}
           >
-            <Typography
-              variant="h4"
-              sx={{ fontFamily: "'Chiron GoRound TC', sans-serif", fontWeight: 600 }}
-            >
-              Manage Categories
-            </Typography>
+            <Box>
+              <Typography
+                variant="h4"
+                component="h1"
+                sx={{
+                  fontFamily: "'Chiron GoRound TC', sans-serif",
+                  fontWeight: 700,
+                  color: "#222",
+                  lineHeight: 1.1,
+                }}
+              >
+                Manage Categories
+              </Typography>
 
-            <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", paddingRight: 3 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.4 }}>
+                Maintain categories for current and future students.
+              </Typography>
+            </Box>
+
+            <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
               <Button
                 variant="outlined"
                 onClick={() => setView("dashboard")}
@@ -404,8 +533,24 @@ export default function Admin() {
               </Button>
               <Button
                 variant="contained"
-                onClick={() => { setEditingCategory(null); setView("addCategory"); }}
-                sx={{ backgroundColor: "#006225", "&:hover": { backgroundColor: "#004d1a" } }}
+                onClick={() => {
+                  setEditingCategory(null);
+                  setView("addCategory");
+                }}
+                sx={{
+                  backgroundColor: "#006225",
+                  color: "white",
+                  fontWeight: 700,
+                  textTransform: "none",
+                  borderRadius: 1.5,
+                  px: 2.5,
+                  py: 1,
+                  boxShadow: "0 2px 5px rgba(0,0,0,0.14)",
+                  "&:hover": {
+                    backgroundColor: "#004d1a",
+                    boxShadow: "0 3px 8px rgba(0,0,0,0.2)",
+                  },
+                }}
               >
                 + Add Category
               </Button>
@@ -416,7 +561,7 @@ export default function Admin() {
         {["current", "future"].map((audience) => (
           <Box
             key={audience}
-            sx={{ mt: 10, maxWidth: "1200px", mx: "auto", width: "100%" }}
+            sx={{ mt: 4, maxWidth: "1200px", mx: "auto", width: "100%" }}
           >
             <Typography variant="h6" gutterBottom>
               {audience === "current" ? "Current Students" : "Future Students"}
@@ -462,7 +607,9 @@ export default function Admin() {
                       }}
                     >
                       <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography sx={{ wordBreak: "break-word" }}>{cat.name}</Typography>
+                        <Typography sx={{ wordBreak: "break-word" }}>
+                          {cat.name}
+                        </Typography>
                       </Box>
 
                       <Typography
@@ -487,7 +634,10 @@ export default function Admin() {
                         <Button
                           size="small"
                           variant="outlined"
-                          onClick={() => { setEditingCategory({ ...cat, audience }); setView("addCategory"); }}
+                          onClick={() => {
+                            setEditingCategory({ ...cat, audience });
+                            setView("addCategory");
+                          }}
                         >
                           Edit
                         </Button>
@@ -507,6 +657,22 @@ export default function Admin() {
             </Paper>
           </Box>
         ))}
+
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={3500}
+          onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+          anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        >
+          <Alert
+            severity={snackbar.severity}
+            variant="filled"
+            onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+            sx={{ width: "100%" }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       </Box>
     );
   }
@@ -539,8 +705,13 @@ export default function Admin() {
             initialData={editingFaq}
             mode={editingFaq ? "edit" : "add"}
             onSuccess={() => {
+              const message = editingFaq
+                ? "FAQ updated successfully."
+                : "FAQ added successfully.";
+
               setEditingFaq(null);
               setView("dashboard");
+              showMessage(message, "success");
               loadFaqs();
             }}
             onCancel={() => {
@@ -554,7 +725,7 @@ export default function Admin() {
   }
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 } }}>
+    <Box sx={{ p: { xs: 2, sm: 3 }, pt: { xs: 12, sm: 13 } }}>
       <Box
         sx={{
           position: "fixed",
@@ -562,36 +733,42 @@ export default function Admin() {
           left: 0,
           right: 0,
           zIndex: 3000,
-          backgroundColor: "white",
-          pointerEvents: "auto",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+          backgroundColor: "#ffffff",
+          borderBottom: "1px solid #d7d7d7",
+          boxShadow: "0 2px 5px rgba(0,0,0,0.08)",
         }}
       >
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: { xs: "flex-start", sm: "center" },
-          flexDirection: { xs: "column", sm: "row" },
-          justifyContent: "space-between",
-          gap: 2,
-          padding: 1,
-          backgroundColor: "#f5f5f5",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
-        }}
-      >
+        <Box
+          sx={{
+            px: { xs: 2, sm: 3 },
+            py: 1.5,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 2,
+            flexWrap: "wrap",
+          }}
+        >
+          <Box>
+            <Typography
+              variant="h4"
+              component="h1"
+              sx={{
+                fontFamily: "'Chiron GoRound TC', sans-serif",
+                fontWeight: 700,
+                color: "#222",
+                lineHeight: 1.1,
+              }}
+            >
+              Admin Dashboard
+            </Typography>
 
-      <Typography
-        variant="h4"
-        sx={{
-          fontFamily: "'Chiron GoRound TC', sans-serif",
-          fontWeight: 600
-        }}
-      >
-        Admin Dashboard
-      </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.4 }}>
+              Manage FAQs and student support content.
+            </Typography>
+          </Box>
 
-
-        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", paddingRight: 3 }}>
+          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
             <Button
               variant="outlined"
               onClick={() => setView("manageCategories")}
@@ -603,6 +780,7 @@ export default function Admin() {
             >
               Manage Categories
             </Button>
+
             <Button
               variant="contained"
               onClick={() => {
@@ -611,7 +789,17 @@ export default function Admin() {
               }}
               sx={{
                 backgroundColor: "#006225",
-                "&:hover": { backgroundColor: "#004d1a" },
+                color: "white",
+                fontWeight: 700,
+                textTransform: "none",
+                borderRadius: 1.5,
+                px: 2.5,
+                py: 1,
+                boxShadow: "0 2px 5px rgba(0,0,0,0.14)",
+                "&:hover": {
+                  backgroundColor: "#004d1a",
+                  boxShadow: "0 3px 8px rgba(0,0,0,0.2)",
+                },
               }}
             >
               + Add FAQ
@@ -620,28 +808,99 @@ export default function Admin() {
         </Box>
       </Box>
 
+      <Box
+        sx={{
+          maxWidth: "1200px",
+          mx: "auto",
+          mt: 5,
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
+          gap: 2,
+        }}
+      >
+        <Paper sx={{ p: 2, textAlign: "center" }}>
+          <Typography variant="h5" fontWeight={700}>
+            {currentTotal}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Current Student FAQs
+          </Typography>
+        </Paper>
 
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
+        <Paper sx={{ p: 2, textAlign: "center" }}>
+          <Typography variant="h5" fontWeight={700}>
+            {futureTotal}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Future Student FAQs
+          </Typography>
+        </Paper>
+
+        <Paper sx={{ p: 2, textAlign: "center" }}>
+          <Typography variant="h5" fontWeight={700}>
+            {currentTotal + futureTotal}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Total FAQs
+          </Typography>
+        </Paper>
+      </Box>
+
+      <Box sx={{ maxWidth: "1200px", mx: "auto", mt: 3 }}>
+        <TextField
+          fullWidth
+          label="Search admin FAQs"
+          placeholder="Search by question, category, or answer text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          helperText={
+            searchTerm.trim()
+              ? `Showing ${visibleTotal} matching FAQ${
+                  visibleTotal === 1 ? "" : "s"
+                }. Clear search before dragging to reorder.`
+              : "Search helps you quickly find FAQs before editing or deleting."
+          }
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon aria-hidden="true" />
+              </InputAdornment>
+            ),
+            endAdornment: searchTerm ? (
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="Clear admin FAQ search"
+                  onClick={() => setSearchTerm("")}
+                  edge="end"
+                >
+                  <ClearIcon />
+                </IconButton>
+              </InputAdornment>
+            ) : null,
+          }}
+        />
+      </Box>
+
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
         <Tabs
           value={activeTab}
-          onChange={(e, v) => setActiveTab(v)}
+          onChange={(_e, v) => setActiveTab(v)}
           centered
           variant="scrollable"
           scrollButtons="auto"
         >
-          <Tab label="Current Students" />
-          <Tab label="Future Students" />
+          <Tab label={`Current Students (${currentTotal})`} />
+          <Tab label={`Future Students (${futureTotal})`} />
         </Tabs>
       </Box>
 
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
-      </Box>
       <Typography
         id="drag-help-text"
         color="text.secondary"
         sx={{ mt: 2, mb: 1, textAlign: "center" }}
       >
-        Drag and drop questions to reorder them within each category. Edit and Delete buttons are available on each item.
+        Drag and drop questions to reorder them within each category. Edit and
+        Delete buttons are available on each item.
       </Typography>
 
       {loadingFaqs && (
@@ -651,17 +910,16 @@ export default function Admin() {
       )}
 
       {fetchError && (
-        <Typography color="error" sx={{ mt: 2 }}>
+        <Alert severity="error" sx={{ maxWidth: "1200px", mx: "auto", mt: 2 }}>
           {fetchError}
-        </Typography>
+        </Alert>
       )}
-
-      {!loadingFaqs && !fetchError && console.log("[render] activeCategories ids:", activeCategories.map(c => c.id), "activeGrouped keys:", Object.keys(activeTab === 0 ? groupedCurrent : groupedFuture))}
 
       {!loadingFaqs &&
         !fetchError &&
         activeCategories.map((cat) => {
-          const questions = activeGrouped[cat.id] || [];
+          const originalQuestions = activeGrouped[cat.id] || [];
+          const questions = filteredGrouped[cat.id] || [];
           const ids = questions.map((q) => q.id);
 
           return (
@@ -675,8 +933,14 @@ export default function Admin() {
               }}
             >
               <Typography variant="h6" gutterBottom>
-                {cat.name}
+                {cat.name} ({originalQuestions.length})
               </Typography>
+
+              {cat.description && (
+                <Typography color="text.secondary" sx={{ mb: 1 }}>
+                  {cat.description}
+                </Typography>
+              )}
 
               <Box
                 sx={{
@@ -718,9 +982,20 @@ export default function Admin() {
                           />
                         ))
                       ) : (
-                        <Typography color="text.secondary">
-                          No questions mapped to this category yet.
-                        </Typography>
+                        <Box
+                          sx={{
+                            p: 2,
+                            border: "1px dashed #cfcfcf",
+                            borderRadius: 1,
+                            backgroundColor: "#fafafa",
+                          }}
+                        >
+                          <Typography color="text.secondary">
+                            {searchTerm.trim()
+                              ? "No matching FAQs in this category."
+                              : "No questions mapped to this category yet."}
+                          </Typography>
+                        </Box>
                       )}
                     </Box>
                   </SortableContext>
@@ -729,6 +1004,22 @@ export default function Admin() {
             </Box>
           );
         })}
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3500}
+        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+      >
+        <Alert
+          severity={snackbar.severity}
+          variant="filled"
+          onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
