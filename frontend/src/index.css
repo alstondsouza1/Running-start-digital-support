@@ -167,3 +167,12 @@ body > .skiptranslate {
 iframe.skiptranslate {
   display: none !important;
 }
+
+.reduced-motion-mode *,
+.reduced-motion-mode *::before,
+.reduced-motion-mode *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  scroll-behavior: auto !important;
+  transition-duration: 0.001ms !important;
+}

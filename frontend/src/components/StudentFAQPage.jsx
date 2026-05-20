@@ -1,16 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Box,
-  Typography,
-  List,
-  ListItem,
-  ListItemText,
-  Link as MuiLink,
   Accordion,
-  AccordionSummary,
   AccordionDetails,
+  AccordionSummary,
+  Box,
   Chip,
+  Link as MuiLink,
+  Typography,
 } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 import Categories from "./Categories";
 import QuestionSearchBar from "./QuestionSearchBar";
@@ -72,369 +70,309 @@ function answerToText(answer) {
   return `${intro} ${bullets}`.trim();
 }
 
-function categoryById(categories, id) {
-  return categories.find((c) => c.id === id) || null;
+function getCategoryById(categories, id) {
+  return categories.find((category) => category.id === id) || null;
 }
 
 export default function StudentFAQPage({
   title,
   description,
+  audience = "",
   categories = [],
   questions = [],
 }) {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [expandedId, setExpandedId] = useState(false);
   const questionsSectionRef = useRef(null);
 
   const isSearching = normalize(searchTerm).length > 0;
 
-  const selectedCategory = useMemo(() => {
-    return categories.find((c) => c.id === selectedCategoryId) || null;
-  }, [categories, selectedCategoryId]);
+  const selectedCategory = useMemo(
+    () => getCategoryById(categories, selectedCategoryId),
+    [categories, selectedCategoryId]
+  );
 
-  const questionsForCategory = useMemo(() => {
-    if (!selectedCategoryId) return [];
-    return questions.filter((q) => q.type === selectedCategoryId);
-  }, [questions, selectedCategoryId]);
+  const visibleQuestions = useMemo(() => {
+    let baseQuestions = questions;
 
-  const searchResults = useMemo(() => {
-    if (!isSearching) return [];
+    if (selectedCategoryId) {
+      baseQuestions = baseQuestions.filter(
+        (question) => question.type === selectedCategoryId
+      );
+    }
 
-    return questions
-      .map((q, index) => {
-        const cat = categoryById(categories, q.type);
+    if (!isSearching) {
+      return baseQuestions;
+    }
 
-        const questionBlob = q.question ?? "";
-        const restBlob = [answerToText(q.answer), cat?.name, cat?.description]
-          .filter(Boolean)
-          .join(" | ");
+    return baseQuestions
+      .map((question) => {
+        const category = getCategoryById(categories, question.type);
+        const searchableText = [
+          question.question,
+          answerToText(question.answer),
+          category?.name,
+          category?.description,
+        ].join(" ");
 
-        const score =
-          scoreText(questionBlob, searchTerm) * 3 +
-          scoreText(restBlob, searchTerm);
-
-        return { q, score, index };
+        return {
+          ...question,
+          searchScore: scoreText(searchableText, searchTerm),
+        };
       })
-      .filter((r) => r.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .map((r) => r.q);
-  }, [categories, questions, isSearching, searchTerm]);
+      .filter((question) => question.searchScore > 0)
+      .sort((a, b) => b.searchScore - a.searchScore);
+  }, [categories, isSearching, questions, searchTerm, selectedCategoryId]);
 
   useEffect(() => {
     if (!isSearching) return;
 
-    const timer = setTimeout(() => {
+    const timeoutId = window.setTimeout(() => {
       trackFaqSearch({
         searchTerm,
-        resultCount: searchResults.length,
+        resultCount: visibleQuestions.length,
       });
-    }, 800);
+    }, 500);
 
-    return () => clearTimeout(timer);
-  }, [isSearching, searchTerm, searchResults.length]);
+    return () => window.clearTimeout(timeoutId);
+  }, [isSearching, searchTerm, visibleQuestions.length]);
 
-  const scrollToQuestions = () => {
-    setTimeout(() => {
-      questionsSectionRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
+  function handleCategorySelect(categoryId) {
+    const nextCategoryId = selectedCategoryId === categoryId ? null : categoryId;
+    const category = getCategoryById(categories, categoryId);
 
-      questionsSectionRef.current?.focus({ preventScroll: true });
-    }, 100);
-  };
+    setSelectedCategoryId(nextCategoryId);
+    setExpandedId(false);
 
-  const handleSelectCategory = (id) => {
-    setSearchTerm("");
-
-    const cat = categoryById(categories, id);
-
-    if (cat) {
+    if (nextCategoryId && category) {
       trackCategoryClick({
-        categoryId: cat.id,
-        categoryName: cat.name,
-        audience: title,
+        categoryId: category.id,
+        categoryName: category.name,
+        audience,
       });
+
+      window.setTimeout(() => {
+        questionsSectionRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 100);
     }
+  }
 
-    setSelectedCategoryId((prev) => (prev === id ? null : id));
-    scrollToQuestions();
-  };
+  function handleAccordionChange(question, category) {
+    return (_event, isExpanded) => {
+      setExpandedId(isExpanded ? question.id : false);
 
-  const handleSearchChange = (value) => {
-    setSelectedCategoryId(null);
-    setSearchTerm(value);
-  };
+      if (isExpanded) {
+        trackQuestionClick({
+          question: question.question,
+          categoryId: question.type,
+          categoryName: category?.name || "Unknown category",
+          source: isSearching ? "search" : "category",
+        });
+      }
+    };
+  }
 
-  const getAccordionKey = (item, fallbackIndex) =>
-    item.id ?? `${item.type}-${normalize(item.question)}-${fallbackIndex}`;
-
-  const handleAccordionChange = (item) => (_event, expanded) => {
-    if (!expanded) return;
-
-    const cat = categoryById(categories, item.type);
-
-    trackQuestionClick({
-      question: item.question,
-      categoryId: item.type,
-      categoryName: cat?.name ?? item.type,
-      source: isSearching ? "search" : "browse",
-    });
-  };
-
-  const renderAccordion = (item, idx) => {
-    const key = getAccordionKey(item, idx);
-    const summaryId = `${key}-summary`;
-    const detailsId = `${key}-details`;
-    const categoryName = categoryById(categories, item.type)?.name ?? item.type;
-
-    return (
-      <Accordion
-        key={key}
-        disableGutters
-        onChange={handleAccordionChange(item)}
-        sx={{
-          "&:before": { display: "none" },
-          boxShadow: 0,
-          borderBottom: "1px solid",
-          borderColor: "divider",
-        }}
-      >
-        <AccordionSummary
-          id={summaryId}
-          aria-controls={detailsId}
-          expandIcon={<span aria-hidden="true">▼</span>}
-          sx={{ "& .MuiAccordionSummary-content": { my: 1 } }}
-        >
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
-            <Typography component="h3" fontWeight={600}>
-              {isSearching
-                ? highlightText(item.question, searchTerm)
-                : item.question}
-            </Typography>
-
-            {isSearching && (
-              <Box>
-                <Chip
-                  size="small"
-                  label={categoryName}
-                  aria-label={`Category ${categoryName}`}
-                />
-              </Box>
-            )}
-          </Box>
-        </AccordionSummary>
-
-        <AccordionDetails
-          id={detailsId}
-          role="region"
-          aria-labelledby={summaryId}
-          sx={{ pt: 0 }}
-        >
-          {item.answer?.intro && (
-            <Typography sx={{ mb: 1 }}>
-              {isSearching
-                ? highlightText(item.answer.intro, searchTerm)
-                : item.answer.intro}
-            </Typography>
-          )}
-
-          {item.answer?.bullets?.length > 0 && (
-            <List dense disablePadding sx={{ pl: 2 }}>
-              {item.answer.bullets.map((bullet, i) => (
-                <ListItem
-                  key={`${key}-bullet-${i}`}
-                  component="li"
-                  sx={{
-                    display: "list-item",
-                    listStyleType: "disc",
-                    py: 0.25,
-                  }}
-                >
-                  <ListItemText
-                    primary={
-                      bullet.url ? (
-                        <MuiLink
-                          href={normalizeUrl(bullet.url)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label={`${bullet.text} opens in a new tab`}
-                        >
-                          {isSearching
-                            ? highlightText(bullet.text, searchTerm)
-                            : bullet.text}
-                        </MuiLink>
-                      ) : isSearching ? (
-                        highlightText(bullet.text, searchTerm)
-                      ) : (
-                        bullet.text
-                      )
-                    }
-                  />
-                </ListItem>
-              ))}
-            </List>
-          )}
-        </AccordionDetails>
-      </Accordion>
-    );
-  };
+  const resultMessage = isSearching
+    ? `${visibleQuestions.length} FAQ result${
+        visibleQuestions.length === 1 ? "" : "s"
+      } found for ${searchTerm}.`
+    : selectedCategory
+      ? `${visibleQuestions.length} FAQ question${
+          visibleQuestions.length === 1 ? "" : "s"
+        } shown in ${selectedCategory.name}.`
+      : "Choose a category or search to view FAQ questions.";
 
   return (
     <Box
       component="section"
-      aria-labelledby="faq-page-title"
-      sx={{ width: "100%", px: { xs: 2, sm: 3 }, py: { xs: 3, sm: 4 } }}
+      aria-labelledby="student-faq-page-title"
+      sx={{
+        px: { xs: 2, sm: 3 },
+        py: { xs: 4, sm: 5 },
+      }}
     >
-      <Box sx={{ width: "100%", maxWidth: 1100, mx: "auto" }}>
+      <Box sx={{ maxWidth: 1100, mx: "auto", textAlign: "center" }}>
         <Typography
-          id="faq-page-title"
-          variant="h4"
+          id="student-faq-page-title"
+          variant="h3"
           component="h1"
           fontWeight={700}
-          sx={{ mb: 1 }}
+          sx={{
+            fontSize: { xs: "2rem", sm: "2.6rem", md: "3rem" },
+          }}
         >
           {title}
         </Typography>
 
-        {description && (
-          <Typography color="text.secondary" sx={{ mb: 3 }}>
-            {description}
+        <Typography
+          color="text.secondary"
+          sx={{
+            mt: 1.5,
+            mb: 4,
+            mx: "auto",
+            maxWidth: 760,
+            fontSize: { xs: "1rem", sm: "1.1rem" },
+          }}
+        >
+          {description}
+        </Typography>
+      </Box>
+
+      <QuestionSearchBar value={searchTerm} onChange={setSearchTerm} />
+
+      <Box
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        sx={{
+          maxWidth: 980,
+          mx: "auto",
+          mb: 2,
+          color: "text.secondary",
+        }}
+      >
+        <Typography variant="body2">{resultMessage}</Typography>
+      </Box>
+
+      {!isSearching && (
+        <Categories
+          categories={categories}
+          selectedId={selectedCategoryId}
+          onSelectCategory={handleCategorySelect}
+        />
+      )}
+
+      <Box
+        ref={questionsSectionRef}
+        component="section"
+        aria-labelledby="faq-results-heading"
+        sx={{
+          maxWidth: 980,
+          mx: "auto",
+          mt: 4,
+        }}
+      >
+        <Typography id="faq-results-heading" variant="h4" component="h2" gutterBottom>
+          {isSearching
+            ? "Search Results"
+            : selectedCategory
+              ? selectedCategory.name
+              : "FAQ Questions"}
+        </Typography>
+
+        {!selectedCategory && !isSearching && (
+          <Typography color="text.secondary" sx={{ mb: 2 }}>
+            Select a category above or use the search bar to find answers.
           </Typography>
         )}
 
-        <QuestionSearchBar value={searchTerm} onChange={handleSearchChange} />
-
-        <Box
-          sx={{
-            position: "absolute",
-            width: 1,
-            height: 1,
-            overflow: "hidden",
-            clip: "rect(0 0 0 0)",
-            whiteSpace: "nowrap",
-          }}
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          {isSearching
-            ? `${searchResults.length} search results found`
-            : selectedCategory
-            ? `${questionsForCategory.length} questions in ${selectedCategory.name}`
-            : "Select a category to view questions"}
-        </Box>
-
-        {isSearching ? (
-          <Box
-            component="section"
-            aria-labelledby="search-results-heading"
-            sx={{
-              p: 3,
-              backgroundColor: "white",
-              borderRadius: 2,
-              boxShadow: 1,
-              textAlign: "left",
-              maxWidth: 980,
-              mx: "auto",
-            }}
-          >
-            <Typography
-              id="search-results-heading"
-              variant="h6"
-              fontWeight={700}
-              sx={{ mb: 2 }}
-            >
-              Search Results ({searchResults.length})
-            </Typography>
-
-            {searchResults.length === 0 ? (
-              <Typography color="text.secondary">
-                No results found. Try different keywords like “deadline”, “book”,
-                “ENGL”, or “ctcLink”.
-              </Typography>
-            ) : (
-              searchResults.map((item, idx) => renderAccordion(item, idx))
-            )}
-          </Box>
-        ) : (
-          <>
-            <Typography id="faq-category-heading" fontWeight={700} sx={{ mb: 2 }}>
-              Browse Categories
-            </Typography>
-
-            <Typography color="text.secondary" sx={{ mb: 2 }}>
-              Select a category card to view related frequently asked questions.
-            </Typography>
-
-            <Categories
-              categories={categories}
-              selectedId={selectedCategoryId}
-              onSelectCategory={handleSelectCategory}
-            />
-
-            {selectedCategory ? (
-              <Box
-                ref={questionsSectionRef}
-                component="section"
-                aria-labelledby="selected-category-heading"
-                tabIndex={-1}
-                sx={{
-                  mt: 4,
-                  p: 3,
-                  backgroundColor: "white",
-                  borderRadius: 2,
-                  boxShadow: 1,
-                  textAlign: "left",
-                  maxWidth: 980,
-                  mx: "auto",
-                  scrollMarginTop: "100px",
-                  "&:focus": {
-                    outline: "none",
-                  },
-                }}
-              >
-                <Typography
-                  id="selected-category-heading"
-                  variant="h5"
-                  sx={{ mb: 0.5 }}
-                  fontWeight={700}
-                >
-                  {selectedCategory.name}
-                </Typography>
-
-                <Typography color="text.secondary" sx={{ mb: 2 }}>
-                  {selectedCategory.description}
-                </Typography>
-
-                {questionsForCategory.length === 0 ? (
-                  <Typography color="text.secondary">
-                    No questions in this category yet.
-                  </Typography>
-                ) : (
-                  questionsForCategory.map((item, idx) =>
-                    renderAccordion(item, idx)
-                  )
-                )}
-              </Box>
-            ) : (
-              <Typography
-                ref={questionsSectionRef}
-                tabIndex={-1}
-                color="text.secondary"
-                sx={{
-                  mt: 3,
-                  textAlign: "center",
-                  scrollMarginTop: "100px",
-                  "&:focus": {
-                    outline: "none",
-                  },
-                }}
-              >
-                Select a category to view questions.
-              </Typography>
-            )}
-          </>
+        {(selectedCategory || isSearching) && visibleQuestions.length === 0 && (
+          <Typography role="status" color="text.secondary" sx={{ mt: 2 }}>
+            No FAQ results found. Try another keyword or choose a different category.
+          </Typography>
         )}
+
+        {(selectedCategory || isSearching) &&
+          visibleQuestions.map((question) => {
+            const category = getCategoryById(categories, question.type);
+            const answer = question.answer || {};
+            const bullets = Array.isArray(answer.bullets) ? answer.bullets : [];
+            const panelId = `faq-panel-${question.id}`;
+            const headerId = `faq-header-${question.id}`;
+
+            return (
+              <Accordion
+                key={question.id}
+                expanded={expandedId === question.id}
+                onChange={handleAccordionChange(question, category)}
+                sx={{
+                  mb: 1.5,
+                  borderRadius: 1,
+                  "&:before": { display: "none" },
+                }}
+              >
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls={panelId}
+                  id={headerId}
+                >
+                  <Box sx={{ width: "100%" }}>
+                    <Typography component="h3" fontWeight={700}>
+                      {highlightText(question.question, searchTerm)}
+                    </Typography>
+
+                    {category && (
+                      <Chip
+                        label={category.name}
+                        size="small"
+                        sx={{
+                          mt: 1,
+                          backgroundColor: "#eef7ef",
+                          color: "#006225",
+                          fontWeight: 600,
+                        }}
+                      />
+                    )}
+                  </Box>
+                </AccordionSummary>
+
+                <AccordionDetails id={panelId} aria-labelledby={headerId}>
+                  {answer.intro && (
+                    <Typography sx={{ mb: 1.5 }}>
+                      {highlightText(answer.intro, searchTerm)}
+                    </Typography>
+                  )}
+
+                  {bullets.length > 0 ? (
+                    <Box
+                      component="ul"
+                      sx={{
+                        pl: 3,
+                        mt: 1,
+                        mb: 0,
+                      }}
+                    >
+                      {bullets.map((bullet, index) => {
+                        const href = bullet.url ? normalizeUrl(bullet.url) : "";
+
+                        return (
+                          <Box
+                            component="li"
+                            key={`${question.id}-${index}`}
+                            sx={{
+                              mb: 1,
+                              lineHeight: 1.6,
+                            }}
+                          >
+                            {href ? (
+                              <MuiLink
+                                href={href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label={`${bullet.text} opens in a new tab`}
+                              >
+                                {highlightText(bullet.text, searchTerm)}
+                              </MuiLink>
+                            ) : (
+                              highlightText(bullet.text, searchTerm)
+                            )}
+                          </Box>
+                        );
+                      })}
+                    </Box>
+                  ) : (
+                    <Typography color="text.secondary">
+                      Content coming soon.
+                    </Typography>
+                  )}
+                </AccordionDetails>
+              </Accordion>
+            );
+          })}
       </Box>
 
       <NeedMoreHelp />
