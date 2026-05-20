@@ -63,6 +63,7 @@ export default function CurrentStudent() {
     <StudentFAQPage
       title="Current Running Start Students"
       description="Find information on fee waivers, class planning, enrollment deadlines, and available campus resources."
+      audience="current"
       categories={categories}
       questions={questions}
     />
