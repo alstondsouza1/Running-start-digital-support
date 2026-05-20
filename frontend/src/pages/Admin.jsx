@@ -68,7 +68,7 @@ function faqCountLabel(count, includeInstruction = false) {
   return `${base} Clear search before dragging to reorder.`;
 }
 
-function SortableCard({ question, onEdit, onDeleteQuestion }) {
+function SortableCard({ question, onEdit, onDelete }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({
       id: question.id,
@@ -137,7 +137,7 @@ function SortableCard({ question, onEdit, onDeleteQuestion }) {
           size="small"
           color="error"
           variant="outlined"
-          onClick={() => onDeleteQuestion(question)}
+          onClick={() => onDelete(question)}
         >
           Delete
         </Button>
@@ -873,7 +873,7 @@ export default function Admin() {
             endAdornment: searchTerm ? (
               <InputAdornment position="end">
                 <IconButton
-                  aria-label="Clear admin FAQ search"
+                  aria-label="Clear search"
                   onClick={() => setSearchTerm("")}
                   edge="end"
                 >
@@ -888,7 +888,7 @@ export default function Admin() {
       <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
         <Tabs
           value={activeTab}
-          onChange={(_event, value) => setActiveTab(value)}
+          onChange={(event, value) => setActiveTab(value)}
           centered
           variant="scrollable"
           scrollButtons="auto"
@@ -982,7 +982,7 @@ export default function Admin() {
                               setEditingFaq(faq);
                               setView("addFaq");
                             }}
-                            onDeleteQuestion={handleDelete}
+                            onDelete={handleDelete}
                           />
                         ))
                       ) : (
