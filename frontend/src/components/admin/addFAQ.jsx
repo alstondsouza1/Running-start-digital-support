@@ -35,7 +35,6 @@ export default function AddFaqForm({
   const [allCategories, setAllCategories] = useState({});
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     async function fetchCategories() {
@@ -195,8 +194,6 @@ export default function AddFaqForm({
     };
 
     try {
-      setIsSaving(true);
-
       const url =
         mode === "edit" && initialData?.id
           ? `${API_BASE}/faq/${initialData.id}`
@@ -231,8 +228,6 @@ export default function AddFaqForm({
     } catch (error) {
       console.error("Error:", error);
       setFormError(error.message);
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -267,7 +262,6 @@ export default function AddFaqForm({
         value={formData.audience}
         onChange={handleChange}
         required
-        disabled={isSaving}
       >
         <MenuItem value="">Select Audience</MenuItem>
         {Object.keys(allCategories).map((audience) => (
@@ -284,7 +278,7 @@ export default function AddFaqForm({
         value={formData.type}
         onChange={handleChange}
         required
-        disabled={!formData.audience || isSaving}
+        disabled={!formData.audience}
         helperText={!formData.audience ? "Select an audience first" : undefined}
       >
         <MenuItem value="">Select a category</MenuItem>
@@ -301,7 +295,6 @@ export default function AddFaqForm({
         value={formData.question}
         onChange={handleChange}
         required
-        disabled={isSaving}
       />
 
       <TextField
@@ -311,7 +304,6 @@ export default function AddFaqForm({
         onChange={handleChange}
         multiline
         minRows={2}
-        disabled={isSaving}
       />
 
       <Box
@@ -342,8 +334,6 @@ export default function AddFaqForm({
               onChange={(e) =>
                 handleBulletChange(index, "text", e.target.value)
               }
-              required={index === 0}
-              disabled={isSaving}
             />
 
             <TextField
@@ -352,21 +342,19 @@ export default function AddFaqForm({
               onChange={(e) =>
                 handleBulletChange(index, "url", e.target.value)
               }
-              disabled={isSaving}
             />
 
             <Button
               type="button"
               onClick={() => removeBullet(index)}
-              disabled={formData.answer.bullets.length === 1 || isSaving}
-              aria-label={`Remove bullet ${index + 1}`}
+              disabled={formData.answer.bullets.length === 1}
             >
               Remove
             </Button>
           </Box>
         ))}
 
-        <Button type="button" onClick={addBullet} disabled={isSaving}>
+        <Button type="button" onClick={addBullet}>
           Add Bullet
         </Button>
       </Box>
@@ -375,28 +363,16 @@ export default function AddFaqForm({
         <Button
           type="submit"
           variant="contained"
-          disabled={isSaving}
           sx={{
             backgroundColor: "#006225",
             "&:hover": { backgroundColor: "#004d1a" },
           }}
         >
-          {isSaving
-            ? mode === "edit"
-              ? "Updating..."
-              : "Saving..."
-            : mode === "edit"
-              ? "Update FAQ"
-              : "Submit FAQ"}
+          {mode === "edit" ? "Update FAQ" : "Submit FAQ"}
         </Button>
 
         {onCancel && (
-          <Button
-            type="button"
-            variant="outlined"
-            onClick={onCancel}
-            disabled={isSaving}
-          >
+          <Button type="button" variant="outlined" onClick={onCancel}>
             Cancel
           </Button>
         )}

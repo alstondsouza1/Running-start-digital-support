@@ -12,10 +12,16 @@ router.get("/health", (req, res) => {
 router.get("/getFAQS", adminController.getFaqs);
 router.get("/categories", adminController.getFaqCategories);
 
-// admin CRUD
+// admin FAQ CRUD
 router.post("/addFAQ", requireAdmin, adminController.addFaq);
 router.put("/faq/order", requireAdmin, adminController.updateFaqOrder);
 router.put("/faq/:id", requireAdmin, adminController.updateFaq);
 router.delete("/faq/:id", requireAdmin, adminController.deleteFaq);
+
+// admin category CRUD
+router.post("/categories", requireAdmin, adminController.addCategory);
+router.put("/categories/order", requireAdmin, adminController.updateCategoryOrder);
+router.put("/categories/:audience/:id", requireAdmin, adminController.updateCategory);
+router.delete("/categories/:audience/:id", requireAdmin, adminController.deleteCategory);
 
 export default router;
