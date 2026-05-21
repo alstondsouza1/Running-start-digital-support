@@ -47,10 +47,6 @@ const ALLOWED_CATEGORIES = {
   ],
 };
 
-function getAllowedCategoryIds(audience) {
-  return ALLOWED_CATEGORIES[audience]?.map((category) => category.id) ?? [];
-}
-
 function isValidHttpUrl(value) {
   try {
     const url = new URL(value);
@@ -81,23 +77,6 @@ function parseAnswer(answerValue) {
   }
 
   return { bullets: [] };
-}
-
-async function resequenceFaqs(audience, type) {
-  const [rows] = await pool.query(
-    `SELECT id
-     FROM faq
-     WHERE audience = ? AND type = ?
-     ORDER BY sort_order, created_at, id`,
-    [audience, type]
-  );
-
-  for (let i = 0; i < rows.length; i += 1) {
-    await pool.query("UPDATE faq SET sort_order = ? WHERE id = ?", [
-      i + 1,
-      rows[i].id,
-    ]);
-  }
 }
 
 function normalizeAnswer(answer) {
@@ -146,7 +125,137 @@ function normalizeAnswer(answer) {
   };
 }
 
-function validateFaqInput({ audience, type, question, answer }) {
+function createCategoryId(name) {
+  return String(name || "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+async function ensureCategoriesTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS categories (
+      id VARCHAR(100) NOT NULL,
+      audience VARCHAR(20) NOT NULL,
+      name VARCHAR(255) NOT NULL,
+      description TEXT,
+      sort_order INT NOT NULL DEFAULT 0,
+      PRIMARY KEY (id, audience)
+    )
+  `);
+
+  const [descriptionCols] = await pool.query(`
+    SELECT COLUMN_NAME
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'categories'
+      AND COLUMN_NAME = 'description'
+  `);
+
+  if (descriptionCols.length === 0) {
+    await pool.query("ALTER TABLE categories ADD COLUMN description TEXT");
+  }
+
+  const [sortCols] = await pool.query(`
+    SELECT COLUMN_NAME
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'categories'
+      AND COLUMN_NAME = 'sort_order'
+  `);
+
+  if (sortCols.length === 0) {
+    await pool.query(
+      "ALTER TABLE categories ADD COLUMN sort_order INT NOT NULL DEFAULT 0"
+    );
+  }
+
+  const [idCol] = await pool.query(`
+    SELECT DATA_TYPE
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'categories'
+      AND COLUMN_NAME = 'id'
+  `);
+
+  if (idCol.length > 0 && idCol[0].DATA_TYPE !== "varchar") {
+    await pool.query(`
+      ALTER TABLE categories
+        DROP PRIMARY KEY,
+        MODIFY COLUMN id VARCHAR(100) NOT NULL,
+        ADD PRIMARY KEY (id, audience)
+    `);
+  }
+
+  await pool.query("DELETE FROM categories WHERE id REGEXP '^[0-9]+$'");
+
+  for (const [audience, cats] of Object.entries(ALLOWED_CATEGORIES)) {
+    for (let i = 0; i < cats.length; i += 1) {
+      const cat = cats[i];
+
+      await pool.query(
+        `
+        INSERT IGNORE INTO categories
+          (id, audience, name, description, sort_order)
+        VALUES (?, ?, ?, ?, ?)
+        `,
+        [cat.id, audience, cat.name, cat.description || "", i + 1]
+      );
+    }
+  }
+
+  for (const audience of ["current", "future"]) {
+    const [rows] = await pool.query(
+      `
+      SELECT id
+      FROM categories
+      WHERE audience = ?
+      ORDER BY sort_order, name
+      `,
+      [audience]
+    );
+
+    for (let i = 0; i < rows.length; i += 1) {
+      await pool.query(
+        "UPDATE categories SET sort_order = ? WHERE audience = ? AND id = ?",
+        [i + 1, audience, rows[i].id]
+      );
+    }
+  }
+}
+
+async function getValidCategoryIds(audience) {
+  await ensureCategoriesTable();
+
+  const [rows] = await pool.query(
+    "SELECT id FROM categories WHERE audience = ?",
+    [audience]
+  );
+
+  return rows.map((row) => row.id);
+}
+
+async function resequenceFaqs(audience, type) {
+  const [rows] = await pool.query(
+    `SELECT id
+     FROM faq
+     WHERE audience = ? AND type = ?
+     ORDER BY sort_order, created_at, id`,
+    [audience, type]
+  );
+
+  for (let i = 0; i < rows.length; i += 1) {
+    await pool.query("UPDATE faq SET sort_order = ? WHERE id = ?", [
+      i + 1,
+      rows[i].id,
+    ]);
+  }
+}
+
+async function validateFaqInput({ audience, type, question, answer }) {
   const trimmedAudience = typeof audience === "string" ? audience.trim() : "";
   const trimmedType = typeof type === "string" ? type.trim() : "";
   const trimmedQuestion = typeof question === "string" ? question.trim() : "";
@@ -157,11 +266,11 @@ function validateFaqInput({ audience, type, question, answer }) {
     };
   }
 
-  if (!Object.hasOwn(ALLOWED_CATEGORIES, trimmedAudience)) {
+  if (!["current", "future"].includes(trimmedAudience)) {
     return { error: "Invalid audience value" };
   }
 
-  const allowedCategoryIds = getAllowedCategoryIds(trimmedAudience);
+  const allowedCategoryIds = await getValidCategoryIds(trimmedAudience);
 
   if (!allowedCategoryIds.includes(trimmedType)) {
     return { error: "Invalid category for the selected audience" };
@@ -194,7 +303,7 @@ export const getFaqs = async (req, res) => {
         .json({ error: "audience query parameter is required" });
     }
 
-    if (!Object.hasOwn(ALLOWED_CATEGORIES, audience)) {
+    if (!["current", "future"].includes(audience)) {
       return res.status(400).json({ error: "Invalid audience value" });
     }
 
@@ -225,7 +334,7 @@ export const getFaqs = async (req, res) => {
 
 export const addFaq = async (req, res) => {
   try {
-    const validated = validateFaqInput(req.body);
+    const validated = await validateFaqInput(req.body);
 
     if (validated.error) {
       return res.status(400).json({ error: validated.error });
@@ -264,7 +373,7 @@ export const updateFaq = async (req, res) => {
       return res.status(400).json({ error: "Valid FAQ id is required" });
     }
 
-    const validated = validateFaqInput(req.body);
+    const validated = await validateFaqInput(req.body);
 
     if (validated.error) {
       return res.status(400).json({ error: validated.error });
@@ -346,9 +455,296 @@ export const deleteFaq = async (req, res) => {
 
 export const getFaqCategories = async (_req, res) => {
   try {
-    return res.json(ALLOWED_CATEGORIES);
+    await ensureCategoriesTable();
+
+    const [rows] = await pool.query(`
+      SELECT id, audience, name, description, sort_order
+      FROM categories
+      ORDER BY audience, sort_order, name
+    `);
+
+    const grouped = {
+      current: [],
+      future: [],
+    };
+
+    for (const row of rows) {
+      if (!grouped[row.audience]) grouped[row.audience] = [];
+
+      grouped[row.audience].push({
+        id: row.id,
+        audience: row.audience,
+        name: row.name,
+        description: row.description || "",
+        sort_order: row.sort_order,
+      });
+    }
+
+    return res.json(grouped);
   } catch (err) {
     console.error("Get FAQ categories error:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const addCategory = async (req, res) => {
+  try {
+    await ensureCategoriesTable();
+
+    const audience =
+      typeof req.body.audience === "string" ? req.body.audience.trim() : "";
+    const name = typeof req.body.name === "string" ? req.body.name.trim() : "";
+    const description =
+      typeof req.body.description === "string"
+        ? req.body.description.trim()
+        : "";
+
+    if (!["current", "future"].includes(audience)) {
+      return res.status(400).json({ error: "Invalid audience value" });
+    }
+
+    if (!name) {
+      return res.status(400).json({ error: "Category name is required" });
+    }
+
+    const id = createCategoryId(name);
+
+    if (!id) {
+      return res.status(400).json({
+        error: "Category name must include at least one letter or number",
+      });
+    }
+
+    const [existing] = await pool.query(
+      "SELECT id FROM categories WHERE id = ? AND audience = ?",
+      [id, audience]
+    );
+
+    if (existing.length > 0) {
+      return res.status(409).json({
+        error: "A category with that name already exists for this audience",
+      });
+    }
+
+    const [maxRows] = await pool.query(
+      "SELECT COALESCE(MAX(sort_order), 0) AS maxSort FROM categories WHERE audience = ?",
+      [audience]
+    );
+
+    const nextSort = (maxRows?.[0]?.maxSort ?? 0) + 1;
+
+    await pool.query(
+      `
+      INSERT INTO categories (id, audience, name, description, sort_order)
+      VALUES (?, ?, ?, ?, ?)
+      `,
+      [id, audience, name, description, nextSort]
+    );
+
+    return res.status(201).json({
+      message: "Category added successfully",
+      category: {
+        id,
+        audience,
+        name,
+        description,
+        sort_order: nextSort,
+      },
+    });
+  } catch (err) {
+    console.error("Add category error:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const updateCategory = async (req, res) => {
+  try {
+    await ensureCategoriesTable();
+
+    const audience =
+      typeof req.params.audience === "string"
+        ? req.params.audience.trim()
+        : "";
+    const id = typeof req.params.id === "string" ? req.params.id.trim() : "";
+
+    const name = typeof req.body.name === "string" ? req.body.name.trim() : "";
+    const description =
+      typeof req.body.description === "string"
+        ? req.body.description.trim()
+        : "";
+
+    if (!["current", "future"].includes(audience)) {
+      return res.status(400).json({ error: "Invalid audience value" });
+    }
+
+    if (!id) {
+      return res.status(400).json({ error: "Category id is required" });
+    }
+
+    if (!name) {
+      return res.status(400).json({ error: "Category name is required" });
+    }
+
+    const [existing] = await pool.query(
+      "SELECT id FROM categories WHERE id = ? AND audience = ?",
+      [id, audience]
+    );
+
+    if (existing.length === 0) {
+      return res.status(404).json({ error: "Category not found" });
+    }
+
+    await pool.query(
+      `
+      UPDATE categories
+      SET name = ?, description = ?
+      WHERE id = ? AND audience = ?
+      `,
+      [name, description, id, audience]
+    );
+
+    return res.json({
+      message: "Category updated successfully",
+      category: {
+        id,
+        audience,
+        name,
+        description,
+      },
+    });
+  } catch (err) {
+    console.error("Update category error:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const deleteCategory = async (req, res) => {
+  try {
+    await ensureCategoriesTable();
+
+    const audience =
+      typeof req.params.audience === "string"
+        ? req.params.audience.trim()
+        : "";
+    const id = typeof req.params.id === "string" ? req.params.id.trim() : "";
+
+    if (!["current", "future"].includes(audience)) {
+      return res.status(400).json({ error: "Invalid audience value" });
+    }
+
+    if (!id) {
+      return res.status(400).json({ error: "Category id is required" });
+    }
+
+    const [existing] = await pool.query(
+      "SELECT id FROM categories WHERE id = ? AND audience = ?",
+      [id, audience]
+    );
+
+    if (existing.length === 0) {
+      return res.status(404).json({ error: "Category not found" });
+    }
+
+    const [faqRows] = await pool.query(
+      `
+      SELECT COUNT(*) AS count
+      FROM faq
+      WHERE audience = ? AND type = ?
+      `,
+      [audience, id]
+    );
+
+    if (faqRows[0].count > 0) {
+      return res.status(409).json({
+        error:
+          "This category still has FAQs. Move or delete those FAQs before deleting the category.",
+      });
+    }
+
+    await pool.query("DELETE FROM categories WHERE id = ? AND audience = ?", [
+      id,
+      audience,
+    ]);
+
+    await resequenceCategories(audience);
+
+    return res.json({ message: "Category deleted successfully" });
+  } catch (err) {
+    console.error("Delete category error:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+async function resequenceCategories(audience) {
+  const [rows] = await pool.query(
+    `
+    SELECT id
+    FROM categories
+    WHERE audience = ?
+    ORDER BY sort_order, name
+    `,
+    [audience]
+  );
+
+  for (let i = 0; i < rows.length; i += 1) {
+    await pool.query(
+      "UPDATE categories SET sort_order = ? WHERE audience = ? AND id = ?",
+      [i + 1, audience, rows[i].id]
+    );
+  }
+}
+
+export const updateCategoryOrder = async (req, res) => {
+  try {
+    await ensureCategoriesTable();
+
+    const audience =
+      typeof req.body.audience === "string" ? req.body.audience.trim() : "";
+
+    if (!["current", "future"].includes(audience)) {
+      return res.status(400).json({ error: "Invalid audience value" });
+    }
+
+    if (!Array.isArray(req.body.orderedIds)) {
+      return res.status(400).json({ error: "orderedIds[] are required" });
+    }
+
+    const orderedIds = [
+      ...new Set(
+        req.body.orderedIds
+          .map((id) => String(id).trim())
+          .filter(Boolean)
+      ),
+    ];
+
+    if (orderedIds.length === 0) {
+      return res.json({ ok: true });
+    }
+
+    const [existingRows] = await pool.query(
+      `
+      SELECT id
+      FROM categories
+      WHERE audience = ?
+      `,
+      [audience]
+    );
+
+    const existingIds = existingRows.map((row) => row.id);
+    const validOrderedIds = orderedIds.filter((id) => existingIds.includes(id));
+    const missingIds = existingIds.filter((id) => !validOrderedIds.includes(id));
+    const finalOrderedIds = [...validOrderedIds, ...missingIds];
+
+    for (let i = 0; i < finalOrderedIds.length; i += 1) {
+      await pool.query(
+        "UPDATE categories SET sort_order = ? WHERE audience = ? AND id = ?",
+        [i + 1, audience, finalOrderedIds[i]]
+      );
+    }
+
+    return res.json({ message: "Category order updated successfully" });
+  } catch (err) {
+    console.error("Update category order error:", err);
     return res.status(500).json({ error: "Server error" });
   }
 };
@@ -359,11 +755,11 @@ export const updateFaqOrder = async (req, res) => {
       typeof req.body.audience === "string" ? req.body.audience.trim() : "";
     const type = typeof req.body.type === "string" ? req.body.type.trim() : "";
 
-    if (!Object.hasOwn(ALLOWED_CATEGORIES, audience)) {
+    if (!["current", "future"].includes(audience)) {
       return res.status(400).json({ error: "Invalid audience value" });
     }
 
-    const allowedCategoryIds = getAllowedCategoryIds(audience);
+    const allowedCategoryIds = await getValidCategoryIds(audience);
 
     if (!allowedCategoryIds.includes(type)) {
       return res
@@ -396,8 +792,9 @@ export const updateFaqOrder = async (req, res) => {
     );
 
     const existingIds = existingRows.map((row) => row.id);
-    const missingIds = existingIds.filter((id) => !orderedIds.includes(id));
-    const finalOrderedIds = [...orderedIds, ...missingIds];
+    const validOrderedIds = orderedIds.filter((id) => existingIds.includes(id));
+    const missingIds = existingIds.filter((id) => !validOrderedIds.includes(id));
+    const finalOrderedIds = [...validOrderedIds, ...missingIds];
 
     const caseSql = finalOrderedIds
       .map((id, idx) => `WHEN ${id} THEN ${idx + 1}`)
@@ -424,6 +821,10 @@ export default {
   addFaq,
   getFaqs,
   getFaqCategories,
+  addCategory,
+  updateCategory,
+  deleteCategory,
+  updateCategoryOrder,
   updateFaq,
   deleteFaq,
   updateFaqOrder,
