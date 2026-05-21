@@ -2,107 +2,274 @@
 
 ## 1. Handoff / Documentation Review
 
-### What worked
-- Repository structure was clear
-- Frontend and backend were separated cleanly
-- README included setup steps, environment setup, and testing instructions
+### What Worked
+
+- Repository structure was organized clearly between frontend and backend
+- README included setup instructions, environment variables, and testing steps
 - `.env.example` files were provided
-
-### Issues / gaps found
-- README originally referenced `sql/schema.sql`, but actual file is `sql/faq.sql`
-- Local setup depends on correct MySQL configuration
-- Admin password must be generated manually using bcrypt
-- Some naming is inconsistent, such as “Future” vs “Prospective”
-
-### Questions raised
-- Should reviewers use local MySQL or cloud MySQL?
-- Which parts of the frontend data folder are still active versus legacy?
+- Project architecture was easy to understand
+- Deployment overview was documented clearly
+- Seed scripts helped simplify local setup
 
 ---
 
-## 2. Usability Review
+### Issues / Gaps Found
 
-### Tasks for reviewers
+- README originally referenced `sql/schema.sql`, but the correct file is `sql/faq.sql`
+- Local setup depends on correct MySQL configuration and credentials
+- Admin password must be manually generated using bcrypt
+- Some naming inconsistencies exist between:
+  - “Future Students”
+  - “Prospective Students”
+- Some older frontend data files may still exist and should be cleaned up
+- Accessibility improvements are still ongoing
+
+---
+
+### Questions Raised
+
+- Should reviewers use local MySQL or cloud MySQL for testing?
+- Which frontend data files are active versus legacy?
+- Should category management eventually move to a dedicated admin page?
+- Should analytics remain optional or become part of production?
+
+---
+
+# 2. Usability Review
+
+## Tasks for Reviewers
+
 1. Find information for current students about deadlines
 2. Find information for future students about enrollment
-3. Search for a topic like “fee waiver” or “ctcLink”
-4. Log in as admin and add a new FAQ
-
-### Notes
-- Home page is simple and clear
-- Search is easy to use
-- FAQ answers are readable and scannable
-- Admin workflow is functional but could be simplified
+3. Search for a topic such as:
+   - “fee waiver”
+   - “ctcLink”
+4. Login as admin and add a new FAQ
+5. Test category creation and editing
+6. Reorder FAQs using drag-and-drop
 
 ---
 
-## 3. Code Review
+## Notes
 
 ### Strengths
-- Good component separation in frontend
+
+- Homepage is simple and easy to navigate
+- FAQ categories are organized clearly
+- Search functionality is easy to use
+- FAQ answers are readable and scannable
+- Responsive layout works well on mobile devices
+- Accessibility tools are easy to locate
+- Admin dashboard is functional
+
+---
+
+### Areas for Improvement
+
+- Admin workflow could be simplified further
+- Some spacing and layout consistency could be improved
+- Drag-and-drop behavior could provide clearer visual feedback
+- Some pages may benefit from loading states or success indicators
+- Search could support typo tolerance in future versions
+
+---
+
+# 3. Code Review
+
+## Strengths
+
+- Good separation of frontend components
 - Express middleware is used for authentication
 - FAQ CRUD routes are organized clearly
 - SQL queries mostly use parameterized statements
-
-### Concerns
-- Some naming inconsistencies
-- Duplicate or older data files appear to still exist in frontend
-- `Admin.jsx` contains login logic even though there is a separate `AdminLogin.jsx`
-- Route naming is not fully RESTful
+- Frontend state management is reasonably organized
+- Accessibility labels are implemented in many areas
+- Reusable components improved maintainability
 
 ---
 
-## 4. Security Review
+## Concerns
 
-### Strengths
-- JWT auth is implemented
+- Some naming inconsistencies still exist
+- Duplicate or unused frontend data files may still exist
+- `Admin.jsx` handles a large amount of logic and could be further split into smaller components
+- Route naming is not fully RESTful
+- Some repeated styling patterns could be centralized
+- Additional validation could be added on both frontend and backend
+
+---
+
+# 4. Security Review
+
+## Strengths
+
+- JWT authentication is implemented
 - Password hashing uses bcrypt
 - Admin routes are protected
-- SQL parameters are used in most places
+- SQL parameters are used in most queries
+- Environment variables are used for secrets
 
-### Concerns
-- JWT is stored in localStorage
-- No login rate limiting
-- No Helmet middleware
+---
+
+## Concerns
+
+- JWT is currently stored in localStorage
+- No login rate limiting implemented
+- Helmet middleware is not currently used
 - `rejectUnauthorized: false` weakens SSL verification
-- Secrets must never be committed
+- No CSRF protection
+- Secrets and `.env` files must never be committed
+- Additional input sanitization could be added
 
 ---
 
-## 5. Accessibility Review
+# 5. Accessibility Review
 
-### Tasks for reviewers
-1. Navigate homepage using only keyboard
-2. Use skip link to jump to content
-3. Search FAQs with keyboard only
-4. Open FAQ accordions with keyboard
-5. Test whether admin drag-and-drop is keyboard accessible
+## Tasks for Reviewers
 
-### Notes
-- Skip link exists
-- Focus states exist
-- Some clickable cards use role=button instead of native button/link
-- Drag-and-drop accessibility may be limited
+1. Navigate homepage using keyboard only
+2. Use skip link to jump to main content
+3. Search FAQs using keyboard only
+4. Open FAQ accordions using keyboard
+5. Test drag-and-drop accessibility in admin dashboard
+6. Test readable font and contrast tools
+7. Test translation dropdown
 
 ---
 
-## 6. Planned Improvements
-- Standardize naming across “future” / “prospective”
+## Notes
+
+### Accessibility Features Present
+
+- Skip link implemented
+- Focus states implemented
+- ARIA labels added in multiple components
+- Keyboard navigation works for most areas
+- Responsive layouts improve usability
+- Accessibility toolbar includes:
+  - Read aloud
+  - High contrast mode
+  - Readable fonts
+  - Translation support
+
+---
+
+### Accessibility Concerns
+
+- Drag-and-drop accessibility may still be limited
+- Some clickable cards rely on custom interactions
+- More screen reader testing is needed
+- Accordion announcements could be improved
+- Additional WCAG testing is recommended
+
+---
+
+# 6. Planned Improvements
+
+## Short-Term Improvements
+
+- Standardize naming across “future” and “prospective”
+- Improve admin UI organization
+- Clean duplicate or unused frontend files
+- Improve loading and success states
+- Improve drag-and-drop accessibility
+
+---
+
+## Future Improvements
+
+- Add automated testing
+- Add analytics dashboard
 - Improve security hardening
-- Clean unused or duplicate frontend data files
-- Add testing in a future iteration
+- Add role-based access control
+- Improve multilingual support
+- Add AI-powered FAQ search
+- Improve screen reader support
+- Add backend rate limiting
+- Add Helmet middleware
+- Add refresh-token authentication flow
 
 ---
 
-# Quick Start for Reviewers
+# 7. Reviewer Quick Start
 
-1. Clone repo
+## Setup Instructions
+
+1. Clone repository
 2. Setup backend `.env`
-3. Run MySQL and import schema
-4. Run seed scripts
-5. Start backend
-6. Start frontend
-7. Visit http://localhost:5173
+3. Run MySQL locally or connect cloud database
+4. Import schema from:
 
-Optional:
-- Login as admin to test CRUD functionality
+```text
+backend/sql/faq.sql
+```
+
+5. Run seed scripts
+
+```bash
+npm run seed:current
+npm run seed:future
+```
+
+6. Start backend
+
+```bash
+npm run dev
+```
+
+7. Start frontend
+
+```bash
+npm run dev
+```
+
+8. Visit:
+
+```text
+http://localhost:5173
+```
+
+---
+
+## Optional Admin Testing
+
+1. Generate bcrypt password hash
+2. Add admin credentials to `.env`
+3. Login at:
+
+```text
+/admin-login
+```
+
+4. Test:
+- Add FAQ
+- Edit FAQ
+- Delete FAQ
+- Reorder FAQs
+- Add category
+- Edit category
+- Reorder categories
+
+---
+
+# 8. Overall Summary
+
+The Running Start Digital Support Portal successfully provides a searchable and accessible FAQ experience for current and future students while giving administrators the ability to manage content dynamically.
+
+The project demonstrates:
+
+- Full-stack development
+- Database integration
+- Authentication
+- Accessibility considerations
+- Responsive frontend design
+- CRUD functionality
+- Admin dashboard workflows
+
+Future iterations should focus on:
+
+- Security hardening
+- Automated testing
+- Accessibility refinement
+- Codebase cleanup
+- Improved admin usability
