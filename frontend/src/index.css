@@ -160,11 +160,13 @@ select:focus-visible {
   outline-offset: 2px !important;
 }
 
+/* Hide the top Google Translate banner, but DO NOT hide iframe.skiptranslate.
+   The dropdown/popup needs Google iframe support to work. */
 body > .skiptranslate {
   display: none !important;
 }
 
-iframe.skiptranslate {
+.goog-te-banner-frame {
   display: none !important;
 }
 
