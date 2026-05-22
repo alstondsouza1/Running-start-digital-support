@@ -19,11 +19,17 @@ import RecordVoiceOverIcon from "@mui/icons-material/RecordVoiceOver";
 import CloseIcon from "@mui/icons-material/Close";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import MotionPhotosOffIcon from "@mui/icons-material/MotionPhotosOff";
+import TranslateIcon from "@mui/icons-material/Translate";
 
 const MIN_ZOOM = 90;
 const MAX_ZOOM = 140;
 const ZOOM_STEP = 10;
 const DEFAULT_POSITION = { x: 16, y: 120 };
+
+function clearGoogleTranslateCookies() {
+  document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`;
+}
 
 export default function AccessibilityBar() {
   const [open, setOpen] = useState(false);
@@ -34,19 +40,15 @@ export default function AccessibilityBar() {
   const [zoom, setZoom] = useState(
     Number(localStorage.getItem("accessibilityZoom")) || 100
   );
-
   const [highContrast, setHighContrast] = useState(
     localStorage.getItem("highContrast") === "true"
   );
-
   const [readableFont, setReadableFont] = useState(
     localStorage.getItem("readableFont") === "true"
   );
-
   const [reducedMotion, setReducedMotion] = useState(
     localStorage.getItem("reducedMotion") === "true"
   );
-
   const [isReading, setIsReading] = useState(false);
 
   useEffect(() => {
@@ -66,7 +68,6 @@ export default function AccessibilityBar() {
       "--accessibility-scale",
       zoom / 100
     );
-
     localStorage.setItem("accessibilityZoom", String(zoom));
   }, [zoom]);
 
@@ -86,36 +87,48 @@ export default function AccessibilityBar() {
   }, [reducedMotion]);
 
   useEffect(() => {
-    if (document.getElementById("google-translate-script")) return;
+    function initGoogleTranslate() {
+      const container = document.getElementById("google_translate_element");
 
-    window.googleTranslateElementInit = function () {
+      if (!container) return;
+      if (container.childElementCount > 0) return;
       if (!window.google?.translate?.TranslateElement) return;
 
       new window.google.translate.TranslateElement(
         {
           pageLanguage: "en",
-          layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
           autoDisplay: false,
         },
         "google_translate_element"
       );
-    };
+    }
 
-    const script = document.createElement("script");
-    script.id = "google-translate-script";
-    script.src =
-      "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-    script.async = true;
+    window.googleTranslateElementInit = initGoogleTranslate;
 
-    document.body.appendChild(script);
+    if (window.google?.translate?.TranslateElement) {
+      initGoogleTranslate();
+      return;
+    }
+
+    if (!document.getElementById("google-translate-script")) {
+      const script = document.createElement("script");
+      script.id = "google-translate-script";
+      script.src =
+        "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+      script.async = true;
+      script.onerror = () => {
+        console.error("Google Translate script failed to load.");
+      };
+      document.body.appendChild(script);
+    }
   }, []);
 
   useEffect(() => {
     function handleMouseMove(e) {
       if (!dragging) return;
 
-      const widgetWidth = open ? 320 : 320;
-      const widgetHeight = open ? 410 : 56;
+      const widgetWidth = 340;
+      const widgetHeight = open ? 520 : 60;
 
       const nextPosition = {
         x: Math.max(
@@ -156,9 +169,10 @@ export default function AccessibilityBar() {
 
   function startDragging(e) {
     if (e.target.closest("button")) return;
+    if (e.target.closest("select")) return;
+    if (e.target.closest("a")) return;
 
     setDragging(true);
-
     setDragOffset({
       x: e.clientX - position.x,
       y: e.clientY - position.y,
@@ -183,17 +197,19 @@ export default function AccessibilityBar() {
     if (!text.trim()) return;
 
     const speech = new SpeechSynthesisUtterance(text);
-
     speech.rate = 0.95;
     speech.pitch = 1;
-
     speech.onend = () => setIsReading(false);
     speech.onerror = () => setIsReading(false);
 
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(speech);
-
     setIsReading(true);
+  }
+
+  function resetTranslation() {
+    clearGoogleTranslateCookies();
+    window.location.reload();
   }
 
   function resetSettings() {
@@ -228,11 +244,11 @@ export default function AccessibilityBar() {
         left: position.x,
         top: position.y,
         zIndex: 9999,
-        width: open ? { xs: "calc(100vw - 24px)", sm: 320 } : 320,
+        width: open ? { xs: "calc(100vw - 24px)", sm: 340 } : 260,
         maxWidth: "calc(100vw - 16px)",
-        borderRadius: 1,
+        borderRadius: 2,
         overflow: "hidden",
-        boxShadow: "0 3px 10px rgba(0,0,0,0.18)",
+        boxShadow: "0 6px 18px rgba(0,0,0,0.22)",
         border: "1px solid #d0d0d0",
         backgroundColor: "white",
       }}
@@ -243,7 +259,7 @@ export default function AccessibilityBar() {
           backgroundColor: "#ffffff",
           color: "#222",
           px: 1.5,
-          py: 1.1,
+          py: 1.2,
           display: "flex",
           alignItems: "center",
           gap: 1,
@@ -255,13 +271,13 @@ export default function AccessibilityBar() {
         <DragIndicatorIcon sx={{ color: "#006225" }} aria-hidden="true" />
 
         <Box sx={{ flexGrow: 1 }}>
-          <Typography fontWeight={700} sx={{ lineHeight: 1.2 }}>
+          <Typography fontWeight={800} sx={{ lineHeight: 1.2 }}>
             Accessibility
           </Typography>
 
           {!open && (
-            <Typography variant="body2" color="text.secondary">
-              Translate, text size, contrast
+            <Typography variant="caption" color="text.secondary">
+              Translate • Text • Contrast
             </Typography>
           )}
         </Box>
@@ -289,10 +305,11 @@ export default function AccessibilityBar() {
       </Box>
 
       <Collapse in={open}>
-        <Box sx={{ p: 1.5 }}>
-          <Typography fontWeight={700} sx={{ mb: 1 }}>
-            Select Language
-          </Typography>
+        <Box sx={{ p: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+            <TranslateIcon sx={{ color: "#006225" }} aria-hidden="true" />
+            <Typography fontWeight={800}>Translate Page</Typography>
+          </Box>
 
           <Box
             id="google_translate_element"
@@ -300,27 +317,42 @@ export default function AccessibilityBar() {
             sx={{ mb: 1 }}
           />
 
+          <Button
+            fullWidth
+            variant="outlined"
+            size="small"
+            onClick={resetTranslation}
+            sx={{
+              borderColor: "#006225",
+              color: "#006225",
+              textTransform: "none",
+              fontWeight: 700,
+              mb: 1.5,
+              "&:hover": {
+                borderColor: "#004d1a",
+                backgroundColor: "#eef7ef",
+              },
+            }}
+          >
+            Back to Original Language
+          </Button>
+
           <Typography
             variant="caption"
             color="text.secondary"
             sx={{ display: "block", mb: 1.5, lineHeight: 1.4 }}
           >
-            Translations are machine-generated and may not be perfect. Please
-            confirm important details with the official Running Start office.
+            Translations are machine-generated. Please confirm important details
+            with the official Running Start office.
           </Typography>
 
           <Divider sx={{ my: 1.5 }} />
 
-          <Typography fontWeight={700} sx={{ mb: 1 }}>
+          <Typography fontWeight={800} sx={{ mb: 1 }}>
             Text Size
           </Typography>
 
-          <Stack
-            direction="row"
-            spacing={1}
-            alignItems="center"
-            sx={{ mb: 1.5 }}
-          >
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
             <Button
               variant="outlined"
               aria-label="Decrease text size"
@@ -353,7 +385,7 @@ export default function AccessibilityBar() {
             </Button>
           </Stack>
 
-          <Stack spacing={0.8}>
+          <Stack spacing={0.9}>
             <Button
               fullWidth
               variant={readableFont ? "contained" : "outlined"}
@@ -407,7 +439,7 @@ export default function AccessibilityBar() {
               textTransform: "none",
             }}
           >
-            Reset Settings
+            Reset Accessibility Settings
           </Button>
         </Box>
       </Collapse>
@@ -420,6 +452,7 @@ const smallButtonSx = {
   color: "#006225",
   textTransform: "none",
   minHeight: 42,
+  flex: 1,
   "&:hover": {
     borderColor: "#004d1a",
     backgroundColor: "#eef7ef",
