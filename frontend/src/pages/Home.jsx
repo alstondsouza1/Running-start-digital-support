@@ -57,8 +57,8 @@ export default function Home() {
           px: { xs: 1, sm: 0 },
         }}
       >
-        Choose whether you are a current or future Running Start student to quickly
-        find FAQs, support information, and important next steps.
+        Choose Current Student FAQs or Future Student FAQs to quickly find
+        Running Start answers, support information, and important next steps.
       </Typography>
 
       <Box sx={{ mt: 1 }}>
@@ -91,12 +91,23 @@ export default function Home() {
             }}
           >
             <CardContent sx={{ px: 3 }}>
-              <SchoolIcon sx={{ fontSize: 70, color: "#2c882b" }} aria-hidden="true" />
-              <Typography variant="h5" component="h2" sx={{ mt: 2 }} fontWeight={700}>
-                Current Student
+              <SchoolIcon
+                sx={{ fontSize: 70, color: "#2c882b" }}
+                aria-hidden="true"
+              />
+
+              <Typography
+                variant="h5"
+                component="h2"
+                sx={{ mt: 2 }}
+                fontWeight={700}
+              >
+                Current Student FAQs
               </Typography>
+
               <Typography variant="body1" color="text.secondary" sx={{ mt: 1.5 }}>
-                Fee waivers, class planning, dates and deadlines, and campus resources
+                Fee waiver, book loan, class planning, dates, deadlines, and
+                campus resources
               </Typography>
             </CardContent>
           </CardActionArea>
@@ -116,12 +127,23 @@ export default function Home() {
             }}
           >
             <CardContent sx={{ px: 3 }}>
-              <PersonAddIcon sx={{ fontSize: 70, color: "#2c882b" }} aria-hidden="true" />
-              <Typography variant="h5" component="h2" sx={{ mt: 2 }} fontWeight={700}>
-                Future Student
+              <PersonAddIcon
+                sx={{ fontSize: 70, color: "#2c882b" }}
+                aria-hidden="true"
+              />
+
+              <Typography
+                variant="h5"
+                component="h2"
+                sx={{ mt: 2 }}
+                fontWeight={700}
+              >
+                Future Student FAQs
               </Typography>
+
               <Typography variant="body1" color="text.secondary" sx={{ mt: 1.5 }}>
-                General questions, enrollment, classes, and other important policies
+                General questions, enrollment, classes, and other important
+                Running Start policies
               </Typography>
             </CardContent>
           </CardActionArea>

@@ -2,35 +2,22 @@
 
 ## Overview
 
-This project was developed as part of a capstone collaboration with the Running Start Department at Green River College.
+The Running Start Digital Support Portal is a full-stack web application developed in collaboration with the Running Start Department at Green River College as part of the BAS Software Development Capstone program.
 
-The **Running Start Digital Support Portal** is a full-stack web application designed to help **current and prospective Running Start students** quickly find answers to frequently asked questions.
+The portal helps current and prospective Running Start students quickly find answers to frequently asked questions through a searchable, categorized, and mobile-friendly interface.
 
-The goal of this project is to:
-
-* Reduce repetitive support requests to staff
-* Provide a **clear, searchable, and mobile-friendly FAQ experience**
-* Allow administrators to easily manage content through a dashboard
+The system also includes an administrative dashboard that allows staff or student administrators to manage FAQ content without editing code.
 
 ---
 
 # Live Demo
 
-Frontend:
-[https://running-start-portal.vercel.app/](https://running-start-portal.vercel.app/)
+Frontend (Vercel):  
+https://running-start-portal.vercel.app/
 
-> Note: Backend is hosted separately. Admin features may require local setup.
-
----
-
-# Prerequisites
-
-Make sure you have:
-
-* Node.js v18+
-* npm
-* MySQL (local or cloud)
-* Git
+> Note:  
+> The backend is hosted separately.  
+> Admin functionality may require local backend setup depending on deployment status.
 
 ---
 
@@ -42,19 +29,31 @@ Make sure you have:
 
 ## Team Members
 
-* Alston Dsouza
-* Diana Khachaturova
-* Laura Villaraza
-* Daniel McCarragher
+- Alston Dsouza
+- Diana Khachaturova
+- Laura Villaraza
+- Daniel McCarragher
 
 ## Client
 
-Running Start Department
+Running Start Department  
 Green River College
 
 ## Project Duration
 
 Winter 2026 – Spring 2026
+
+---
+
+# Project Goals
+
+This project was designed to:
+
+- Reduce repetitive support requests to Running Start staff
+- Improve accessibility of student information
+- Provide a searchable FAQ experience
+- Support both current and future students
+- Allow non-technical admins to manage content easily
 
 ---
 
@@ -64,12 +63,19 @@ Winter 2026 – Spring 2026
 
 Students can:
 
-* Browse FAQs for **Current Students**
-* Browse FAQs for **Future / Prospective Students**
-* View FAQs organized by category
-* Read answers in **bullet-point format**
-* Access helpful resource links
-* Use the app on **mobile, tablet, and desktop**
+- Browse FAQs for Current Students
+- Browse FAQs for Future / Prospective Students
+- Search FAQs by keyword
+- Browse FAQs by category
+- Read answers in bullet-point format
+- Open helpful external resource links
+- Use the portal on mobile, tablet, and desktop devices
+- Navigate using keyboard accessibility support
+- Use accessibility tools:
+  - Read aloud
+  - High contrast mode
+  - Readable fonts
+  - Translation support
 
 ---
 
@@ -77,13 +83,16 @@ Students can:
 
 Admins can:
 
-* Login securely using JWT authentication
-* Add new FAQ entries
-* Edit existing FAQs
-* Delete FAQs
-* Reorder FAQs (drag-and-drop)
-* Assign FAQs to categories
-* Manage both **Current** and **Future** content
+- Login securely using JWT authentication
+- Add FAQs
+- Edit FAQs
+- Delete FAQs
+- Reorder FAQs using drag-and-drop
+- Create custom categories
+- Edit categories
+- Delete categories
+- Reorder categories using drag-and-drop
+- Manage Current and Future student content separately
 
 ---
 
@@ -91,29 +100,30 @@ Admins can:
 
 ## Frontend
 
-* React (Vite)
-* Material UI
-* React Router
-* DnD Kit
+- React (Vite)
+- Material UI (MUI)
+- React Router
+- DnD Kit
+- Context API
 
 ## Backend
 
-* Node.js
-* Express.js
-* JWT Authentication
-* bcryptjs
-* mysql2
-* dotenv
+- Node.js
+- Express.js
+- JWT Authentication
+- bcryptjs
+- mysql2
+- dotenv
 
 ## Database
 
-* MySQL (Aiven Cloud or Local)
+- MySQL (Aiven Cloud or Local)
 
 ---
 
 # System Architecture
 
-```
+```text
 Frontend (React + Vite)
         │
         ▼
@@ -127,7 +137,7 @@ MySQL Database
 
 # Project Structure
 
-```
+```text
 Running-start-digital-support
 │
 ├── backend
@@ -148,8 +158,8 @@ Running-start-digital-support
 │   │   ├── utils
 │   │   └── App.jsx
 │   └── package.json
-|
-│── REVIEW_NOTES.md
+│
+├── REVIEW_NOTES.md
 └── README.md
 ```
 
@@ -159,25 +169,40 @@ Running-start-digital-support
 
 ## Table: `faq`
 
-| Column     | Type      | Description       |
-| ---------- | --------- | ----------------- |
-| id         | INT       | Primary key       |
-| audience   | VARCHAR   | current or future |
-| type       | VARCHAR   | category          |
-| question   | TEXT      | FAQ question      |
-| answer     | JSON      | answer content    |
-| sort_order | INT       | display order     |
-| created_at | TIMESTAMP | creation date     |
+| Column | Type | Description |
+|---|---|---|
+| id | INT | Primary key |
+| audience | VARCHAR | current or future |
+| type | VARCHAR | category id |
+| question | TEXT | FAQ question |
+| answer | JSON | FAQ answer |
+| sort_order | INT | display order |
+| created_at | TIMESTAMP | creation date |
+
+---
+
+## Table: `categories`
+
+| Column | Type | Description |
+|---|---|---|
+| id | VARCHAR | category id |
+| audience | VARCHAR | current or future |
+| name | VARCHAR | category name |
+| description | TEXT | category description |
+| sort_order | INT | display order |
 
 ---
 
 # API Routes
 
-Note: Some routes are not fully RESTful and may be refactored in future iterations.
+> Note:  
+> Some routes may be refactored into a more RESTful structure in future iterations.
+
+---
 
 ## Public Routes
 
-```
+```http
 GET /api/getFAQS?audience=current
 GET /api/getFAQS?audience=future
 GET /api/categories
@@ -185,9 +210,9 @@ GET /api/categories
 
 ---
 
-## Admin Routes (Protected)
+## Admin FAQ Routes (Protected)
 
-```
+```http
 POST   /api/addFAQ
 PUT    /api/faq/:id
 DELETE /api/faq/:id
@@ -196,9 +221,20 @@ PUT    /api/faq/order
 
 ---
 
-## Authentication
+## Admin Category Routes (Protected)
 
+```http
+POST   /api/categories
+PUT    /api/categories/order
+PUT    /api/categories/:audience/:id
+DELETE /api/categories/:audience/:id
 ```
+
+---
+
+# Authentication
+
+```http
 POST /api/auth/login
 ```
 
@@ -210,7 +246,7 @@ Returns a JWT token for admin access.
 
 ## Backend `.env`
 
-```
+```env
 PORT=5001
 
 ADMIN_USERNAME=admin
@@ -231,7 +267,7 @@ DB_SSL_REJECT_UNAUTHORIZED=false
 
 ## Frontend `.env`
 
-```
+```env
 VITE_API_BASE=http://localhost:5001/api
 ```
 
@@ -241,8 +277,9 @@ VITE_API_BASE=http://localhost:5001/api
 
 ## 1. Clone Repository
 
-```
+```bash
 git clone https://github.com/alstondsouza1/Running-start-digital-support.git
+
 cd Running-start-digital-support
 ```
 
@@ -250,9 +287,11 @@ cd Running-start-digital-support
 
 ## 2. Backend Setup
 
-```
+```bash
 cd backend
+
 npm install
+
 cp .env.example .env
 ```
 
@@ -260,59 +299,73 @@ cp .env.example .env
 
 ## 3. Setup Database
 
-### Option 1: MySQL Workbench
+### Option 1 — MySQL Workbench
 
 ```sql
 CREATE DATABASE runningstart;
+
 USE runningstart;
 ```
 
 Run:
 
-```
+```text
 backend/sql/faq.sql
 ```
 
 ---
 
-### Option 2: Terminal
+### Option 2 — Terminal
 
-```
+```bash
 mysql -u root -p
+```
+
+```sql
 CREATE DATABASE runningstart;
+
 USE runningstart;
+
 SOURCE backend/sql/faq.sql;
 ```
 
 ---
 
-## 4. Seed Data
+## 4. Seed Default FAQ Data
 
-```
+```bash
 npm run seed:current
+
 npm run seed:future
 ```
 
 ---
 
-## 5. Generate Admin Password
+## 5. Generate Admin Password Hash
 
 ```js
 import bcrypt from "bcryptjs";
+
 console.log(await bcrypt.hash("yourpassword", 12));
+```
+
+Copy the generated hash into:
+
+```env
+ADMIN_PASSWORD_HASH=
 ```
 
 ---
 
 ## 6. Start Backend
 
-```
+```bash
 npm run dev
 ```
 
-Backend:
+Backend URL:
 
-```
+```text
 http://localhost:5001
 ```
 
@@ -320,16 +373,19 @@ http://localhost:5001
 
 ## 7. Start Frontend
 
-```
+```bash
 cd frontend
+
 npm install
+
 cp .env.example .env
+
 npm run dev
 ```
 
-Frontend:
+Frontend URL:
 
-```
+```text
 http://localhost:5173
 ```
 
@@ -338,125 +394,155 @@ http://localhost:5173
 # How to Test
 
 1. Open homepage
-2. Navigate between Current and Future students
+2. Browse Current and Future student sections
 3. Search FAQs
-4. Login at `/admin-login`
-5. Add / Edit / Delete FAQs
-6. Reorder FAQs
+4. Open categories
+5. Test accessibility tools
+6. Login at `/admin-login`
+7. Add FAQs
+8. Edit FAQs
+9. Delete FAQs
+10. Reorder FAQs
+11. Create categories
+12. Reorder categories
+
+---
+
+# Accessibility Features
+
+The project includes accessibility-focused functionality such as:
+
+- Keyboard navigation support
+- ARIA labels
+- Readable font mode
+- High contrast mode
+- Read aloud support
+- Google Translate integration
+- Responsive design
+- Screen reader improvements
+
+Goal target:
+
+- WCAG 2.1 AA compliance
 
 ---
 
 # Deployment Overview
 
-The application consists of three main components:
+The application is separated into three services:
 
-* Frontend: React (Vite)
-* Backend: Node.js + Express API
-* Database: MySQL
+- Frontend
+- Backend API
+- Database
 
-This architecture allows independent scaling of the frontend, backend, and database as usage grows.
-
----
-
-## Deployment Configuration
-
-For production deployment:
-
-Frontend (Vercel):
-- VITE_API_BASE=https://your-backend-url/api
-
-Backend (Render):
-- DB_HOST=your-aiven-host
-- DB_PORT=your-port
-- DB_USER=your-user
-- DB_PASSWORD=your-password
-- DB_NAME=your-db
-- JWT_SECRET=your-secret
-
-Ensure environment variables are configured in each platform dashboard.
+This architecture allows each service to scale independently.
 
 ---
 
-### System Flow
+# Hosting Summary
 
-1. Frontend is deployed on Vercel
-2. Frontend sends API requests to backend
-3. Backend processes requests and connects to database
-4. Database stores FAQ content and admin-managed data
-
----
-
-## Hosting Summary
-
-* Frontend → Vercel
-* Backend → Render
-* Database → Aiven MySQL
+| Service | Platform |
+|---|---|
+| Frontend | Vercel |
+| Backend | Render |
+| Database | Aiven MySQL |
 
 ---
 
-## Monthly Cost Estimate
+# Production Environment Variables
 
-| Service         | Estimated Cost |
-| --------------- | -------------- |
-| Aiven MySQL (Developer Plan)     | ~$5/month      |
-| Render Backend (Starter Plan)  | ~$7/month      |
-| Vercel Frontend (Pro Plan) | ~$20/month           |
+## Frontend (Vercel)
 
-Estimated Total: **~$32/month**
+```env
+VITE_API_BASE=https://your-backend-url/api
+```
 
-Projected Range: ~$40–$50/month depending on usage, traffic, and future features such as analytics.
+---
 
-### Notes
+## Backend (Render)
 
-* Free tiers are sufficient for development and demos
-* Costs may increase with traffic or scaling
-* Paid plans can be used for production reliability
+```env
+DB_HOST=your-aiven-host
+DB_PORT=your-port
+DB_USER=your-user
+DB_PASSWORD=your-password
+DB_NAME=your-db
+JWT_SECRET=your-secret
+```
+
+---
+
+# System Flow
+
+1. Frontend sends API requests
+2. Backend processes requests
+3. Backend connects to MySQL database
+4. Database stores FAQs and categories
+5. Admin dashboard updates content dynamically
+
+---
+
+# Monthly Cost Estimate
+
+| Service | Estimated Cost |
+|---|---|
+| Aiven MySQL | ~$5/month |
+| Render Backend | ~$7/month |
+| Vercel Frontend | ~$20/month |
+
+Estimated Total:
+
+**~$32/month**
+
+Projected production range:
+
+**~$40–$50/month**
+
+depending on traffic and future scaling.
+
+---
+
+# Security Notes
+
+Current protections include:
+
+- JWT authentication
+- Password hashing with bcrypt
+- Protected admin routes
+- Environment variable configuration
+
+Future security improvements:
+
+- Rate limiting
+- Helmet middleware
+- Better input validation
+- Refresh tokens
+- Secure cookie auth
+- CSRF protection
+
+---
+
+# Known Limitations
+
+- Requires JavaScript enabled
+- JWT stored in localStorage
+- No automated testing yet
+- Limited analytics
+- Accessibility improvements still ongoing
+- No rate limiting currently implemented
 
 ---
 
 # Data Collection & Privacy
 
-* No student login required
-* No personal data stored
-* FAQ browsing is anonymous
-
-Admin access:
-
-* JWT authentication
-* Password hashing (bcrypt)
+- No student login required
+- No personal student data stored
+- FAQ browsing is anonymous
 
 Future analytics (if added):
 
-* Will avoid collecting personal data
-* Focus on general usage only
-
----
-
-# Support
-
-If students are unable to find the information they need, they are encouraged to:
-
-- Visit the official Green River College website  
-- Contact the Running Start office directly  
-- Use available student support services  
-
-Future versions of this portal may include direct support links or live assistance options.
-
----
-
-# Launch Checklist
-
-* Frontend deployed
-* Backend deployed
-* Database connected
-* Environment variables configured
-* HTTPS enabled
-* CORS configured
-* Admin credentials secured
-* FAQ content reviewed
-* Accessibility checked (WCAG 2.1 AA)
-* Support/Help links added
-* Disclaimer added
+- Will avoid personal data collection
+- Will focus only on general usage metrics
 
 ---
 
@@ -464,122 +550,86 @@ Future versions of this portal may include direct support links or live assistan
 
 ## Ownership
 
-* Student Team (until June 2026): development + fixes
-* Running Start Department: content updates
-* Future support: potential student interns or college team
+- Student Team (until June 2026)
+- Running Start Department (content ownership)
+- Future student developers or interns
 
 ---
 
-## Maintenance Tasks
+# Maintenance Tasks
 
-* Update FAQ content
-* Monitor backend uptime
-* Maintain database backups
-* Update dependencies
-* Rotate secrets
-
----
-
-## Change Management
-
-* Maintain documentation
-* Define ownership roles
-* Provide onboarding for future teams
-
----
-
-# Known Limitations
-
-* Requires JavaScript
-* JWT stored in localStorage
-* No rate limiting
-* No automated testing yet
-* Accessibility improvements ongoing
-
----
-
-# Security Notes
-
-* Do NOT commit `.env` files
-* Use strong JWT secrets
-* Consider adding:
-
-  * Rate limiting
-  * Helmet middleware
-  * Input validation
-
-# Additional Considerations
-
-- JWT is currently stored in localStorage (not recommended for production)
-- HTTPS should be enforced in production deployments
-- Input validation should be expanded on all endpoints
-
-# Additional Considerations
-
-- JWT is currently stored in localStorage (not recommended for production)
-- HTTPS should be enforced in production deployments
-- Input validation should be expanded on all endpoints
-
----
-
-# Accessibility Goals
-
-* Improve keyboard navigation
-* Add ARIA labels
-* Improve contrast
-* Enhance screen reader support
+- Update FAQ content
+- Monitor backend uptime
+- Backup database
+- Update dependencies
+- Rotate secrets
+- Review accessibility
 
 ---
 
 # Future Improvements
 
-* Full-text search
-* Multilingual support
-* Admin analytics dashboard
-* Role-based access control
-* Automated testing
-* Improved admin UI
+Potential future enhancements include:
+
+- Full-text search
+- AI-powered FAQ suggestions
+- Admin analytics dashboard
+- Role-based access control
+- Automated testing
+- Better admin UI
+- Expanded accessibility support
+- Live support/contact integration
+- More multilingual support
 
 ---
 
 # Client Impact
 
-This portal helps the Running Start office by:
+This project helps the Running Start office by:
 
-* Reducing repetitive questions
-* Providing consistent information
-* Improving accessibility
-* Supporting current and future students
+- Reducing repetitive support requests
+- Providing more consistent information
+- Improving accessibility
+- Supporting students outside office hours
+- Improving navigation of support resources
 
 ---
 
 # Disclaimer
 
-This website was created by students as part of a Green River College capstone project.
+This project was created by students as part of the Green River College BAS Software Development Capstone.
 
-The content provided does not represent official Green River College policies. Students should refer to the official Green River College website or contact the Running Start office for verified information.
+The content provided does not represent official Green River College policy. Students should verify information through official Green River College resources and the Running Start office.
 
 ---
 
 # Notes for Reviewers
 
-* Use `.env.example`
-* Run seed scripts before testing
-* Generate admin password using bcrypt
-* Check DB connection if backend fails
+- Use `.env.example`
+- Run seed scripts before testing
+- Generate bcrypt password hash before login
+- Verify database connection if backend fails
+- Admin routes require valid JWT authentication
 
 ---
 
 # Acknowledgements
 
-Running Start Department
+Running Start Department  
 Green River College
+
+Special thanks to:
+
+- Lindsey Morris and Kyle Stevenson
+- Green River College BAS Faculty
+- Capstone instructors and reviewers
 
 ---
 
 # License
 
-This project was created for the
+This project was created for the:
+
 **Green River College BAS Software Development Capstone**
 
 For educational use only.
