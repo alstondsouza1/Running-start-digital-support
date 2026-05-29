@@ -13,9 +13,10 @@ export default function FeedbackButton() {
       startIcon={<FeedbackIcon />}
       sx={{
         position: "fixed",
-        top: { xs: 84, sm: 92 },
-        left: { xs: 12, sm: 16 },
+        top: 92,
+        left: 16,
         zIndex: 1100,
+        display: { xs: "none", md: "inline-flex" },
         backgroundColor: "white",
         color: "#2c882b",
         borderColor: "#2c882b",
