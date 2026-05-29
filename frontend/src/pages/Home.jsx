@@ -3,6 +3,7 @@ import SchoolIcon from "@mui/icons-material/School";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import { Link as RouterLink } from "react-router-dom";
 import QuickLinksPanel from "../components/QuickLinksPanel";
+import FeedbackButton from "../components/FeedbackButton";
 
 export default function Home() {
   const cardStyles = {
@@ -21,6 +22,8 @@ export default function Home() {
   };
 
   return (
+    <>
+    <FeedbackButton />
     <Box
       component="section"
       aria-labelledby="home-page-title"
@@ -150,5 +153,6 @@ export default function Home() {
         </Card>
       </Box>
     </Box>
+    </>
   );
 }
