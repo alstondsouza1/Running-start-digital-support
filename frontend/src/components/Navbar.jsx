@@ -9,10 +9,12 @@ import {
   List,
   ListItemButton,
   ListItemText,
+  ListItemIcon,
   Box,
   Divider,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import FeedbackIcon from "@mui/icons-material/Feedback";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
@@ -114,6 +116,22 @@ export default function Navbar() {
             </ListItemButton>
           );
         })}
+
+        <Divider sx={{ my: 1 }} />
+
+        <ListItemButton
+          component="a"
+          href="https://docs.google.com/forms/d/e/1FAIpQLScN1mQvZYCjWOsUCj7B-RyMK16dd6ad2I51pHDZ0cWk2_6v9Q/viewform?usp=dialog"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Give feedback about this site"
+          sx={{ px: 2, color: "#2c882b" }}
+        >
+          <ListItemIcon sx={{ minWidth: 36, color: "#2c882b" }}>
+            <FeedbackIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Feedback" />
+        </ListItemButton>
       </List>
     </Box>
   );
