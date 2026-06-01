@@ -22,7 +22,7 @@ The portal includes:
 * Admin dashboard
 * FAQ management
 * Category management
-* Google Analytics tracking without collecting personal student information
+* Google Analytics 4 and Vercel Analytics tracking without collecting personal student information
 
 This project was created by the capstone team **“Why Are You Running?”**
 
@@ -153,12 +153,12 @@ Main tables:
 
 Current hosting setup:
 
-| Part      | Service            |
-| --------- | ------------------ |
-| Frontend  | Vercel             |
-| Backend   | Render             |
-| Database  | Aiven MySQL        |
-| Analytics | Google Analytics 4 |
+| Part      | Service                              |
+| --------- | ------------------------------------ |
+| Frontend  | Vercel                               |
+| Backend   | Render                               |
+| Database  | Aiven MySQL                          |
+| Analytics | Google Analytics 4 + Vercel Analytics |
 
 ---
 
@@ -345,6 +345,7 @@ The team manually reviewed:
 * Added text size controls
 * Added read aloud functionality
 * Added translation support
+* Mobile-friendly accessibility toolbar
 
 ### Remaining Accessibility Limitations
 
@@ -380,6 +381,15 @@ Analytics help answer questions such as:
 * Which categories are used most?
 * What topics are students searching for?
 * Are students using search or browsing categories more often?
+
+### Analytics Tools
+
+The project currently uses:
+
+* Google Analytics 4 (GA4)
+* Vercel Analytics
+
+Google Analytics tracks FAQ interactions while Vercel Analytics provides anonymous traffic and performance insights.
 
 ### Privacy Statement
 
@@ -439,7 +449,7 @@ trackCategoryClick({
 Frontend environment variable:
 
 ```env
-VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+VITE_GOOGLE_ID=G-XXXXXXXXXX
 ```
 
 ### Analytics Maintenance
@@ -612,6 +622,8 @@ Monthly:
 * Check broken links
 * Confirm backend uptime
 * Review analytics
+* Verify Google Analytics tracking
+* Verify Vercel Analytics tracking
 
 Quarterly:
 
@@ -828,6 +840,9 @@ Recommended future improvements:
 * Improve security configuration
 * Add advanced search support
 * Improve screen reader testing
+* Accessibility toolbar usage reporting
+* Translation usage analytics
+* Mobile accessibility enhancements
 
 ---
 

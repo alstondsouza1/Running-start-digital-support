@@ -106,6 +106,11 @@ Admins can:
 - DnD Kit
 - Context API
 
+## Analytics
+
+- Google Analytics 4
+- Vercel Analytics
+
 ## Backend
 
 - Node.js
@@ -269,6 +274,7 @@ DB_SSL_REJECT_UNAUTHORIZED=false
 
 ```env
 VITE_API_BASE=http://localhost:5001/api
+VITE_GOOGLE_ID=G-XXXXXXXXXX
 ```
 
 ---
@@ -420,6 +426,10 @@ The project includes accessibility-focused functionality such as:
 - Google Translate integration
 - Responsive design
 - Screen reader improvements
+- Text size controls
+- Reduced motion mode
+- Draggable accessibility toolbar
+- Mobile accessibility support
 
 Goal target:
 
@@ -446,6 +456,8 @@ This architecture allows each service to scale independently.
 | Frontend | Vercel |
 | Backend | Render |
 | Database | Aiven MySQL |
+| Analytics | Google Analytics 4 |
+| Usage Analytics | Vercel Analytics |
 
 ---
 
@@ -455,6 +467,7 @@ This architecture allows each service to scale independently.
 
 ```env
 VITE_API_BASE=https://your-backend-url/api
+VITE_GOOGLE_ID=G-XXXXXXXXXX
 ```
 
 ---
@@ -527,9 +540,10 @@ Future security improvements:
 - Requires JavaScript enabled
 - JWT stored in localStorage
 - No automated testing yet
-- Limited analytics
+- Analytics currently limited to FAQ interactions, searches, and category usage
 - Accessibility improvements still ongoing
 - No rate limiting currently implemented
+- Drag-and-drop interactions in the admin dashboard are primarily mouse-based
 
 ---
 
@@ -571,7 +585,7 @@ Future analytics (if added):
 
 Potential future enhancements include:
 
-- Full-text search
+- Improved search relevance and ranking
 - AI-powered FAQ suggestions
 - Admin analytics dashboard
 - Role-based access control
