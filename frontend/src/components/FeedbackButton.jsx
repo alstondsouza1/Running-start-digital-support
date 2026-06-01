@@ -11,23 +11,28 @@ export default function FeedbackButton() {
       variant="outlined"
       size="small"
       startIcon={<FeedbackIcon />}
+      aria-label="Give feedback about this site"
       sx={{
         position: "fixed",
-        top: 92,
-        left: 16,
+        top: 104,
+        left: 20,
         zIndex: 1100,
         display: { xs: "none", md: "inline-flex" },
         backgroundColor: "white",
         color: "#2c882b",
         borderColor: "#2c882b",
         textTransform: "none",
-        fontWeight: 600,
+        fontWeight: 700,
+        boxShadow: 1,
         "&:hover": {
           backgroundColor: "#f0f8f0",
           borderColor: "#1a5e1a",
         },
+        "&:focus-visible": {
+          outline: "3px solid #d14900",
+          outlineOffset: "3px",
+        },
       }}
-      aria-label="Give feedback about this site"
     >
       Please provide feedback
     </Button>

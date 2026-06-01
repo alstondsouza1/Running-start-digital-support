@@ -9,7 +9,9 @@ import {
   Stack,
   Tooltip,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 
 import AccessibilityNewIcon from "@mui/icons-material/AccessibilityNew";
 import TextFieldsIcon from "@mui/icons-material/TextFields";
@@ -27,11 +29,15 @@ const ZOOM_STEP = 10;
 const DEFAULT_POSITION = { x: 16, y: 120 };
 
 function clearGoogleTranslateCookies() {
-  document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  document.cookie =
+    "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
   document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`;
 }
 
 export default function AccessibilityBar() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState(DEFAULT_POSITION);
   const [dragging, setDragging] = useState(false);
@@ -52,6 +58,11 @@ export default function AccessibilityBar() {
   const [isReading, setIsReading] = useState(false);
 
   useEffect(() => {
+    if (isMobile) {
+      setPosition({ x: 12, y: 86 });
+      return;
+    }
+
     const savedPosition = localStorage.getItem("accessibilityPosition");
 
     if (savedPosition) {
@@ -61,7 +72,7 @@ export default function AccessibilityBar() {
         setPosition(DEFAULT_POSITION);
       }
     }
-  }, []);
+  }, [isMobile]);
 
   useEffect(() => {
     document.documentElement.style.setProperty(
@@ -125,7 +136,7 @@ export default function AccessibilityBar() {
 
   useEffect(() => {
     function handleMouseMove(e) {
-      if (!dragging) return;
+      if (!dragging || isMobile) return;
 
       const widgetWidth = 340;
       const widgetHeight = open ? 520 : 60;
@@ -159,7 +170,7 @@ export default function AccessibilityBar() {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [dragging, dragOffset, open]);
+  }, [dragging, dragOffset, open, isMobile]);
 
   useEffect(() => {
     return () => {
@@ -168,6 +179,7 @@ export default function AccessibilityBar() {
   }, []);
 
   function startDragging(e) {
+    if (isMobile) return;
     if (e.target.closest("button")) return;
     if (e.target.closest("select")) return;
     if (e.target.closest("a")) return;
@@ -218,7 +230,7 @@ export default function AccessibilityBar() {
     setReadableFont(false);
     setReducedMotion(false);
     setIsReading(false);
-    setPosition(DEFAULT_POSITION);
+    setPosition(isMobile ? { x: 12, y: 86 } : DEFAULT_POSITION);
 
     window.speechSynthesis?.cancel();
 
@@ -241,11 +253,15 @@ export default function AccessibilityBar() {
       aria-label="Accessibility and translation tools"
       sx={{
         position: "fixed",
-        left: position.x,
-        top: position.y,
+        left: isMobile ? 12 : position.x,
+        top: isMobile ? 86 : position.y,
+        right: isMobile ? 12 : "auto",
         zIndex: 9999,
-        width: open ? { xs: "calc(100vw - 24px)", sm: 340 } : 260,
-        maxWidth: "calc(100vw - 16px)",
+        width: open
+          ? { xs: "calc(100vw - 24px)", sm: 340 }
+          : { xs: "calc(100vw - 24px)", sm: 260 },
+        maxWidth: "calc(100vw - 24px)",
+        maxHeight: open ? "calc(100vh - 110px)" : "auto",
         borderRadius: 2,
         overflow: "hidden",
         boxShadow: "0 6px 18px rgba(0,0,0,0.22)",
@@ -263,7 +279,7 @@ export default function AccessibilityBar() {
           display: "flex",
           alignItems: "center",
           gap: 1,
-          cursor: dragging ? "grabbing" : "grab",
+          cursor: isMobile ? "default" : dragging ? "grabbing" : "grab",
           userSelect: "none",
           borderBottom: open ? "1px solid #dddddd" : "none",
         }}
@@ -305,7 +321,13 @@ export default function AccessibilityBar() {
       </Box>
 
       <Collapse in={open}>
-        <Box sx={{ p: 2 }}>
+        <Box
+          sx={{
+            p: 2,
+            maxHeight: "calc(100vh - 180px)",
+            overflowY: "auto",
+          }}
+        >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
             <TranslateIcon sx={{ color: "#006225" }} aria-hidden="true" />
             <Typography fontWeight={800}>Translate Page</Typography>
@@ -317,23 +339,7 @@ export default function AccessibilityBar() {
             sx={{ mb: 1 }}
           />
 
-          <Button
-            fullWidth
-            variant="outlined"
-            size="small"
-            onClick={resetTranslation}
-            sx={{
-              borderColor: "#006225",
-              color: "#006225",
-              textTransform: "none",
-              fontWeight: 700,
-              mb: 1.5,
-              "&:hover": {
-                borderColor: "#004d1a",
-                backgroundColor: "#eef7ef",
-              },
-            }}
-          >
+          <Button fullWidth variant="outlined" size="small" onClick={resetTranslation} sx={resetButtonSx}>
             Back to Original Language
           </Button>
 
@@ -446,6 +452,18 @@ export default function AccessibilityBar() {
     </Paper>
   );
 }
+
+const resetButtonSx = {
+  borderColor: "#006225",
+  color: "#006225",
+  textTransform: "none",
+  fontWeight: 700,
+  mb: 1.5,
+  "&:hover": {
+    borderColor: "#004d1a",
+    backgroundColor: "#eef7ef",
+  },
+};
 
 const smallButtonSx = {
   borderColor: "#006225",
