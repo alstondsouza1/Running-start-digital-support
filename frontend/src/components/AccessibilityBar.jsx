@@ -29,8 +29,7 @@ const ZOOM_STEP = 10;
 const DEFAULT_POSITION = { x: 16, y: 120 };
 
 function clearGoogleTranslateCookies() {
-  document.cookie =
-    "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
   document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`;
 }
 
@@ -339,7 +338,13 @@ export default function AccessibilityBar() {
             sx={{ mb: 1 }}
           />
 
-          <Button fullWidth variant="outlined" size="small" onClick={resetTranslation} sx={resetButtonSx}>
+          <Button
+            fullWidth
+            variant="outlined"
+            size="small"
+            onClick={resetTranslation}
+            sx={resetButtonSx}
+          >
             Back to Original Language
           </Button>
 
