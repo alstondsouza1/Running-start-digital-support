@@ -1,13 +1,14 @@
 # Deployment & Handoff Guide
+
 Running Start Digital Support Portal
 
 ---
 
 # Overview
 
-This document provides deployment information, client handoff instructions, embedding guidance, and maintenance recommendations for the Running Start Digital Support Portal.
+This document provides deployment information, client handoff instructions, embedding guidance, maintenance recommendations, and operational support details for the Running Start Digital Support Portal.
 
-The goal is to ensure the Running Start Department can continue using the portal with minimal technical support after the capstone project concludes.
+The goal is to ensure the Running Start Department can continue using, updating, and maintaining the portal with minimal technical support after the capstone project concludes.
 
 ---
 
@@ -15,21 +16,15 @@ The goal is to ensure the Running Start Department can continue using the portal
 
 Current Status:
 
-Frontend Complete
-
-Backend Complete
-
-Database Connected
-
-FAQ Management Functional
-
-Search Functionality Functional
-
-Mobile Responsive
-
-Accessibility Improvements Implemented
-
-Deployment Ready
+* Frontend Complete
+* Backend Complete
+* Database Connected
+* FAQ Management Functional
+* Search Functionality Functional
+* Mobile Responsive
+* Accessibility Improvements Implemented
+* Analytics Implemented
+* Deployment Ready
 
 ---
 
@@ -57,16 +52,34 @@ https://your-render-backend.onrender.com/api
 
 ---
 
+# Current Hosting Services
+
+| Service         | Provider           |
+| --------------- | ------------------ |
+| Frontend        | Vercel             |
+| Backend         | Render             |
+| Database        | Aiven MySQL        |
+| Analytics       | Google Analytics 4 |
+| Usage Analytics | Vercel Analytics   |
+
+---
+
 # Deployment Architecture
 
 ```txt
 Student Browser
       │
       ▼
-Frontend (Vercel)
+Frontend (React + Vite)
       │
       ▼
-Backend API (Render)
+Vercel Hosting
+      │
+      ▼
+Backend API (Node.js + Express)
+      │
+      ▼
+Render Hosting
       │
       ▼
 MySQL Database (Aiven)
@@ -80,20 +93,25 @@ MySQL Database (Aiven)
 
 Technology:
 
-- React
-- Vite
-- Material UI
+* React
+* Vite
+* Material UI
+* React Router
+* DnD Kit
 
 Hosting:
 
-- Vercel
+* Vercel
 
 Responsibilities:
 
-- Display FAQs
-- Search functionality
-- Student interface
-- Admin interface
+* Display FAQs
+* Search functionality
+* Student interface
+* Admin interface
+* Accessibility tools
+* Translation support
+* Analytics event tracking
 
 ---
 
@@ -101,19 +119,24 @@ Responsibilities:
 
 Technology:
 
-- Node.js
-- Express
+* Node.js
+* Express.js
+* JWT Authentication
+* bcryptjs
+* mysql2
 
 Hosting:
 
-- Render
+* Render
 
 Responsibilities:
 
-- FAQ management
-- Authentication
-- Database communication
-- Analytics events
+* FAQ CRUD operations
+* Category CRUD operations
+* Authentication
+* Database communication
+* FAQ ordering
+* Security validation
 
 ---
 
@@ -121,17 +144,18 @@ Responsibilities:
 
 Technology:
 
-- MySQL
+* MySQL
 
 Hosting:
 
-- Aiven
+* Aiven
 
 Responsibilities:
 
-- Store FAQs
-- Store category data
-- Store ordering information
+* Store FAQs
+* Store category data
+* Store FAQ ordering
+* Support admin management
 
 ---
 
@@ -144,24 +168,30 @@ Responsibilities:
 3. Configure environment variables
 4. Deploy
 
-Required environment variable:
+Required environment variables:
 
 ```env
 VITE_API_BASE=https://your-backend-url/api
+VITE_GOOGLE_ID=G-XXXXXXXXXX
 ```
 
 ---
 
 ## Verify Frontend Deployment
 
-Check:
+Verify:
 
-- Homepage loads
-- Current Student page loads
-- Future Student page loads
-- Search works
-- FAQ links open correctly
-- Mobile layout works
+* Homepage loads
+* Current Student page loads
+* Future Student page loads
+* Search works correctly
+* FAQ links open correctly
+* Mobile layout works correctly
+* Accessibility toolbar opens correctly on mobile devices
+* Translation dropdown loads successfully
+* Text size controls function properly
+* High contrast mode functions properly
+* Read aloud feature functions properly
 
 ---
 
@@ -194,21 +224,18 @@ DB_NAME=your-db
 Test:
 
 ```txt
-GET /api/health
 GET /api/getFAQS?audience=current
 GET /api/getFAQS?audience=future
 GET /api/categories
+POST /api/admin/login
 ```
 
 Expected:
 
-```json
-{
-  "ok": true
-}
-```
-
-for health route.
+* Successful responses
+* No database errors
+* Categories returned correctly
+* Authentication functioning properly
 
 ---
 
@@ -228,7 +255,7 @@ Import schema:
 SOURCE faq.sql;
 ```
 
-Run seed scripts:
+Run seed scripts if needed:
 
 ```bash
 npm run seed:current
@@ -239,7 +266,7 @@ npm run seed:future
 
 # Client Embedding Guidance
 
-The portal can be embedded into the Green River College website using an iframe.
+The portal can be embedded directly into the Green River College website using an iframe.
 
 Example:
 
@@ -261,17 +288,18 @@ Suggested placement:
 
 ```txt
 Running Start Website
-   ↓
+      ↓
 Frequently Asked Questions
-   ↓
-Embedded Portal
+      ↓
+Embedded FAQ Portal
 ```
 
 Benefits:
 
-- Students remain on the college website
-- FAQ content remains centralized
-- Updates appear automatically
+* Students remain on the Green River website
+* FAQ content remains centralized
+* Updates appear automatically
+* Reduced maintenance effort
 
 ---
 
@@ -282,9 +310,9 @@ Benefits:
 For normal FAQ updates:
 
 1. Login to admin dashboard
-2. Edit FAQ
+2. Edit FAQ content
 3. Save changes
-4. Verify frontend display
+4. Verify display on frontend
 
 No deployment required.
 
@@ -298,13 +326,42 @@ Admin Login:
 /admin-login
 ```
 
-Admin Functions:
+Available Admin Functions:
 
-- Add FAQ
-- Edit FAQ
-- Delete FAQ
-- Reorder FAQs
-- Manage categories
+* Add FAQ
+* Edit FAQ
+* Delete FAQ
+* Reorder FAQs
+* Add Categories
+* Edit Categories
+* Delete Categories
+
+---
+
+# Analytics
+
+## Analytics Platforms
+
+* Google Analytics 4
+* Vercel Analytics
+
+## Analytics Events Tracked
+
+* FAQ Question Clicks
+* FAQ Searches
+* Category Selection
+
+## Privacy Statement
+
+The portal does not intentionally collect:
+
+* Student names
+* Student IDs
+* Email addresses
+* Academic records
+* Personal support information
+
+Analytics are used only for general usage trends and portal improvement.
 
 ---
 
@@ -312,16 +369,14 @@ Admin Functions:
 
 ## Documentation
 
-- README.md
-- REVIEW_NOTES.md
-- ACCESSIBILITY_NOTES.md
-- ANALYTICS_DOCUMENTATION.md
-- CHANGE_MANAGEMENT_PLAN.md
-- DEPLOYMENT_AND_HANDOFF_GUIDE.md
-
 Completed:
 
-Yes
+* README.md
+* REVIEW_NOTES.md
+* ACCESSIBILITY_NOTES.md
+* ANALYTICS_DOCUMENTATION.md
+* CHANGE_MANAGEMENT_PLAN.md
+* DEPLOYMENT_AND_HANDOFF_GUIDE.md
 
 ---
 
@@ -329,54 +384,47 @@ Yes
 
 Frontend:
 
-Deployed
+* Deployed
 
 Backend:
 
-Deployed
+* Deployed
 
 Database:
 
-Connected
+* Connected
 
 ---
 
 ## Functionality
 
-FAQ Search:
+Verified:
 
-Working
-
-Admin Dashboard:
-
-Working
-
-Category Management:
-
-Working
-
-Responsive Layout:
-
-Working
-
-Accessibility Features:
-
-Working
+* FAQ Search
+* FAQ Categories
+* FAQ CRUD
+* Category CRUD
+* Admin Login
+* Responsive Design
+* Accessibility Tools
+* Translation Support
+* Analytics Tracking
 
 ---
 
 # Minimal Maintenance Requirements
 
-The system was intentionally designed to require minimal maintenance.
+The portal was intentionally designed to require minimal maintenance.
 
-Typical maintenance includes:
+Typical maintenance tasks include:
 
-- Updating FAQ content
-- Checking broken links
-- Monitoring hosting services
-- Updating dependencies periodically
+* Updating FAQ content
+* Reviewing broken links
+* Monitoring hosting services
+* Reviewing analytics
+* Updating dependencies periodically
 
-Most content changes can be completed without modifying code.
+Most content updates can be completed without code changes.
 
 ---
 
@@ -386,9 +434,10 @@ Most content changes can be completed without modifying code.
 
 Check:
 
-- Backend running
-- Database connection
-- API URL configuration
+* Backend running
+* Database connection
+* API URL configuration
+* Network requests
 
 ---
 
@@ -396,21 +445,33 @@ Check:
 
 Check:
 
-- JWT secret configured
-- Admin credentials configured
-- Token expiration
+* JWT secret configured
+* Admin credentials configured
+* Token expiration
+* Authentication routes
 
 ---
 
 ## Categories Missing
 
-Check:
+Verify:
 
 ```txt
 GET /api/categories
 ```
 
-Verify category table contains records.
+Confirm categories exist in database.
+
+---
+
+## Translation Not Working
+
+Check:
+
+* Google Translate script loaded
+* Browser extensions not blocking Google services
+* Translation dropdown rendered
+* CSS not hiding translation elements
 
 ---
 
@@ -418,52 +479,73 @@ Verify category table contains records.
 
 Check:
 
-- Environment variables
-- Database credentials
-- Build logs
+* Environment variables
+* Database credentials
+* Build logs
+* Render logs
+* Vercel logs
 
 ---
 
 # Recommended Future Improvements
 
-Future enhancements may include:
+Potential future enhancements:
 
-- Advanced analytics dashboard
-- Multilingual support
-- Automated testing
-- Enhanced accessibility tools
-- Role-based permissions
-- Automated backups
+* Advanced analytics dashboard
+* Accessibility usage reporting
+* Search trend reporting
+* Improved translation support
+* Automated testing
+* Enhanced accessibility tools
+* Role-based permissions
+* Automated backups
+* Improved screen reader testing
+* Additional security hardening
 
 ---
 
 # Support Contacts
 
-Current Capstone Team:
+## Current Capstone Team
 
-- Alston Dsouza
-- Diana Khachaturova
-- Laura Villaraza
-- Daniel McCarragher
+* Alston Dsouza
+* Diana Khachaturova
+* Laura Villaraza
+* Daniel McCarragher
 
-Client:
+---
+
+## Client
 
 Running Start Department
+
 Green River College
 
 ---
 
 # Final Handoff Summary
 
-The Running Start Digital Support Portal has been prepared for deployment, client handoff, and long-term maintenance.
+The Running Start Digital Support Portal has been successfully prepared for deployment, client handoff, and long-term maintenance.
 
 The system provides:
 
-- Searchable FAQs
-- Admin-managed content
-- Responsive design
-- Accessibility improvements
-- Deployment documentation
-- Maintenance documentation
+* Searchable FAQs
+* Category-based organization
+* Admin-managed content updates
+* Mobile responsiveness
+* Accessibility tools
+* Translation support
+* Privacy-conscious analytics
+* Deployment documentation
+* Maintenance documentation
 
-The portal is designed to be maintainable, scalable, and easy for future stakeholders to support.
+Most future content updates can be completed directly through the admin dashboard without requiring code changes.
+
+Long-term success will depend on:
+
+* Maintaining accurate FAQ content
+* Monitoring hosting services
+* Reviewing analytics data
+* Updating dependencies periodically
+* Continuing accessibility improvements
+* Assigning future project ownership

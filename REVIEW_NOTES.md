@@ -22,7 +22,7 @@
   - “Future Students”
   - “Prospective Students”
 - Some older frontend data files may still exist and should be cleaned up
-- Accessibility improvements are still ongoing
+- Accessibility improvements have been significantly expanded, though additional WCAG testing is still recommended
 
 ---
 
@@ -31,7 +31,7 @@
 - Should reviewers use local MySQL or cloud MySQL for testing?
 - Which frontend data files are active versus legacy?
 - Should category management eventually move to a dedicated admin page?
-- Should analytics remain optional or become part of production?
+- How should analytics data be reviewed and maintained over time?
 
 ---
 
@@ -61,6 +61,8 @@
 - Responsive layout works well on mobile devices
 - Accessibility tools are easy to locate
 - Admin dashboard is functional
+- Accessibility toolbar provides multiple accessibility options
+- Translation support improves usability for multilingual users
 
 ---
 
@@ -85,6 +87,9 @@
 - Frontend state management is reasonably organized
 - Accessibility labels are implemented in many areas
 - Reusable components improved maintainability
+- Authentication context is separated from UI components
+- Analytics utilities are centralized and reusable
+- Accessibility utilities are integrated throughout the application
 
 ---
 
@@ -106,7 +111,7 @@
 - JWT authentication is implemented
 - Password hashing uses bcrypt
 - Admin routes are protected
-- SQL parameters are used in most queries
+- Parameterized SQL queries are used throughout database operations
 - Environment variables are used for secrets
 
 ---
@@ -151,6 +156,9 @@
   - High contrast mode
   - Readable fonts
   - Translation support
+- Text size controls
+- Reduced motion mode
+- Mobile-friendly accessibility toolbar
 
 ---
 
@@ -173,6 +181,7 @@
 - Clean duplicate or unused frontend files
 - Improve loading and success states
 - Improve drag-and-drop accessibility
+- Add analytics dashboard
 
 ---
 
@@ -265,6 +274,9 @@ The project demonstrates:
 - Responsive frontend design
 - CRUD functionality
 - Admin dashboard workflows
+- Analytics integration
+- Translation support
+- Accessibility tooling
 
 Future iterations should focus on:
 
