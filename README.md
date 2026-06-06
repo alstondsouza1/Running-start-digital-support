@@ -4,7 +4,7 @@
 
 The Running Start Digital Support Portal is a full-stack web application developed in collaboration with the Running Start Department at Green River College as part of the BAS Software Development Capstone program.
 
-The portal helps current and prospective Running Start students quickly find answers to frequently asked questions through a searchable, categorized, and mobile-friendly interface.
+The portal helps current and future Running Start students quickly find answers to frequently asked questions through a searchable, categorized, and mobile-friendly interface.
 
 The system also includes an administrative dashboard that allows staff or student administrators to manage FAQ content without editing code.
 
@@ -64,7 +64,7 @@ This project was designed to:
 Students can:
 
 - Browse FAQs for Current Students
-- Browse FAQs for Future / Prospective Students
+- Browse FAQs for Future Students
 - Search FAQs by keyword
 - Browse FAQs by category
 - Read answers in bullet-point format
@@ -170,7 +170,9 @@ Running-start-digital-support
 ├── MANUAL_TEST_CHECKLIST.md
 ├── SUBMISSION_EVIDENCE_CHECKLIST.md
 ├── ACCESSIBILITY_AUDIT_GUIDE.md
-├── REVIEW_NOTES.md
+├── ANALYTICS_DOCUMENTATION.md
+├── CHANGE_MANAGEMENT_PLAN.md
+├── CLIENT_HANDOFF_DOCUMENTATION.md
 └── README.md
 ```
 
@@ -559,12 +561,12 @@ Future security improvements:
 # Known Limitations
 
 - Requires JavaScript enabled
-- JWT stored in localStorage
-- No automated testing yet
+- Admin authentication uses JWT stored in localStorage; secure httpOnly cookies would be stronger for a production system
+- Full end-to-end browser tests are not included yet
 - Analytics currently limited to FAQ interactions, searches, and category usage
-- Accessibility improvements still ongoing
-- No rate limiting currently implemented
-- Drag-and-drop interactions in the admin dashboard are primarily mouse-based
+- Google Translate depends on the external Google Translate script loading correctly
+- Read aloud behavior depends on browser and operating system speech synthesis support
+- Drag-and-drop interactions in the admin dashboard may be easier with a mouse or touch device
 
 ---
 

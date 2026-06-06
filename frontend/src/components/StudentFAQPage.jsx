@@ -273,6 +273,7 @@ export default function StudentFAQPage({
           maxWidth: 980,
           mx: "auto",
           mt: 4,
+          scrollMarginTop: { xs: 88, sm: 96 },
         }}
       >
         <Typography id="faq-results-heading" variant="h4" component="h2" gutterBottom>

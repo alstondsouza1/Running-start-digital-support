@@ -15,6 +15,7 @@ import Admin from "./pages/Admin";
 import AdminLogin from "./components/admin/AdminLogin";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 import NotFound from "./pages/NotFound";
+import AccessibilityStatement from "./pages/AccessibilityStatement";
 
 const srOnlyStyles = {
   position: "absolute",
@@ -35,6 +36,7 @@ function getPageTitle(pathname) {
     "/future-student": "Future Running Start Students",
     "/admin-login": "Admin Login",
     "/admin": "Admin Dashboard",
+    "/accessibility": "Accessibility Statement",
   };
 
   return titles[pathname] || "Page Not Found";
@@ -89,6 +91,7 @@ export default function App() {
             <Route path="/current-student" element={<CurrentStudent />} />
             <Route path="/future-student" element={<ProspectiveStudent />} />
             <Route path="/admin-login" element={<AdminLogin />} />
+            <Route path="/accessibility" element={<AccessibilityStatement />} />
 
             <Route element={<ProtectedRoute />}>
               <Route path="/admin" element={<Admin />} />

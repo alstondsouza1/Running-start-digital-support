@@ -56,6 +56,8 @@ Use this checklist before a demo, submission, or deployment. Mark each item as p
 - [ ] Toolbar can be dragged with a mouse on desktop.
 - [ ] Toolbar can be dragged with touch on mobile.
 - [ ] Toolbar remains inside the viewport after dragging.
+- [ ] Toolbar header/drag handle gives clear move instructions.
+- [ ] Toolbar header moves with arrow keys and resets with Home.
 - [ ] Text size decrease/increase changes readable page text.
 - [ ] Readable font mode changes page typography.
 - [ ] High contrast mode changes all major pages to black/white/yellow.
@@ -82,11 +84,13 @@ Use this checklist before a demo, submission, or deployment. Mark each item as p
 - [ ] Accordion controls can be expanded/collapsed with keyboard only.
 - [ ] Admin forms have visible labels and focus states.
 - [ ] Status/error messages are visible and understandable.
+- [ ] Lighthouse accessibility scores are recorded in `ACCESSIBILITY_AUDIT_GUIDE.md`.
+- [ ] Screen reader smoke-test notes are recorded in `ACCESSIBILITY_AUDIT_GUIDE.md`.
 
 ## Final Verification
 
 - [ ] `npm run lint` passes in `frontend`.
 - [ ] `npm run build` passes in `frontend`.
 - [ ] `npm test` passes in `backend`.
-- [ ] `node --check backend/app.js` passes.
-- [ ] `node --check backend/controllers/adminController.js` passes.
+- [ ] `node --check app.js` passes from the `backend` directory.
+- [ ] `node --check controllers/adminController.js` passes from the `backend` directory.

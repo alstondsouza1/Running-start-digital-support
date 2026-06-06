@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -20,11 +20,18 @@ export default function AddCategoryForm({
   onCancel,
 }) {
   const token = localStorage.getItem("token");
+  const errorRef = useRef(null);
 
   const [formData, setFormData] = useState(createEmptyForm());
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (formError) {
+      errorRef.current?.focus();
+    }
+  }, [formError]);
 
   useEffect(() => {
     if (initialData) {
@@ -132,7 +139,7 @@ export default function AddCategoryForm({
       </Typography>
 
       {formError && (
-        <Alert severity="error" role="alert">
+        <Alert ref={errorRef} severity="error" role="alert" tabIndex={-1}>
           {formError}
         </Alert>
       )}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Accordion,
   AccordionDetails,
@@ -33,11 +33,18 @@ export default function AddFaqForm({
   onCancel,
 }) {
   const token = localStorage.getItem("token");
+  const errorRef = useRef(null);
 
   const [formData, setFormData] = useState(createEmptyForm());
   const [allCategories, setAllCategories] = useState({});
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
+
+  useEffect(() => {
+    if (formError) {
+      errorRef.current?.focus();
+    }
+  }, [formError]);
 
   useEffect(() => {
     async function fetchCategories() {
@@ -251,7 +258,12 @@ export default function AddFaqForm({
       </Typography>
 
       {formError && (
-        <Alert severity="error" role="alert">
+        <Alert
+          ref={errorRef}
+          severity="error"
+          role="alert"
+          tabIndex={-1}
+        >
           {formError}
         </Alert>
       )}

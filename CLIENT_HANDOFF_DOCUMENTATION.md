@@ -650,18 +650,20 @@ Current protections:
 * Protected admin routes
 * Environment variables for secrets
 * SQL parameters used in queries
+* Helmet security headers
+* Login rate limiting
 
 Known concerns:
 
 * JWT is stored in localStorage
-* Rate limiting may need improvement
+* Rate limiting currently focuses on login attempts rather than every API route
 * Additional security hardening is recommended
 * Secrets must never be committed to GitHub
 
 Future security recommendations:
 
-* Add Helmet middleware
-* Add stronger rate limiting
+* Keep Helmet configuration reviewed as dependencies change
+* Add broader API rate limiting if traffic or abuse warrants it
 * Use secure HTTP-only cookies
 * Improve role-based access control
 * Add automated security checks
@@ -819,7 +821,7 @@ Current known limitations:
 
 * Drag-and-drop accessibility is limited
 * JWT is stored in localStorage
-* No automated test suite yet
+* Backend authentication tests exist, but frontend and end-to-end automation are not yet included
 * No advanced analytics dashboard yet
 * Some production settings may need future security hardening
 * Translation is machine-generated and may not be perfect
@@ -830,7 +832,7 @@ Current known limitations:
 
 Recommended future improvements:
 
-* Add automated tests
+* Add frontend and end-to-end automated tests
 * Improve drag-and-drop keyboard accessibility
 * Add admin analytics dashboard
 * Add role-based access control

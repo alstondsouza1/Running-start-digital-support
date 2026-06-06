@@ -1,26 +1,33 @@
 # Submission Evidence Checklist
 
-Use this file to collect screenshots and short notes for a class submission, demo, or client handoff.
+Use this file as the single checklist for class submission, demo, and client
+handoff evidence. Final screenshots are stored in `screenshots/`.
 
-## Recommended Screenshots
+## Captured Screenshots
 
-- [ ] Homepage desktop view.
-- [ ] Homepage mobile view.
-- [ ] Current Student FAQ page with categories visible.
-- [ ] Future Student FAQ page with categories visible.
-- [ ] FAQ search results with highlighted terms.
+- [x] `screenshots/01-home-desktop.png` - homepage desktop view.
+- [x] `screenshots/02-home-mobile.png` - homepage mobile view.
+- [x] `screenshots/03-current-faq-high-contrast.png` - Current Student FAQ
+  categories with the accessibility toolbar open and high contrast enabled.
+- [x] `screenshots/04-future-faq-search.png` - Future Student FAQ search with
+  highlighted results.
+- [x] `screenshots/05-accessibility-toolbar-mobile-moved.png` - mobile homepage
+  with the accessibility toolbar moved.
+- [x] `screenshots/06-accessibility-statement.png` - accessibility statement.
+- [x] `screenshots/07-admin-dashboard.png` - authenticated admin FAQ management
+  dashboard.
+- [x] `screenshots/08-admin-form-error-focus.png` - incomplete Add FAQ form with
+  the focused validation error.
+
+## Optional Additional Evidence
+
+Capture these only if the assignment or client specifically requires them:
+
 - [ ] Open FAQ accordion showing answer bullets and links.
 - [ ] Quick Links drawer.
 - [ ] Need More Help contact section.
-- [ ] Accessibility toolbar closed.
-- [ ] Accessibility toolbar open.
-- [ ] High contrast mode on a student FAQ page.
-- [ ] Mobile view with the accessibility toolbar moved.
 - [ ] Admin login page.
-- [ ] Admin dashboard FAQ management view.
-- [ ] Add/Edit FAQ form.
-- [ ] Category management view.
-- [ ] Add/Edit category form.
+- [ ] Category management and Add/Edit Category form.
 - [ ] Successful admin action message, such as FAQ added or order updated.
 
 ## Recommended Short Demo Flow
@@ -39,8 +46,6 @@ Use this file to collect screenshots and short notes for a class submission, dem
 
 ## Verification Evidence
 
-Record the date and result for each command.
-
 ```bash
 cd frontend
 npm run lint
@@ -50,15 +55,21 @@ npm run build
 ```bash
 cd backend
 npm test
-node --check backend/app.js
-node --check backend/controllers/adminController.js
+node --check app.js
+node --check controllers/adminController.js
 ```
+
+- [x] Frontend lint passed.
+- [x] Frontend production build passed.
+- [x] Backend tests passed.
+- [x] Backend syntax checks passed.
 
 ## Deployment Evidence
 
 - [ ] Frontend production URL.
-- [ ] Backend production URL or health endpoint.
-- [ ] `/api/health` returns `ok: true` and `database: "connected"`.
+- [ ] Backend production URL.
+- [ ] Production `/api/health` returns `ok: true`, `api: "running"`, and
+  `database: "connected"`.
 - [ ] Database provider and database name, without passwords or secrets.
 - [ ] Screenshot of required production environment variables, with secret values hidden.
 - [ ] Confirmation that `VITE_API_BASE` points to the deployed backend `/api` URL.
