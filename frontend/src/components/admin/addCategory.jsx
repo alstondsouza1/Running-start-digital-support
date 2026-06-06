@@ -7,8 +7,7 @@ import {
   MenuItem,
   Alert,
 } from "@mui/material";
-
-const API_BASE = import.meta.env.VITE_API_BASE;
+import { apiUrl, handleAuthErrorResponse } from "../../utils/api";
 
 function createEmptyForm() {
   return { audience: "", name: "", description: "" };
@@ -80,8 +79,8 @@ export default function AddCategoryForm({
 
       const url =
         mode === "edit" && initialData?.id
-          ? `${API_BASE}/categories/${initialData.audience}/${initialData.id}`
-          : `${API_BASE}/categories`;
+          ? apiUrl(`/categories/${initialData.audience}/${initialData.id}`)
+          : apiUrl("/categories");
 
       const method = mode === "edit" ? "PUT" : "POST";
 
@@ -97,6 +96,7 @@ export default function AddCategoryForm({
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
+        handleAuthErrorResponse(response);
         throw new Error(data.error || data.message || "Request failed");
       }
 

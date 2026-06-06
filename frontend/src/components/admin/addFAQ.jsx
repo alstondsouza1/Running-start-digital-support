@@ -8,8 +8,7 @@ import {
   Alert,
   FormHelperText,
 } from "@mui/material";
-
-const API_BASE = import.meta.env.VITE_API_BASE;
+import { apiUrl, handleAuthErrorResponse } from "../../utils/api";
 
 function createEmptyForm() {
   return {
@@ -39,7 +38,7 @@ export default function AddFaqForm({
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const res = await fetch(`${API_BASE}/categories`);
+        const res = await fetch(apiUrl("/categories"));
         const data = await res.json();
 
         if (!res.ok) {
@@ -196,8 +195,8 @@ export default function AddFaqForm({
     try {
       const url =
         mode === "edit" && initialData?.id
-          ? `${API_BASE}/faq/${initialData.id}`
-          : `${API_BASE}/addFAQ`;
+          ? apiUrl(`/faq/${initialData.id}`)
+          : apiUrl("/addFAQ");
 
       const method = mode === "edit" ? "PUT" : "POST";
 
@@ -213,6 +212,7 @@ export default function AddFaqForm({
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
+        handleAuthErrorResponse(response);
         throw new Error(data.error || data.message || "Request failed");
       }
 

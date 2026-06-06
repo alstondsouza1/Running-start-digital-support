@@ -135,6 +135,22 @@ function createCategoryId(name) {
     .replace(/^-|-$/g, "");
 }
 
+async function categoryNameExists(audience, name, excludeId = "") {
+  const normalizedName = createCategoryId(name);
+
+  if (!normalizedName) return false;
+
+  const [rows] = await pool.query(
+    "SELECT id, name FROM categories WHERE audience = ?",
+    [audience]
+  );
+
+  return rows.some((row) => {
+    if (excludeId && row.id === excludeId) return false;
+    return createCategoryId(row.name) === normalizedName;
+  });
+}
+
 async function ensureCategoriesTable() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS categories (
@@ -515,12 +531,7 @@ export const addCategory = async (req, res) => {
       });
     }
 
-    const [existing] = await pool.query(
-      "SELECT id FROM categories WHERE id = ? AND audience = ?",
-      [id, audience]
-    );
-
-    if (existing.length > 0) {
+    if (await categoryNameExists(audience, name)) {
       return res.status(409).json({
         error: "A category with that name already exists for this audience",
       });
@@ -585,6 +596,14 @@ export const updateCategory = async (req, res) => {
       return res.status(400).json({ error: "Category name is required" });
     }
 
+    const nextId = createCategoryId(name);
+
+    if (!nextId) {
+      return res.status(400).json({
+        error: "Category name must include at least one letter or number",
+      });
+    }
+
     const [existing] = await pool.query(
       "SELECT id FROM categories WHERE id = ? AND audience = ?",
       [id, audience]
@@ -592,6 +611,12 @@ export const updateCategory = async (req, res) => {
 
     if (existing.length === 0) {
       return res.status(404).json({ error: "Category not found" });
+    }
+
+    if (await categoryNameExists(audience, name, id)) {
+      return res.status(409).json({
+        error: "A category with that name already exists for this audience",
+      });
     }
 
     await pool.query(

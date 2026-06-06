@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import StudentFAQPage from "../components/StudentFAQPage";
-
-const API_BASE = import.meta.env.VITE_API_BASE;
+import { apiUrl } from "../utils/api";
 
 export default function CurrentStudent() {
   const [questions, setQuestions] = useState([]);
@@ -13,8 +12,8 @@ export default function CurrentStudent() {
     async function loadData() {
       try {
         const [faqRes, categoryRes] = await Promise.all([
-          fetch(`${API_BASE}/getFAQS?audience=current`),
-          fetch(`${API_BASE}/categories`),
+          fetch(apiUrl("/getFAQS?audience=current")),
+          fetch(apiUrl("/categories")),
         ]);
 
         const [faqData, categoryData] = await Promise.all([

@@ -1,11 +1,34 @@
 import express from "express";
 import adminController from "../controllers/adminController.js";
 import requireAdmin from "../middleware/requireAdmin.js";
+import { checkDatabaseHealth } from "../db/db.js";
 
 const router = express.Router();
 
-router.get("/health", (req, res) => {
-  res.json({ ok: true, message: "API is running" });
+router.get("/health", async (_req, res) => {
+  try {
+    const databaseOk = await checkDatabaseHealth();
+
+    if (!databaseOk) {
+      return res.status(503).json({
+        ok: false,
+        api: "running",
+        database: "unavailable",
+      });
+    }
+
+    return res.json({
+      ok: true,
+      api: "running",
+      database: "connected",
+    });
+  } catch {
+    return res.status(503).json({
+      ok: false,
+      api: "running",
+      database: "unavailable",
+    });
+  }
 });
 
 // public read

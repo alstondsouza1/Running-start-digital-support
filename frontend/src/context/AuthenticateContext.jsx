@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { jwtDecode } from "jwt-decode";
 import { AuthenticateContext } from "./auth-context";
+import { ADMIN_SESSION_EXPIRED_EVENT } from "../utils/api";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -50,6 +51,21 @@ export function AuthProvider({ children }) {
     },
     [runLogoutTimer]
   );
+
+  useEffect(() => {
+    function handleSessionExpired() {
+      logout();
+    }
+
+    window.addEventListener(ADMIN_SESSION_EXPIRED_EVENT, handleSessionExpired);
+
+    return () => {
+      window.removeEventListener(
+        ADMIN_SESSION_EXPIRED_EVENT,
+        handleSessionExpired
+      );
+    };
+  }, [logout]);
 
   useEffect(() => {
     let nextUser = null;

@@ -28,8 +28,7 @@ import { CSS } from "@dnd-kit/utilities";
 import AddFaqForm from "../components/admin/addFAQ.jsx";
 import AddCategoryForm from "../components/admin/addCategory.jsx";
 import { useAuth } from "../context/useAuth";
-
-const API_BASE = import.meta.env.VITE_API_BASE;
+import { apiUrl, handleAuthErrorResponse } from "../utils/api";
 
 function groupByType(questions) {
   return questions.reduce((acc, q) => {
@@ -321,7 +320,7 @@ export default function Admin() {
 
   const loadCategories = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/categories`);
+      const res = await fetch(apiUrl("/categories"));
       const data = await res.json();
 
       if (!res.ok) {
@@ -343,8 +342,8 @@ export default function Admin() {
 
     try {
       const [currentRes, futureRes] = await Promise.all([
-        fetch(`${API_BASE}/getFAQS?audience=current`),
-        fetch(`${API_BASE}/getFAQS?audience=future`),
+        fetch(apiUrl("/getFAQS?audience=current")),
+        fetch(apiUrl("/getFAQS?audience=future")),
       ]);
 
       if (!currentRes.ok || !futureRes.ok) {
@@ -398,7 +397,7 @@ export default function Admin() {
     if (!confirmed) return;
 
     try {
-      const res = await fetch(`${API_BASE}/faq/${id}`, {
+      const res = await fetch(apiUrl(`/faq/${id}`), {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -408,6 +407,7 @@ export default function Admin() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
+        handleAuthErrorResponse(res);
         throw new Error(data?.error || data?.message || "Delete failed");
       }
 
@@ -430,7 +430,7 @@ export default function Admin() {
       const audience = activeTab === 0 ? "current" : "future";
       const orderedIds = reorderedList.map((item) => item.id);
 
-      const res = await fetch(`${API_BASE}/faq/order`, {
+      const res = await fetch(apiUrl("/faq/order"), {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -446,6 +446,7 @@ export default function Admin() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
+        handleAuthErrorResponse(res);
         throw new Error(data?.error || data?.message || "Failed to save order");
       }
 
@@ -506,7 +507,7 @@ export default function Admin() {
     try {
       const orderedIds = reorderedList.map((cat) => cat.id);
 
-      const res = await fetch(`${API_BASE}/categories/order`, {
+      const res = await fetch(apiUrl("/categories/order"), {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -521,6 +522,7 @@ export default function Admin() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
+        handleAuthErrorResponse(res);
         throw new Error(data?.error || "Failed to save category order");
       }
 
@@ -573,7 +575,7 @@ export default function Admin() {
     if (!confirmed) return;
 
     try {
-      const res = await fetch(`${API_BASE}/categories/${audience}/${id}`, {
+      const res = await fetch(apiUrl(`/categories/${audience}/${id}`), {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -581,6 +583,7 @@ export default function Admin() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
+        handleAuthErrorResponse(res);
         throw new Error(data?.error || "Delete failed");
       }
 

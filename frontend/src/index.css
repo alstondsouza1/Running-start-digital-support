@@ -67,6 +67,12 @@ select:focus-visible {
   color: #ffffff !important;
 }
 
+.high-contrast-mode #root > .MuiBox-root,
+.high-contrast-mode main .MuiBox-root:not(mark) {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
 .high-contrast-mode .MuiAppBar-root,
 .high-contrast-mode footer {
   background-color: #000000 !important;
@@ -76,10 +82,14 @@ select:focus-visible {
 
 .high-contrast-mode .MuiPaper-root,
 .high-contrast-mode .MuiCard-root,
-.high-contrast-mode .MuiAccordion-root {
+.high-contrast-mode .MuiAccordion-root,
+.high-contrast-mode .MuiDrawer-paper,
+.high-contrast-mode .MuiAlert-root,
+.high-contrast-mode .MuiSnackbarContent-root {
   background-color: #111111 !important;
   color: #ffffff !important;
   border: 2px solid #ffffff !important;
+  box-shadow: none !important;
 }
 
 .high-contrast-mode p,
@@ -95,37 +105,103 @@ select:focus-visible {
 .high-contrast-mode .MuiTypography-root,
 .high-contrast-mode .MuiFormHelperText-root,
 .high-contrast-mode .MuiInputLabel-root,
-.high-contrast-mode .MuiInputBase-input {
+.high-contrast-mode .MuiInputBase-input,
+.high-contrast-mode .MuiListItemText-primary,
+.high-contrast-mode .MuiListItemText-secondary,
+.high-contrast-mode .MuiAlert-message {
   color: #ffffff !important;
 }
 
-.high-contrast-mode a {
+.high-contrast-mode a,
+.high-contrast-mode .MuiLink-root {
   color: #ffff00 !important;
   text-decoration: underline !important;
 }
 
 .high-contrast-mode button,
-.high-contrast-mode .MuiButton-root {
+.high-contrast-mode .MuiButton-root,
+.high-contrast-mode .MuiIconButton-root,
+.high-contrast-mode .MuiTab-root {
   color: #ffff00 !important;
   border-color: #ffff00 !important;
 }
 
-.high-contrast-mode .MuiButton-contained {
+.high-contrast-mode .MuiButton-contained,
+.high-contrast-mode .MuiButton-contained.Mui-disabled {
   background-color: #ffff00 !important;
   color: #000000 !important;
+  border-color: #ffff00 !important;
+}
+
+.high-contrast-mode .MuiButton-outlined,
+.high-contrast-mode .MuiButton-text,
+.high-contrast-mode .MuiIconButton-root {
+  background-color: #000000 !important;
+}
+
+.high-contrast-mode .MuiButton-root.Mui-disabled,
+.high-contrast-mode .MuiIconButton-root.Mui-disabled,
+.high-contrast-mode .MuiTab-root.Mui-disabled {
+  background-color: #1a1a1a !important;
+  color: #bdbdbd !important;
+  border-color: #bdbdbd !important;
 }
 
 .high-contrast-mode input,
 .high-contrast-mode textarea,
 .high-contrast-mode select,
-.high-contrast-mode .MuiOutlinedInput-root {
+.high-contrast-mode .MuiOutlinedInput-root,
+.high-contrast-mode .MuiSelect-select,
+.high-contrast-mode .goog-te-combo {
   background-color: #000000 !important;
   color: #ffffff !important;
   border-color: #ffffff !important;
 }
 
-.high-contrast-mode .MuiOutlinedInput-notchedOutline {
+.high-contrast-mode .MuiOutlinedInput-notchedOutline,
+.high-contrast-mode .MuiDivider-root {
   border-color: #ffffff !important;
+}
+
+.high-contrast-mode .MuiSvgIcon-root {
+  color: #ffff00 !important;
+}
+
+.high-contrast-mode .MuiButton-contained .MuiSvgIcon-root,
+.high-contrast-mode .MuiChip-root .MuiSvgIcon-root {
+  color: #000000 !important;
+}
+
+.high-contrast-mode .MuiChip-root {
+  background-color: #ffff00 !important;
+  color: #000000 !important;
+  border: 2px solid #ffff00 !important;
+  font-weight: 700 !important;
+}
+
+.high-contrast-mode .MuiListItemButton-root,
+.high-contrast-mode .MuiAccordionSummary-root,
+.high-contrast-mode .MuiCardActionArea-root {
+  color: #ffffff !important;
+}
+
+.high-contrast-mode .MuiListItemButton-root:hover,
+.high-contrast-mode .MuiListItemButton-root.Mui-selected,
+.high-contrast-mode .MuiListItemButton-root.Mui-selected:hover,
+.high-contrast-mode .MuiCardActionArea-root:hover,
+.high-contrast-mode .MuiCardActionArea-root[aria-pressed="true"] {
+  background-color: #333300 !important;
+  color: #ffff00 !important;
+  outline: 2px solid #ffff00 !important;
+  outline-offset: -2px !important;
+}
+
+.high-contrast-mode .MuiTabs-indicator {
+  background-color: #ffff00 !important;
+}
+
+.high-contrast-mode .MuiCircularProgress-root {
+  color: #ffff00 !important;
 }
 
 .high-contrast-mode mark {

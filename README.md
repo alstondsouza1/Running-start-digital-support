@@ -164,6 +164,9 @@ Running-start-digital-support
 │   │   └── App.jsx
 │   └── package.json
 │
+├── MANUAL_TEST_CHECKLIST.md
+├── SUBMISSION_EVIDENCE_CHECKLIST.md
+├── ACCESSIBILITY_AUDIT_GUIDE.md
 ├── REVIEW_NOTES.md
 └── README.md
 ```
@@ -208,6 +211,7 @@ Running-start-digital-support
 ## Public Routes
 
 ```http
+GET /api/health
 GET /api/getFAQS?audience=current
 GET /api/getFAQS?audience=future
 GET /api/categories
@@ -399,18 +403,29 @@ http://localhost:5173
 
 # How to Test
 
-1. Open homepage
-2. Browse Current and Future student sections
-3. Search FAQs
-4. Open categories
-5. Test accessibility tools
-6. Login at `/admin-login`
-7. Add FAQs
-8. Edit FAQs
-9. Delete FAQs
-10. Reorder FAQs
-11. Create categories
-12. Reorder categories
+Use `MANUAL_TEST_CHECKLIST.md` for the full pre-demo and pre-deployment checklist.
+
+Use `ACCESSIBILITY_AUDIT_GUIDE.md` for Lighthouse, keyboard, screen reader, and accessibility toolbar audit notes.
+
+Quick smoke test:
+
+1. Open homepage.
+2. Browse Current and Future student sections.
+3. Search FAQs and open a category.
+4. Open and test accessibility tools, including high contrast mode.
+5. Login at `/admin-login`.
+6. Add, edit, delete, and reorder FAQs.
+7. Add, edit, delete, and reorder categories.
+8. Verify the mobile navigation and mobile accessibility toolbar.
+
+For presentation screenshots and proof of testing, use `SUBMISSION_EVIDENCE_CHECKLIST.md`.
+
+Backend auth tests can be run from the backend folder:
+
+```bash
+cd backend
+npm test
+```
 
 ---
 
