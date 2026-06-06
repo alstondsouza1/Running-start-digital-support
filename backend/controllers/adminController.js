@@ -243,6 +243,41 @@ async function ensureCategoriesTable() {
   }
 }
 
+async function ensureFaqTableShape() {
+  const [updatedCols] = await pool.query(`
+    SELECT COLUMN_NAME
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'faq'
+      AND COLUMN_NAME = 'updated_at'
+  `);
+
+  if (updatedCols.length === 0) {
+    await pool.query(`
+      ALTER TABLE faq
+      ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP
+      AFTER created_at
+    `);
+  }
+
+  const [publishedCols] = await pool.query(`
+    SELECT COLUMN_NAME
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'faq'
+      AND COLUMN_NAME = 'is_published'
+  `);
+
+  if (publishedCols.length === 0) {
+    await pool.query(`
+      ALTER TABLE faq
+      ADD COLUMN is_published BOOLEAN NOT NULL DEFAULT TRUE
+      AFTER answer
+    `);
+  }
+}
+
 async function getValidCategoryIds(audience) {
   await ensureCategoriesTable();
 
@@ -310,6 +345,8 @@ async function validateFaqInput({ audience, type, question, answer }) {
 
 export const getFaqs = async (req, res) => {
   try {
+    await ensureFaqTableShape();
+
     const audience =
       typeof req.query.audience === "string" ? req.query.audience.trim() : "";
 
@@ -323,10 +360,14 @@ export const getFaqs = async (req, res) => {
       return res.status(400).json({ error: "Invalid audience value" });
     }
 
+    const includeHidden = req.user?.role === "admin";
+    const visibilityClause = includeHidden ? "" : "AND is_published = TRUE";
+
     const [rows] = await pool.query(
-      `SELECT id, audience, type, question, answer, sort_order, created_at
+      `SELECT id, audience, type, question, answer, is_published, sort_order, created_at, updated_at
        FROM faq
        WHERE audience = ?
+       ${visibilityClause}
        ORDER BY type, sort_order, created_at, id`,
       [audience]
     );
@@ -336,7 +377,9 @@ export const getFaqs = async (req, res) => {
       audience: row.audience,
       type: row.type,
       sort_order: row.sort_order,
+      is_published: Boolean(row.is_published),
       created_at: row.created_at,
+      updated_at: row.updated_at,
       question: row.question,
       answer: parseAnswer(row.answer),
     }));
@@ -350,6 +393,8 @@ export const getFaqs = async (req, res) => {
 
 export const addFaq = async (req, res) => {
   try {
+    await ensureFaqTableShape();
+
     const validated = await validateFaqInput(req.body);
 
     if (validated.error) {
@@ -357,6 +402,8 @@ export const addFaq = async (req, res) => {
     }
 
     const { audience, type, question, answer } = validated.value;
+    const isPublished =
+      typeof req.body.is_published === "boolean" ? req.body.is_published : true;
 
     const [maxRows] = await pool.query(
       "SELECT COALESCE(MAX(sort_order), 0) AS maxSort FROM faq WHERE audience = ? AND type = ?",
@@ -366,8 +413,8 @@ export const addFaq = async (req, res) => {
     const nextSort = (maxRows?.[0]?.maxSort ?? 0) + 1;
 
     const [result] = await pool.query(
-      "INSERT INTO faq (audience, type, question, answer, sort_order) VALUES (?, ?, ?, ?, ?)",
-      [audience, type, question, JSON.stringify(answer), nextSort]
+      "INSERT INTO faq (audience, type, question, answer, is_published, sort_order) VALUES (?, ?, ?, ?, ?, ?)",
+      [audience, type, question, JSON.stringify(answer), isPublished, nextSort]
     );
 
     return res.status(201).json({
@@ -383,6 +430,8 @@ export const addFaq = async (req, res) => {
 
 export const updateFaq = async (req, res) => {
   try {
+    await ensureFaqTableShape();
+
     const id = Number(req.params.id);
 
     if (!Number.isInteger(id) || id <= 0) {
@@ -398,7 +447,7 @@ export const updateFaq = async (req, res) => {
     const { audience, type, question, answer } = validated.value;
 
     const [existingRows] = await pool.query(
-      "SELECT id, audience, type, sort_order FROM faq WHERE id = ?",
+      "SELECT id, audience, type, sort_order, is_published FROM faq WHERE id = ?",
       [id]
     );
 
@@ -407,6 +456,10 @@ export const updateFaq = async (req, res) => {
     }
 
     const existing = existingRows[0];
+    const isPublished =
+      typeof req.body.is_published === "boolean"
+        ? req.body.is_published
+        : Boolean(existing.is_published);
     let sortOrder = existing.sort_order;
 
     const movedToDifferentGroup =
@@ -423,9 +476,9 @@ export const updateFaq = async (req, res) => {
 
     await pool.query(
       `UPDATE faq
-       SET audience = ?, type = ?, question = ?, answer = ?, sort_order = ?
+       SET audience = ?, type = ?, question = ?, answer = ?, is_published = ?, sort_order = ?
        WHERE id = ?`,
-      [audience, type, question, JSON.stringify(answer), sortOrder, id]
+      [audience, type, question, JSON.stringify(answer), isPublished, sortOrder, id]
     );
 
     if (movedToDifferentGroup) {
@@ -440,8 +493,43 @@ export const updateFaq = async (req, res) => {
   }
 };
 
+export const updateFaqVisibility = async (req, res) => {
+  try {
+    await ensureFaqTableShape();
+
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ error: "Valid FAQ id is required" });
+    }
+
+    if (typeof req.body.is_published !== "boolean") {
+      return res.status(400).json({ error: "is_published boolean is required" });
+    }
+
+    const [result] = await pool.query(
+      "UPDATE faq SET is_published = ? WHERE id = ?",
+      [req.body.is_published, id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "FAQ not found" });
+    }
+
+    return res.json({
+      message: req.body.is_published ? "FAQ published" : "FAQ hidden",
+      is_published: req.body.is_published,
+    });
+  } catch (err) {
+    console.error("Update FAQ visibility error:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
 export const deleteFaq = async (req, res) => {
   try {
+    await ensureFaqTableShape();
+
     const id = Number(req.params.id);
 
     if (!Number.isInteger(id) || id <= 0) {
@@ -851,6 +939,7 @@ export default {
   deleteCategory,
   updateCategoryOrder,
   updateFaq,
+  updateFaqVisibility,
   deleteFaq,
   updateFaqOrder,
 };

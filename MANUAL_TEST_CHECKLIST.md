@@ -19,8 +19,10 @@ Use this checklist before a demo, submission, or deployment. Mark each item as p
 - [ ] Future Student page loads categories and FAQs.
 - [ ] Category selection filters FAQs correctly.
 - [ ] Search returns relevant FAQ results.
+- [ ] Clear Search resets the search results view.
 - [ ] Search highlighting is readable.
 - [ ] FAQ accordion opens and closes correctly.
+- [ ] No-results search state shows contact options.
 - [ ] External FAQ links open in a new tab.
 - [ ] Need More Help links work for Zoom, email, and phone.
 - [ ] Quick Links drawer opens, closes, and external links work.
@@ -37,8 +39,11 @@ Use this checklist before a demo, submission, or deployment. Mark each item as p
 - [ ] Admin search filters FAQ cards.
 - [ ] Add FAQ works.
 - [ ] Edit FAQ works.
+- [ ] Hide FAQ removes it from student pages without deleting it.
+- [ ] Publish FAQ makes it visible on student pages again.
 - [ ] Delete FAQ asks for confirmation and removes the FAQ.
 - [ ] FAQ reorder saves and remains after refresh.
+- [ ] FAQ preview displays the student-facing answer before saving.
 - [ ] Add category works.
 - [ ] Edit category works.
 - [ ] Duplicate category names are rejected.

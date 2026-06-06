@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Box,
   Button,
   TextField,
@@ -8,6 +11,7 @@ import {
   Alert,
   FormHelperText,
 } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { apiUrl, handleAuthErrorResponse } from "../../utils/api";
 
 function createEmptyForm() {
@@ -184,6 +188,9 @@ export default function AddFaqForm({
       audience: formData.audience.trim(),
       type: formData.type.trim(),
       question: formData.question.trim(),
+      ...(initialData?.id && typeof initialData.is_published === "boolean"
+        ? { is_published: initialData.is_published }
+        : {}),
       answer: {
         ...(formData.answer.intro?.trim()
           ? { intro: formData.answer.intro.trim() }
@@ -357,6 +364,61 @@ export default function AddFaqForm({
         <Button type="button" onClick={addBullet}>
           Add Bullet
         </Button>
+      </Box>
+
+      <Box
+        component="section"
+        aria-labelledby="faq-preview-heading"
+        sx={{
+          border: "1px solid #d0d0d0",
+          borderRadius: 2,
+          p: 2,
+          backgroundColor: "#fafafa",
+        }}
+      >
+        <Typography id="faq-preview-heading" variant="h6" sx={{ mb: 1 }}>
+          Student Preview
+        </Typography>
+
+        <Accordion defaultExpanded disableGutters>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography fontWeight={700}>
+              {formData.question.trim() || "Question preview"}
+            </Typography>
+          </AccordionSummary>
+
+          <AccordionDetails>
+            {formData.answer.intro.trim() && (
+              <Typography sx={{ mb: 1.5 }}>{formData.answer.intro}</Typography>
+            )}
+
+            <Box component="ul" sx={{ pl: 3, my: 0 }}>
+              {formData.answer.bullets
+                .filter((bullet) => bullet.text.trim())
+                .map((bullet, index) => (
+                  <Box component="li" key={index} sx={{ mb: 1 }}>
+                    {bullet.text}
+                    {bullet.url.trim() && (
+                      <Typography
+                        component="span"
+                        color="text.secondary"
+                        sx={{ display: "block", fontSize: "0.9rem" }}
+                      >
+                        {bullet.url}
+                      </Typography>
+                    )}
+                  </Box>
+                ))}
+            </Box>
+
+            {!formData.answer.intro.trim() &&
+              formData.answer.bullets.every((bullet) => !bullet.text.trim()) && (
+                <Typography color="text.secondary">
+                  Add a question and bullet points to preview the student view.
+                </Typography>
+              )}
+          </AccordionDetails>
+        </Accordion>
       </Box>
 
       <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>

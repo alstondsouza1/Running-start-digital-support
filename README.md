@@ -68,6 +68,7 @@ Students can:
 - Search FAQs by keyword
 - Browse FAQs by category
 - Read answers in bullet-point format
+- Get contact options when search has no results
 - Open helpful external resource links
 - Use the portal on mobile, tablet, and desktop devices
 - Navigate using keyboard accessibility support
@@ -86,8 +87,10 @@ Admins can:
 - Login securely using JWT authentication
 - Add FAQs
 - Edit FAQs
+- Hide or publish FAQs without deleting them
 - Delete FAQs
 - Reorder FAQs using drag-and-drop
+- Preview FAQs before saving
 - Create custom categories
 - Edit categories
 - Delete categories
@@ -184,8 +187,10 @@ Running-start-digital-support
 | type | VARCHAR | category id |
 | question | TEXT | FAQ question |
 | answer | JSON | FAQ answer |
+| is_published | BOOLEAN | whether students can see the FAQ |
 | sort_order | INT | display order |
 | created_at | TIMESTAMP | creation date |
+| updated_at | TIMESTAMP | last update date |
 
 ---
 
@@ -226,6 +231,7 @@ POST   /api/addFAQ
 PUT    /api/faq/:id
 DELETE /api/faq/:id
 PUT    /api/faq/order
+PUT    /api/faq/:id/visibility
 ```
 
 ---

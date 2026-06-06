@@ -75,7 +75,14 @@ function sanitizeConfirmText(text) {
     .slice(0, 180);
 }
 
-function SortableCard({ question, onEdit, onDelete }) {
+function getAllFaqs(groupedCurrent, groupedFuture) {
+  return [
+    ...Object.values(groupedCurrent).flat(),
+    ...Object.values(groupedFuture).flat(),
+  ];
+}
+
+function SortableCard({ question, onEdit, onDelete, onToggleVisibility }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({
       id: question.id,
@@ -125,7 +132,7 @@ function SortableCard({ question, onEdit, onDelete }) {
           fontSize: { xs: "0.9rem", sm: "1rem" },
         }}
       >
-        {question.type}
+        {question.is_published === false ? "Hidden" : "Published"}
       </Typography>
 
       <Box
@@ -138,6 +145,14 @@ function SortableCard({ question, onEdit, onDelete }) {
       >
         <Button size="small" variant="outlined" onClick={() => onEdit(question)}>
           Edit
+        </Button>
+
+        <Button
+          size="small"
+          variant="outlined"
+          onClick={() => onToggleVisibility(question)}
+        >
+          {question.is_published === false ? "Publish" : "Hide"}
         </Button>
 
         <Button
@@ -288,6 +303,30 @@ export default function Admin() {
     [groupedFuture]
   );
 
+  const categoryTotal = useMemo(
+    () => (categories.current?.length || 0) + (categories.future?.length || 0),
+    [categories]
+  );
+
+  const allFaqs = useMemo(
+    () => getAllFaqs(groupedCurrent, groupedFuture),
+    [groupedCurrent, groupedFuture]
+  );
+
+  const lastUpdated = useMemo(() => {
+    const timestamps = allFaqs
+      .map((faq) => new Date(faq.updated_at || faq.created_at).getTime())
+      .filter((time) => !Number.isNaN(time));
+
+    if (timestamps.length === 0) return "No updates yet";
+
+    return new Date(Math.max(...timestamps)).toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  }, [allFaqs]);
+
   const filteredGrouped = useMemo(() => {
     const result = {};
 
@@ -339,14 +378,24 @@ export default function Admin() {
   const loadFaqs = useCallback(async () => {
     setLoadingFaqs(true);
     setFetchError("");
+    const token = localStorage.getItem("token");
 
     try {
+      if (!token) {
+        throw new Error("Please login again.");
+      }
+
       const [currentRes, futureRes] = await Promise.all([
-        fetch(apiUrl("/getFAQS?audience=current")),
-        fetch(apiUrl("/getFAQS?audience=future")),
+        fetch(apiUrl("/admin/faq?audience=current"), {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch(apiUrl("/admin/faq?audience=future"), {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
       ]);
 
       if (!currentRes.ok || !futureRes.ok) {
+        handleAuthErrorResponse(!currentRes.ok ? currentRes : futureRes);
         throw new Error("Failed to load FAQs from server");
       }
 
@@ -415,6 +464,45 @@ export default function Admin() {
       loadFaqs();
     } catch (err) {
       showMessage(err.message || "Delete failed.", "error");
+    }
+  }
+
+  async function handleToggleVisibility(question) {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      showMessage("Please login again.", "error");
+      return;
+    }
+
+    const nextPublished = question.is_published === false;
+
+    try {
+      const res = await fetch(apiUrl(`/faq/${question.id}/visibility`), {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ is_published: nextPublished }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        handleAuthErrorResponse(res);
+        throw new Error(data?.error || "Failed to update visibility");
+      }
+
+      showMessage(
+        nextPublished
+          ? "FAQ is now visible to students."
+          : "FAQ is now hidden from students.",
+        "success"
+      );
+      loadFaqs();
+    } catch (err) {
+      showMessage(err.message || "Failed to update visibility.", "error");
     }
   }
 
@@ -949,7 +1037,7 @@ export default function Admin() {
           mx: "auto",
           mt: 5,
           display: "grid",
-          gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
+          gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(4, 1fr)" },
           gap: 2,
         }}
       >
@@ -973,10 +1061,19 @@ export default function Admin() {
 
         <Paper sx={{ p: 2, textAlign: "center" }}>
           <Typography variant="h5" fontWeight={700}>
-            {currentTotal + futureTotal}
+            {categoryTotal}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Total FAQs
+            Categories
+          </Typography>
+        </Paper>
+
+        <Paper sx={{ p: 2, textAlign: "center" }}>
+          <Typography variant="h6" fontWeight={700}>
+            {lastUpdated}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Last Updated
           </Typography>
         </Paper>
       </Box>
@@ -1112,6 +1209,7 @@ export default function Admin() {
                               setView("addFaq");
                             }}
                             onDelete={handleDelete}
+                            onToggleVisibility={handleToggleVisibility}
                           />
                         ))
                       ) : (

@@ -34,10 +34,12 @@ router.get("/health", async (_req, res) => {
 // public read
 router.get("/getFAQS", adminController.getFaqs);
 router.get("/categories", adminController.getFaqCategories);
+router.get("/admin/faq", requireAdmin, adminController.getFaqs);
 
 // admin FAQ CRUD
 router.post("/addFAQ", requireAdmin, adminController.addFaq);
 router.put("/faq/order", requireAdmin, adminController.updateFaqOrder);
+router.put("/faq/:id/visibility", requireAdmin, adminController.updateFaqVisibility);
 router.put("/faq/:id", requireAdmin, adminController.updateFaq);
 router.delete("/faq/:id", requireAdmin, adminController.deleteFaq);
 
