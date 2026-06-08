@@ -510,18 +510,19 @@ DB_NAME=your-db
 
 Database uses MySQL.
 
-Basic setup:
+After creating the database and configuring backend environment variables, run:
 
-```sql
-CREATE DATABASE runningstart;
-USE runningstart;
+```bash
+cd backend
+npm run migrate
 ```
 
-Import schema:
+Migrations are versioned in `backend/migrations/` and also run automatically
+before the API starts.
 
-```sql
-SOURCE faq.sql;
-```
+GitHub Actions verifies frontend lint, unit tests, production builds, backend
+tests, dependency audits, and Chromium end-to-end tests on pushes and pull
+requests.
 
 Run seed scripts:
 

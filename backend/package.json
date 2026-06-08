@@ -27,6 +27,7 @@
     "dev": "nodemon app.js",
     "start": "node app.js",
     "test": "node --test",
+    "migrate": "node scripts/migrate.js",
     "seed:current": "node scripts/seedCurrenFAQ.js",
     "seed:future": "node scripts/seedFutureFAQ.js",
     "seed:all": "npm run seed:current && npm run seed:future"

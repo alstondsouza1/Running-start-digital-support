@@ -1,52 +1,5 @@
 import pool from "../db/db.js";
 
-const ALLOWED_CATEGORIES = {
-  current: [
-    {
-      id: "fee-waiver-book-loan",
-      name: "Fee Waiver & Book Loan",
-      description: "Fee waiver steps, book loan info, and related support",
-    },
-    {
-      id: "how-to-plan-classes",
-      name: "How to Plan Classes",
-      description: "Advising, planning schedules, and choosing classes",
-    },
-    {
-      id: "dates-deadlines",
-      name: "Dates & Deadlines",
-      description: "Enrollment deadlines, important dates, and term timelines",
-    },
-    {
-      id: "campus-resources",
-      name: "Campus Resources",
-      description: "Support services, offices, and student resources at GRC",
-    },
-  ],
-  future: [
-    {
-      id: "general",
-      name: "General Questions",
-      description: "Program overview, eligibility, and participation basics",
-    },
-    {
-      id: "enrollment",
-      name: "Enrollment",
-      description: "Deadlines, placement, and getting registered",
-    },
-    {
-      id: "classes",
-      name: "Classes",
-      description: "Allowed courses, online learning, transfer, and degrees",
-    },
-    {
-      id: "other",
-      name: "Other",
-      description: "Moving districts, FERPA, and parent/guardian info",
-    },
-  ],
-};
-
 function isValidHttpUrl(value) {
   try {
     const url = new URL(value);
@@ -151,136 +104,7 @@ async function categoryNameExists(audience, name, excludeId = "") {
   });
 }
 
-async function ensureCategoriesTable() {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS categories (
-      id VARCHAR(100) NOT NULL,
-      audience VARCHAR(20) NOT NULL,
-      name VARCHAR(255) NOT NULL,
-      description TEXT,
-      sort_order INT NOT NULL DEFAULT 0,
-      PRIMARY KEY (id, audience)
-    )
-  `);
-
-  const [descriptionCols] = await pool.query(`
-    SELECT COLUMN_NAME
-    FROM INFORMATION_SCHEMA.COLUMNS
-    WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME = 'categories'
-      AND COLUMN_NAME = 'description'
-  `);
-
-  if (descriptionCols.length === 0) {
-    await pool.query("ALTER TABLE categories ADD COLUMN description TEXT");
-  }
-
-  const [sortCols] = await pool.query(`
-    SELECT COLUMN_NAME
-    FROM INFORMATION_SCHEMA.COLUMNS
-    WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME = 'categories'
-      AND COLUMN_NAME = 'sort_order'
-  `);
-
-  if (sortCols.length === 0) {
-    await pool.query(
-      "ALTER TABLE categories ADD COLUMN sort_order INT NOT NULL DEFAULT 0"
-    );
-  }
-
-  const [idCol] = await pool.query(`
-    SELECT DATA_TYPE
-    FROM INFORMATION_SCHEMA.COLUMNS
-    WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME = 'categories'
-      AND COLUMN_NAME = 'id'
-  `);
-
-  if (idCol.length > 0 && idCol[0].DATA_TYPE !== "varchar") {
-    await pool.query(`
-      ALTER TABLE categories
-        DROP PRIMARY KEY,
-        MODIFY COLUMN id VARCHAR(100) NOT NULL,
-        ADD PRIMARY KEY (id, audience)
-    `);
-  }
-
-  await pool.query("DELETE FROM categories WHERE id REGEXP '^[0-9]+$'");
-
-  for (const [audience, cats] of Object.entries(ALLOWED_CATEGORIES)) {
-    for (let i = 0; i < cats.length; i += 1) {
-      const cat = cats[i];
-
-      await pool.query(
-        `
-        INSERT IGNORE INTO categories
-          (id, audience, name, description, sort_order)
-        VALUES (?, ?, ?, ?, ?)
-        `,
-        [cat.id, audience, cat.name, cat.description || "", i + 1]
-      );
-    }
-  }
-
-  for (const audience of ["current", "future"]) {
-    const [rows] = await pool.query(
-      `
-      SELECT id
-      FROM categories
-      WHERE audience = ?
-      ORDER BY sort_order, name
-      `,
-      [audience]
-    );
-
-    for (let i = 0; i < rows.length; i += 1) {
-      await pool.query(
-        "UPDATE categories SET sort_order = ? WHERE audience = ? AND id = ?",
-        [i + 1, audience, rows[i].id]
-      );
-    }
-  }
-}
-
-async function ensureFaqTableShape() {
-  const [updatedCols] = await pool.query(`
-    SELECT COLUMN_NAME
-    FROM INFORMATION_SCHEMA.COLUMNS
-    WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME = 'faq'
-      AND COLUMN_NAME = 'updated_at'
-  `);
-
-  if (updatedCols.length === 0) {
-    await pool.query(`
-      ALTER TABLE faq
-      ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        ON UPDATE CURRENT_TIMESTAMP
-      AFTER created_at
-    `);
-  }
-
-  const [publishedCols] = await pool.query(`
-    SELECT COLUMN_NAME
-    FROM INFORMATION_SCHEMA.COLUMNS
-    WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME = 'faq'
-      AND COLUMN_NAME = 'is_published'
-  `);
-
-  if (publishedCols.length === 0) {
-    await pool.query(`
-      ALTER TABLE faq
-      ADD COLUMN is_published BOOLEAN NOT NULL DEFAULT TRUE
-      AFTER answer
-    `);
-  }
-}
-
 async function getValidCategoryIds(audience) {
-  await ensureCategoriesTable();
-
   const [rows] = await pool.query(
     "SELECT id FROM categories WHERE audience = ?",
     [audience]
@@ -345,8 +169,6 @@ async function validateFaqInput({ audience, type, question, answer }) {
 
 export const getFaqs = async (req, res) => {
   try {
-    await ensureFaqTableShape();
-
     const audience =
       typeof req.query.audience === "string" ? req.query.audience.trim() : "";
 
@@ -393,8 +215,6 @@ export const getFaqs = async (req, res) => {
 
 export const addFaq = async (req, res) => {
   try {
-    await ensureFaqTableShape();
-
     const validated = await validateFaqInput(req.body);
 
     if (validated.error) {
@@ -430,8 +250,6 @@ export const addFaq = async (req, res) => {
 
 export const updateFaq = async (req, res) => {
   try {
-    await ensureFaqTableShape();
-
     const id = Number(req.params.id);
 
     if (!Number.isInteger(id) || id <= 0) {
@@ -495,8 +313,6 @@ export const updateFaq = async (req, res) => {
 
 export const updateFaqVisibility = async (req, res) => {
   try {
-    await ensureFaqTableShape();
-
     const id = Number(req.params.id);
 
     if (!Number.isInteger(id) || id <= 0) {
@@ -528,8 +344,6 @@ export const updateFaqVisibility = async (req, res) => {
 
 export const deleteFaq = async (req, res) => {
   try {
-    await ensureFaqTableShape();
-
     const id = Number(req.params.id);
 
     if (!Number.isInteger(id) || id <= 0) {
@@ -559,8 +373,6 @@ export const deleteFaq = async (req, res) => {
 
 export const getFaqCategories = async (_req, res) => {
   try {
-    await ensureCategoriesTable();
-
     const [rows] = await pool.query(`
       SELECT id, audience, name, description, sort_order
       FROM categories
@@ -593,8 +405,6 @@ export const getFaqCategories = async (_req, res) => {
 
 export const addCategory = async (req, res) => {
   try {
-    await ensureCategoriesTable();
-
     const audience =
       typeof req.body.audience === "string" ? req.body.audience.trim() : "";
     const name = typeof req.body.name === "string" ? req.body.name.trim() : "";
@@ -658,8 +468,6 @@ export const addCategory = async (req, res) => {
 
 export const updateCategory = async (req, res) => {
   try {
-    await ensureCategoriesTable();
-
     const audience =
       typeof req.params.audience === "string"
         ? req.params.audience.trim()
@@ -733,8 +541,6 @@ export const updateCategory = async (req, res) => {
 
 export const deleteCategory = async (req, res) => {
   try {
-    await ensureCategoriesTable();
-
     const audience =
       typeof req.params.audience === "string"
         ? req.params.audience.trim()
@@ -809,8 +615,6 @@ async function resequenceCategories(audience) {
 
 export const updateCategoryOrder = async (req, res) => {
   try {
-    await ensureCategoriesTable();
-
     const audience =
       typeof req.body.audience === "string" ? req.body.audience.trim() : "";
 

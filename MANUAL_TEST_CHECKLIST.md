@@ -6,7 +6,7 @@ Use this checklist before a demo, submission, or deployment. Mark each item as p
 
 - [ ] Backend `.env` is configured from `backend/.env.example`.
 - [ ] Frontend `.env` is configured from `frontend/.env.example`.
-- [ ] MySQL database exists and `backend/sql/faq.sql` has been run.
+- [ ] MySQL database exists and `npm run migrate` passes in `backend`.
 - [ ] Seed scripts have been run if default FAQ data is needed.
 - [ ] Backend starts without database connection errors.
 - [ ] `/api/health` reports `database: "connected"`.
@@ -90,7 +90,11 @@ Use this checklist before a demo, submission, or deployment. Mark each item as p
 ## Final Verification
 
 - [ ] `npm run lint` passes in `frontend`.
+- [ ] `npm test` passes in `frontend`.
 - [ ] `npm run build` passes in `frontend`.
+- [ ] `npm run test:e2e` passes in `frontend`.
 - [ ] `npm test` passes in `backend`.
 - [ ] `node --check app.js` passes from the `backend` directory.
 - [ ] `node --check controllers/adminController.js` passes from the `backend` directory.
+- [ ] `node --check migrations/index.js` passes from the `backend` directory.
+- [ ] `npm audit --omit=dev` reports no vulnerabilities in both projects.

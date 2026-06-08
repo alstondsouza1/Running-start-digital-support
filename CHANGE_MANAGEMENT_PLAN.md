@@ -187,7 +187,8 @@ Recommended maintenance tasks:
 * Maintain backups
 * Monitor connection credentials
 * Review database access permissions
-* Update schema carefully when needed
+* Add versioned files under `backend/migrations/` for schema changes
+* Run `npm run migrate` before deployment when validating a migration
 * Verify FAQ data integrity after updates
 
 ---

@@ -49,7 +49,9 @@ Capture these only if the assignment or client specifically requires them:
 ```bash
 cd frontend
 npm run lint
+npm test
 npm run build
+npm run test:e2e
 ```
 
 ```bash
@@ -60,7 +62,9 @@ node --check controllers/adminController.js
 ```
 
 - [x] Frontend lint passed.
+- [x] Frontend unit tests passed.
 - [x] Frontend production build passed.
+- [x] Frontend Chromium end-to-end tests passed.
 - [x] Backend tests passed.
 - [x] Backend syntax checks passed.
 

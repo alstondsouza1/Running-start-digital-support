@@ -317,35 +317,16 @@ cp .env.example .env
 
 ## 3. Setup Database
 
-### Option 1 — MySQL Workbench
-
-```sql
-CREATE DATABASE runningstart;
-
-USE runningstart;
-```
-
-Run:
-
-```text
-backend/sql/faq.sql
-```
-
----
-
-### Option 2 — Terminal
+Create an empty MySQL database, configure the backend `.env`, then run the
+versioned migrations:
 
 ```bash
-mysql -u root -p
+cd backend
+npm run migrate
 ```
 
-```sql
-CREATE DATABASE runningstart;
-
-USE runningstart;
-
-SOURCE backend/sql/faq.sql;
-```
+The backend also runs pending migrations automatically before starting the API.
+Applied migration IDs are recorded in the `schema_migrations` table.
 
 ---
 
@@ -434,6 +415,24 @@ Backend auth tests can be run from the backend folder:
 cd backend
 npm test
 ```
+
+Frontend unit and component tests:
+
+```bash
+cd frontend
+npm test
+```
+
+Chromium end-to-end tests:
+
+```bash
+cd frontend
+npx playwright install chromium
+npm run test:e2e
+```
+
+GitHub Actions runs lint, unit tests, backend tests, production builds,
+dependency audits, and Playwright tests for pushes and pull requests.
 
 ---
 

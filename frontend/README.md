@@ -28,6 +28,9 @@ npm install
 npm run dev
 npm run lint
 npm run build
+npm test
+npx playwright install chromium
+npm run test:e2e
 ```
 
 ## Local Development
@@ -59,5 +62,7 @@ Run these before sharing or deploying frontend changes:
 
 ```bash
 npm run lint
+npm test
 npm run build
+npm run test:e2e
 ```

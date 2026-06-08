@@ -7,6 +7,7 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 
 import { testConnection } from "./db/db.js";
+import { runMigrations } from "./migrations/index.js";
 import router from "./router/router.js";
 import authenticateRoutes from "./router/authenticateRoutes.js";
 
@@ -72,6 +73,7 @@ app.use((err, _req, res, next) => {
 
 async function startServer() {
   await testConnection();
+  await runMigrations();
   app.listen(PORT, () => {
     console.log(`Listening on http://localhost:${PORT}`);
   });
