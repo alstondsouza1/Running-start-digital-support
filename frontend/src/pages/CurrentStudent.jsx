@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import StudentFAQPage from "../components/StudentFAQPage";
-import { apiUrl } from "../utils/api";
+import { loadStudentData } from "../utils/studentData";
 
 export default function CurrentStudent() {
   const [questions, setQuestions] = useState([]);
@@ -11,26 +11,9 @@ export default function CurrentStudent() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [faqRes, categoryRes] = await Promise.all([
-          fetch(apiUrl("/getFAQS?audience=current")),
-          fetch(apiUrl("/categories")),
-        ]);
-
-        const [faqData, categoryData] = await Promise.all([
-          faqRes.json(),
-          categoryRes.json(),
-        ]);
-
-        if (!faqRes.ok) {
-          throw new Error(faqData.error || "Failed to load current student FAQs.");
-        }
-
-        if (!categoryRes.ok) {
-          throw new Error(categoryData.error || "Failed to load categories.");
-        }
-
-        setQuestions(faqData);
-        setCategories(categoryData.current || []);
+        const data = await loadStudentData("current");
+        setQuestions(data.questions);
+        setCategories(data.categories);
       } catch (err) {
         console.error("Failed to load current student page:", err);
         setError(err.message || "Something went wrong.");

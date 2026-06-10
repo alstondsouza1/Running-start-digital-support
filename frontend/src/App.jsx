@@ -14,6 +14,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import SkipLink from "./components/SkipLink";
 import AccessibilityBar from "./components/AccessibilityBar";
+import { prefetchStudentData } from "./utils/studentData";
 
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 
@@ -83,6 +84,11 @@ function PageLoadingFallback() {
 }
 
 export default function App() {
+  useEffect(() => {
+    const timeoutId = window.setTimeout(prefetchStudentData, 250);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
+
   return (
     <>
       <CssBaseline />
