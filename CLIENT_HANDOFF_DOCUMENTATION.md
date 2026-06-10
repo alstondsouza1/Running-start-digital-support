@@ -510,19 +510,18 @@ DB_NAME=your-db
 
 Database uses MySQL.
 
-After creating the database and configuring backend environment variables, run:
+Basic setup:
 
-```bash
-cd backend
-npm run migrate
+```sql
+CREATE DATABASE runningstart;
+USE runningstart;
 ```
 
-Migrations are versioned in `backend/migrations/` and also run automatically
-before the API starts.
+Import schema:
 
-GitHub Actions verifies frontend lint, unit tests, production builds, backend
-tests, dependency audits, and Chromium end-to-end tests on pushes and pull
-requests.
+```sql
+SOURCE faq.sql;
+```
 
 Run seed scripts:
 
@@ -651,20 +650,18 @@ Current protections:
 * Protected admin routes
 * Environment variables for secrets
 * SQL parameters used in queries
-* Helmet security headers
-* Login rate limiting
 
 Known concerns:
 
 * JWT is stored in localStorage
-* Rate limiting currently focuses on login attempts rather than every API route
+* Rate limiting may need improvement
 * Additional security hardening is recommended
 * Secrets must never be committed to GitHub
 
 Future security recommendations:
 
-* Keep Helmet configuration reviewed as dependencies change
-* Add broader API rate limiting if traffic or abuse warrants it
+* Add Helmet middleware
+* Add stronger rate limiting
 * Use secure HTTP-only cookies
 * Improve role-based access control
 * Add automated security checks
@@ -822,7 +819,7 @@ Current known limitations:
 
 * Drag-and-drop accessibility is limited
 * JWT is stored in localStorage
-* Backend authentication tests exist, but frontend and end-to-end automation are not yet included
+* No automated test suite yet
 * No advanced analytics dashboard yet
 * Some production settings may need future security hardening
 * Translation is machine-generated and may not be perfect
@@ -833,7 +830,7 @@ Current known limitations:
 
 Recommended future improvements:
 
-* Add frontend and end-to-end automated tests
+* Add automated tests
 * Improve drag-and-drop keyboard accessibility
 * Add admin analytics dashboard
 * Add role-based access control

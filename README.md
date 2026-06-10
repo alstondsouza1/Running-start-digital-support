@@ -4,7 +4,7 @@
 
 The Running Start Digital Support Portal is a full-stack web application developed in collaboration with the Running Start Department at Green River College as part of the BAS Software Development Capstone program.
 
-The portal helps current and future Running Start students quickly find answers to frequently asked questions through a searchable, categorized, and mobile-friendly interface.
+The portal helps current and prospective Running Start students quickly find answers to frequently asked questions through a searchable, categorized, and mobile-friendly interface.
 
 The system also includes an administrative dashboard that allows staff or student administrators to manage FAQ content without editing code.
 
@@ -64,11 +64,10 @@ This project was designed to:
 Students can:
 
 - Browse FAQs for Current Students
-- Browse FAQs for Future Students
+- Browse FAQs for Future / Prospective Students
 - Search FAQs by keyword
 - Browse FAQs by category
 - Read answers in bullet-point format
-- Get contact options when search has no results
 - Open helpful external resource links
 - Use the portal on mobile, tablet, and desktop devices
 - Navigate using keyboard accessibility support
@@ -87,10 +86,8 @@ Admins can:
 - Login securely using JWT authentication
 - Add FAQs
 - Edit FAQs
-- Hide or publish FAQs without deleting them
 - Delete FAQs
 - Reorder FAQs using drag-and-drop
-- Preview FAQs before saving
 - Create custom categories
 - Edit categories
 - Delete categories
@@ -167,12 +164,7 @@ Running-start-digital-support
 │   │   └── App.jsx
 │   └── package.json
 │
-├── MANUAL_TEST_CHECKLIST.md
-├── SUBMISSION_EVIDENCE_CHECKLIST.md
-├── ACCESSIBILITY_AUDIT_GUIDE.md
-├── ANALYTICS_DOCUMENTATION.md
-├── CHANGE_MANAGEMENT_PLAN.md
-├── CLIENT_HANDOFF_DOCUMENTATION.md
+├── REVIEW_NOTES.md
 └── README.md
 ```
 
@@ -189,10 +181,8 @@ Running-start-digital-support
 | type | VARCHAR | category id |
 | question | TEXT | FAQ question |
 | answer | JSON | FAQ answer |
-| is_published | BOOLEAN | whether students can see the FAQ |
 | sort_order | INT | display order |
 | created_at | TIMESTAMP | creation date |
-| updated_at | TIMESTAMP | last update date |
 
 ---
 
@@ -218,7 +208,6 @@ Running-start-digital-support
 ## Public Routes
 
 ```http
-GET /api/health
 GET /api/getFAQS?audience=current
 GET /api/getFAQS?audience=future
 GET /api/categories
@@ -233,7 +222,6 @@ POST   /api/addFAQ
 PUT    /api/faq/:id
 DELETE /api/faq/:id
 PUT    /api/faq/order
-PUT    /api/faq/:id/visibility
 ```
 
 ---
@@ -317,16 +305,35 @@ cp .env.example .env
 
 ## 3. Setup Database
 
-Create an empty MySQL database, configure the backend `.env`, then run the
-versioned migrations:
+### Option 1 — MySQL Workbench
 
-```bash
-cd backend
-npm run migrate
+```sql
+CREATE DATABASE runningstart;
+
+USE runningstart;
 ```
 
-The backend also runs pending migrations automatically before starting the API.
-Applied migration IDs are recorded in the `schema_migrations` table.
+Run:
+
+```text
+backend/sql/faq.sql
+```
+
+---
+
+### Option 2 — Terminal
+
+```bash
+mysql -u root -p
+```
+
+```sql
+CREATE DATABASE runningstart;
+
+USE runningstart;
+
+SOURCE backend/sql/faq.sql;
+```
 
 ---
 
@@ -392,47 +399,18 @@ http://localhost:5173
 
 # How to Test
 
-Use `MANUAL_TEST_CHECKLIST.md` for the full pre-demo and pre-deployment checklist.
-
-Use `ACCESSIBILITY_AUDIT_GUIDE.md` for Lighthouse, keyboard, screen reader, and accessibility toolbar audit notes.
-
-Quick smoke test:
-
-1. Open homepage.
-2. Browse Current and Future student sections.
-3. Search FAQs and open a category.
-4. Open and test accessibility tools, including high contrast mode.
-5. Login at `/admin-login`.
-6. Add, edit, delete, and reorder FAQs.
-7. Add, edit, delete, and reorder categories.
-8. Verify the mobile navigation and mobile accessibility toolbar.
-
-For presentation screenshots and proof of testing, use `SUBMISSION_EVIDENCE_CHECKLIST.md`.
-
-Backend auth tests can be run from the backend folder:
-
-```bash
-cd backend
-npm test
-```
-
-Frontend unit and component tests:
-
-```bash
-cd frontend
-npm test
-```
-
-Chromium end-to-end tests:
-
-```bash
-cd frontend
-npx playwright install chromium
-npm run test:e2e
-```
-
-GitHub Actions runs lint, unit tests, backend tests, production builds,
-dependency audits, and Playwright tests for pushes and pull requests.
+1. Open homepage
+2. Browse Current and Future student sections
+3. Search FAQs
+4. Open categories
+5. Test accessibility tools
+6. Login at `/admin-login`
+7. Add FAQs
+8. Edit FAQs
+9. Delete FAQs
+10. Reorder FAQs
+11. Create categories
+12. Reorder categories
 
 ---
 
@@ -560,12 +538,12 @@ Future security improvements:
 # Known Limitations
 
 - Requires JavaScript enabled
-- Admin authentication uses JWT stored in localStorage; secure httpOnly cookies would be stronger for a production system
-- Full end-to-end browser tests are not included yet
+- JWT stored in localStorage
+- No automated testing yet
 - Analytics currently limited to FAQ interactions, searches, and category usage
-- Google Translate depends on the external Google Translate script loading correctly
-- Read aloud behavior depends on browser and operating system speech synthesis support
-- Drag-and-drop interactions in the admin dashboard may be easier with a mouse or touch device
+- Accessibility improvements still ongoing
+- No rate limiting currently implemented
+- Drag-and-drop interactions in the admin dashboard are primarily mouse-based
 
 ---
 

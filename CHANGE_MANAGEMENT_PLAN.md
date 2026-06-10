@@ -187,8 +187,7 @@ Recommended maintenance tasks:
 * Maintain backups
 * Monitor connection credentials
 * Review database access permissions
-* Add versioned files under `backend/migrations/` for schema changes
-* Run `npm run migrate` before deployment when validating a migration
+* Update schema carefully when needed
 * Verify FAQ data integrity after updates
 
 ---
@@ -275,14 +274,14 @@ Recommendation:
 Current known concerns:
 
 * JWT authentication currently uses browser localStorage.
-* Login rate limiting is implemented, but broader API rate limiting may be useful if abuse becomes a concern.
+* Rate limiting has not yet been implemented.
 * Additional security hardening may be beneficial as the application grows.
 * Administrative access should be periodically reviewed and updated.
 
 ### Recommendations
 
-* Keep Helmet security headers reviewed as dependencies and deployment settings change.
-* Consider broader API rate limiting if traffic or abuse warrants it.
+* Add Helmet middleware.
+* Add API rate limiting.
 * Improve token handling in future versions.
 * Review administrator permissions regularly.
 * Rotate secrets when necessary.
@@ -351,12 +350,10 @@ Future maintainers should review:
 
 ```txt
 README.md
-CLIENT_HANDOFF_DOCUMENTATION.md
-ACCESSIBILITY_AUDIT_GUIDE.md
+REVIEW_NOTES.md
+ACCESSIBILITY_NOTES.md
 ANALYTICS_DOCUMENTATION.md
 CHANGE_MANAGEMENT_PLAN.md
-MANUAL_TEST_CHECKLIST.md
-SUBMISSION_EVIDENCE_CHECKLIST.md
 ```
 
 ---
@@ -368,7 +365,7 @@ Potential future enhancements:
 * Better admin dashboard UI
 * Full multilingual support
 * Advanced analytics dashboard
-* Expanded frontend and end-to-end automated testing
+* Automated testing
 * Better accessibility tooling
 * Role-based admin permissions
 * Accessibility usage reporting
