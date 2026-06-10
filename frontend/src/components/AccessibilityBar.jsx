@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -27,20 +27,42 @@ const MIN_ZOOM = 90;
 const MAX_ZOOM = 140;
 const ZOOM_STEP = 10;
 const DEFAULT_POSITION = { x: 16, y: 120 };
+const MOBILE_DEFAULT_POSITION = { x: 12, y: 86 };
+const EDGE_GAP = 8;
+const KEYBOARD_MOVE_STEP = 16;
+const KEYBOARD_FAST_MOVE_STEP = 48;
 
 function clearGoogleTranslateCookies() {
   document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
   document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`;
 }
 
+function getInitialPosition() {
+  const savedPosition = localStorage.getItem("accessibilityPosition");
+
+  if (savedPosition) {
+    try {
+      return JSON.parse(savedPosition);
+    } catch {
+      localStorage.removeItem("accessibilityPosition");
+    }
+  }
+
+  return window.matchMedia("(max-width:599.95px)").matches
+    ? MOBILE_DEFAULT_POSITION
+    : DEFAULT_POSITION;
+}
+
 export default function AccessibilityBar() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const toolbarRef = useRef(null);
 
   const [open, setOpen] = useState(false);
-  const [position, setPosition] = useState(DEFAULT_POSITION);
+  const [position, setPosition] = useState(getInitialPosition);
   const [dragging, setDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [moveStatus, setMoveStatus] = useState("");
 
   const [zoom, setZoom] = useState(
     Number(localStorage.getItem("accessibilityZoom")) || 100
@@ -56,22 +78,28 @@ export default function AccessibilityBar() {
   );
   const [isReading, setIsReading] = useState(false);
 
-  useEffect(() => {
-    if (isMobile) {
-      setPosition({ x: 12, y: 86 });
-      return;
-    }
+  const getToolbarSize = useCallback((isOpen) => {
+    const bounds = toolbarRef.current?.getBoundingClientRect();
 
-    const savedPosition = localStorage.getItem("accessibilityPosition");
+    return {
+      width: bounds?.width || Math.min(isOpen ? 340 : 260, window.innerWidth - 24),
+      height: bounds?.height || (isOpen ? 520 : 64),
+    };
+  }, []);
 
-    if (savedPosition) {
-      try {
-        setPosition(JSON.parse(savedPosition));
-      } catch {
-        setPosition(DEFAULT_POSITION);
-      }
-    }
-  }, [isMobile]);
+  const clampPosition = useCallback(
+    (nextPosition, isOpen) => {
+      const { width, height } = getToolbarSize(isOpen);
+      const maxX = Math.max(EDGE_GAP, window.innerWidth - width - EDGE_GAP);
+      const maxY = Math.max(EDGE_GAP, window.innerHeight - height - EDGE_GAP);
+
+      return {
+        x: Math.max(EDGE_GAP, Math.min(nextPosition.x, maxX)),
+        y: Math.max(EDGE_GAP, Math.min(nextPosition.y, maxY)),
+      };
+    },
+    [getToolbarSize]
+  );
 
   useEffect(() => {
     document.documentElement.style.setProperty(
@@ -134,42 +162,56 @@ export default function AccessibilityBar() {
   }, []);
 
   useEffect(() => {
-    function handleMouseMove(e) {
-      if (!dragging || isMobile) return;
+    function handlePointerMove(e) {
+      if (!dragging) return;
 
-      const widgetWidth = 340;
-      const widgetHeight = open ? 520 : 60;
-
-      const nextPosition = {
-        x: Math.max(
-          8,
-          Math.min(e.clientX - dragOffset.x, window.innerWidth - widgetWidth)
-        ),
-        y: Math.max(
-          8,
-          Math.min(e.clientY - dragOffset.y, window.innerHeight - widgetHeight)
-        ),
-      };
+      const nextPosition = clampPosition(
+        {
+          x: e.clientX - dragOffset.x,
+          y: e.clientY - dragOffset.y,
+        },
+        open
+      );
 
       setPosition(nextPosition);
-      localStorage.setItem(
-        "accessibilityPosition",
-        JSON.stringify(nextPosition)
-      );
+      localStorage.setItem("accessibilityPosition", JSON.stringify(nextPosition));
     }
 
-    function handleMouseUp() {
+    function handlePointerUp() {
       setDragging(false);
     }
 
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
     };
-  }, [dragging, dragOffset, open, isMobile]);
+  }, [clampPosition, dragging, dragOffset, open]);
+
+  useEffect(() => {
+    function handleResize() {
+      setPosition((currentPosition) => {
+        const nextPosition = clampPosition(currentPosition, open);
+        localStorage.setItem(
+          "accessibilityPosition",
+          JSON.stringify(nextPosition)
+        );
+        return nextPosition;
+      });
+    }
+
+    const frameId = window.requestAnimationFrame(handleResize);
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [clampPosition, open]);
 
   useEffect(() => {
     return () => {
@@ -178,16 +220,55 @@ export default function AccessibilityBar() {
   }, []);
 
   function startDragging(e) {
-    if (isMobile) return;
+    if (e.button !== 0 && e.pointerType === "mouse") return;
     if (e.target.closest("button")) return;
     if (e.target.closest("select")) return;
     if (e.target.closest("a")) return;
 
+    e.preventDefault();
     setDragging(true);
     setDragOffset({
       x: e.clientX - position.x,
       y: e.clientY - position.y,
     });
+  }
+
+  function savePosition(nextPosition) {
+    setPosition(nextPosition);
+    localStorage.setItem("accessibilityPosition", JSON.stringify(nextPosition));
+  }
+
+  function handleHeaderKeyDown(e) {
+    const moveKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
+
+    if (e.key === "Home") {
+      e.preventDefault();
+      const defaultPosition = isMobile ? MOBILE_DEFAULT_POSITION : DEFAULT_POSITION;
+      const nextPosition = clampPosition(defaultPosition, open);
+      savePosition(nextPosition);
+      setMoveStatus("Accessibility toolbar moved back to the default position.");
+      return;
+    }
+
+    if (!moveKeys.includes(e.key)) return;
+
+    e.preventDefault();
+
+    const step = e.shiftKey ? KEYBOARD_FAST_MOVE_STEP : KEYBOARD_MOVE_STEP;
+    const nextPosition = clampPosition(
+      {
+        x:
+          position.x +
+          (e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0),
+        y:
+          position.y +
+          (e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0),
+      },
+      open
+    );
+
+    savePosition(nextPosition);
+    setMoveStatus("Accessibility toolbar moved.");
   }
 
   function readPage() {
@@ -229,7 +310,7 @@ export default function AccessibilityBar() {
     setReadableFont(false);
     setReducedMotion(false);
     setIsReading(false);
-    setPosition(isMobile ? { x: 12, y: 86 } : DEFAULT_POSITION);
+    setPosition(isMobile ? MOBILE_DEFAULT_POSITION : DEFAULT_POSITION);
 
     window.speechSynthesis?.cancel();
 
@@ -248,17 +329,17 @@ export default function AccessibilityBar() {
 
   return (
     <Paper
+      ref={toolbarRef}
       role="region"
       aria-label="Accessibility and translation tools"
       sx={{
         position: "fixed",
-        left: isMobile ? 12 : position.x,
-        top: isMobile ? 86 : position.y,
-        right: isMobile ? 12 : "auto",
+        left: position.x,
+        top: position.y,
         zIndex: 9999,
         width: open
-          ? { xs: "calc(100vw - 24px)", sm: 340 }
-          : { xs: "calc(100vw - 24px)", sm: 260 },
+          ? { xs: "min(340px, calc(100vw - 24px))", sm: 340 }
+          : { xs: "min(260px, calc(100vw - 24px))", sm: 260 },
         maxWidth: "calc(100vw - 24px)",
         maxHeight: open ? "calc(100vh - 110px)" : "auto",
         borderRadius: 2,
@@ -269,7 +350,13 @@ export default function AccessibilityBar() {
       }}
     >
       <Box
-        onMouseDown={startDragging}
+        onPointerDown={startDragging}
+        onKeyDown={handleHeaderKeyDown}
+        role="group"
+        tabIndex={0}
+        aria-label="Accessibility toolbar header"
+        aria-describedby="accessibility-toolbar-move-help"
+        title="Drag to move accessibility toolbar"
         sx={{
           backgroundColor: "#ffffff",
           color: "#222",
@@ -278,23 +365,51 @@ export default function AccessibilityBar() {
           display: "flex",
           alignItems: "center",
           gap: 1,
-          cursor: isMobile ? "default" : dragging ? "grabbing" : "grab",
+          cursor: dragging ? "grabbing" : "grab",
           userSelect: "none",
+          touchAction: "none",
           borderBottom: open ? "1px solid #dddddd" : "none",
         }}
       >
-        <DragIndicatorIcon sx={{ color: "#006225" }} aria-hidden="true" />
+        <Tooltip title="Drag to move toolbar">
+          <DragIndicatorIcon
+            sx={{ color: "#006225", flexShrink: 0 }}
+            aria-hidden="true"
+          />
+        </Tooltip>
 
         <Box sx={{ flexGrow: 1 }}>
           <Typography fontWeight={800} sx={{ lineHeight: 1.2 }}>
             Accessibility
           </Typography>
 
+          {open && (
+            <Typography
+              variant="caption"
+              color="text.secondary"
+            >
+              Drag header or use arrow keys to move. Press Home to reset.
+            </Typography>
+          )}
+
           {!open && (
-            <Typography variant="caption" color="text.secondary">
+            <Typography
+              variant="caption"
+              color="text.secondary"
+            >
               Translate • Text • Contrast
             </Typography>
           )}
+        </Box>
+
+        <Box id="accessibility-toolbar-move-help" className="sr-only">
+          Drag this header to move the accessibility toolbar. Keyboard users can
+          use arrow keys to move it, Shift plus arrow keys to move faster, and
+          Home to reset its position.
+        </Box>
+
+        <Box className="sr-only" aria-live="polite">
+          {moveStatus}
         </Box>
 
         <Tooltip title={open ? "Close tools" : "Open tools"}>
@@ -400,6 +515,7 @@ export default function AccessibilityBar() {
             <Button
               fullWidth
               variant={readableFont ? "contained" : "outlined"}
+              aria-pressed={readableFont}
               startIcon={<TextFieldsIcon />}
               onClick={() => setReadableFont((prev) => !prev)}
               sx={buttonSx}
@@ -410,6 +526,7 @@ export default function AccessibilityBar() {
             <Button
               fullWidth
               variant={highContrast ? "contained" : "outlined"}
+              aria-pressed={highContrast}
               startIcon={<ContrastIcon />}
               onClick={() => setHighContrast((prev) => !prev)}
               sx={buttonSx}
@@ -420,6 +537,7 @@ export default function AccessibilityBar() {
             <Button
               fullWidth
               variant={reducedMotion ? "contained" : "outlined"}
+              aria-pressed={reducedMotion}
               startIcon={<MotionPhotosOffIcon />}
               onClick={() => setReducedMotion((prev) => !prev)}
               sx={buttonSx}
@@ -430,6 +548,7 @@ export default function AccessibilityBar() {
             <Button
               fullWidth
               variant={isReading ? "contained" : "outlined"}
+              aria-pressed={isReading}
               startIcon={<RecordVoiceOverIcon />}
               onClick={readPage}
               sx={buttonSx}

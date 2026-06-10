@@ -18,6 +18,7 @@ export default function QuestionSearchBar({
       }}
     >
       <TextField
+        id="faq-search"
         fullWidth
         type="search"
         label="Search FAQs"

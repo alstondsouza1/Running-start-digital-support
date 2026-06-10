@@ -39,13 +39,14 @@ if (useSsl) {
 const pool = mysql.createPool(poolConfig);
 
 export async function testConnection() {
-  try {
-    const connection = await pool.getConnection();
-    console.log("MySQL Connected Successfully");
-    connection.release();
-  } catch (err) {
-    console.error("MySQL connection failed:", err.message);
-  }
+  const connection = await pool.getConnection();
+  console.log("MySQL Connected Successfully");
+  connection.release();
+}
+
+export async function checkDatabaseHealth() {
+  const [rows] = await pool.query("SELECT 1 AS ok");
+  return rows?.[0]?.ok === 1;
 }
 
 export default pool;

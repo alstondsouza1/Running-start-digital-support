@@ -1,4 +1,5 @@
 import { Box, Typography, Link } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
 
 export default function Footer() {
   return (
@@ -36,7 +37,6 @@ export default function Footer() {
         attachments) • Student Affairs & Success Center – SA 135
       </Typography>
 
-      {/* Link to Green River */}
       <Typography
         variant="body2"
         sx={{
@@ -44,6 +44,17 @@ export default function Footer() {
           fontSize: { xs: "0.8rem", sm: "0.9rem" },
         }}
       >
+        <Link
+          component={RouterLink}
+          to="/accessibility"
+          underline="always"
+          color="inherit"
+          aria-label="Read the accessibility statement"
+          sx={{ mr: 2 }}
+        >
+          Accessibility Statement
+        </Link>
+
         <Link
           href="https://www.greenriver.edu"
           target="_blank"

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -7,8 +7,7 @@ import {
   MenuItem,
   Alert,
 } from "@mui/material";
-
-const API_BASE = import.meta.env.VITE_API_BASE;
+import { apiUrl, handleAuthErrorResponse } from "../../utils/api";
 
 function createEmptyForm() {
   return { audience: "", name: "", description: "" };
@@ -21,11 +20,18 @@ export default function AddCategoryForm({
   onCancel,
 }) {
   const token = localStorage.getItem("token");
+  const errorRef = useRef(null);
 
   const [formData, setFormData] = useState(createEmptyForm());
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (formError) {
+      errorRef.current?.focus();
+    }
+  }, [formError]);
 
   useEffect(() => {
     if (initialData) {
@@ -80,8 +86,8 @@ export default function AddCategoryForm({
 
       const url =
         mode === "edit" && initialData?.id
-          ? `${API_BASE}/categories/${initialData.audience}/${initialData.id}`
-          : `${API_BASE}/categories`;
+          ? apiUrl(`/categories/${initialData.audience}/${initialData.id}`)
+          : apiUrl("/categories");
 
       const method = mode === "edit" ? "PUT" : "POST";
 
@@ -97,6 +103,7 @@ export default function AddCategoryForm({
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
+        handleAuthErrorResponse(response);
         throw new Error(data.error || data.message || "Request failed");
       }
 
@@ -132,7 +139,7 @@ export default function AddCategoryForm({
       </Typography>
 
       {formError && (
-        <Alert severity="error" role="alert">
+        <Alert ref={errorRef} severity="error" role="alert" tabIndex={-1}>
           {formError}
         </Alert>
       )}

@@ -1,20 +1,32 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
-import { CssBaseline, Box, Toolbar } from "@mui/material";
+import {
+  CssBaseline,
+  Box,
+  CircularProgress,
+  Stack,
+  Toolbar,
+  Typography,
+} from "@mui/material";
 import { Analytics } from "@vercel/analytics/react";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import SkipLink from "./components/SkipLink";
 import AccessibilityBar from "./components/AccessibilityBar";
+import { prefetchStudentData } from "./utils/studentData";
 
-import Home from "./pages/Home";
-import CurrentStudent from "./pages/CurrentStudent";
-import ProspectiveStudent from "./pages/ProspectiveStudent";
-import Admin from "./pages/Admin";
-import AdminLogin from "./components/admin/AdminLogin";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
-import NotFound from "./pages/NotFound";
+
+const Home = lazy(() => import("./pages/Home"));
+const CurrentStudent = lazy(() => import("./pages/CurrentStudent"));
+const ProspectiveStudent = lazy(() => import("./pages/ProspectiveStudent"));
+const Admin = lazy(() => import("./pages/Admin"));
+const AdminLogin = lazy(() => import("./components/admin/AdminLogin"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const AccessibilityStatement = lazy(
+  () => import("./pages/AccessibilityStatement")
+);
 
 const srOnlyStyles = {
   position: "absolute",
@@ -35,6 +47,7 @@ function getPageTitle(pathname) {
     "/future-student": "Future Running Start Students",
     "/admin-login": "Admin Login",
     "/admin": "Admin Dashboard",
+    "/accessibility": "Accessibility Statement",
   };
 
   return titles[pathname] || "Page Not Found";
@@ -55,7 +68,27 @@ function RouteAnnouncer() {
   );
 }
 
+function PageLoadingFallback() {
+  return (
+    <Stack
+      role="status"
+      aria-live="polite"
+      alignItems="center"
+      spacing={2}
+      sx={{ py: 8 }}
+    >
+      <CircularProgress aria-hidden="true" sx={{ color: "#006225" }} />
+      <Typography>Loading page...</Typography>
+    </Stack>
+  );
+}
+
 export default function App() {
+  useEffect(() => {
+    const timeoutId = window.setTimeout(prefetchStudentData, 250);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
+
   return (
     <>
       <CssBaseline />
@@ -84,18 +117,21 @@ export default function App() {
             backgroundColor: "#f5f5f5",
           }}
         >
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/current-student" element={<CurrentStudent />} />
-            <Route path="/future-student" element={<ProspectiveStudent />} />
-            <Route path="/admin-login" element={<AdminLogin />} />
+          <Suspense fallback={<PageLoadingFallback />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/current-student" element={<CurrentStudent />} />
+              <Route path="/future-student" element={<ProspectiveStudent />} />
+              <Route path="/admin-login" element={<AdminLogin />} />
+              <Route path="/accessibility" element={<AccessibilityStatement />} />
 
-            <Route element={<ProtectedRoute />}>
-              <Route path="/admin" element={<Admin />} />
-            </Route>
+              <Route element={<ProtectedRoute />}>
+                <Route path="/admin" element={<Admin />} />
+              </Route>
 
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </Box>
 
         <Footer />

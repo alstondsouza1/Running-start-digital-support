@@ -4,8 +4,10 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
+  Button,
   Chip,
   Link as MuiLink,
+  Stack,
   Typography,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -176,6 +178,10 @@ export default function StudentFAQPage({
     };
   }
 
+  function clearSearch() {
+    setSearchTerm("");
+  }
+
   const resultMessage = isSearching
     ? `${visibleQuestions.length} FAQ result${
         visibleQuestions.length === 1 ? "" : "s"
@@ -233,9 +239,22 @@ export default function StudentFAQPage({
           mx: "auto",
           mb: 2,
           color: "text.secondary",
+          display: "flex",
+          gap: 1,
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
         }}
       >
         <Typography variant="body2">{resultMessage}</Typography>
+
+        <Stack direction="row" spacing={1}>
+          {isSearching && (
+            <Button size="small" variant="outlined" onClick={clearSearch}>
+              Clear Search
+            </Button>
+          )}
+        </Stack>
       </Box>
 
       {!isSearching && (
@@ -254,6 +273,7 @@ export default function StudentFAQPage({
           maxWidth: 980,
           mx: "auto",
           mt: 4,
+          scrollMarginTop: { xs: 88, sm: 96 },
         }}
       >
         <Typography id="faq-results-heading" variant="h4" component="h2" gutterBottom>
@@ -271,9 +291,54 @@ export default function StudentFAQPage({
         )}
 
         {(selectedCategory || isSearching) && visibleQuestions.length === 0 && (
-          <Typography role="status" color="text.secondary" sx={{ mt: 2 }}>
-            No FAQ results found. Try another keyword or choose a different category.
-          </Typography>
+          <Box
+            role="status"
+            sx={{
+              mt: 2,
+              p: 2,
+              border: "1px dashed #cfcfcf",
+              borderRadius: 1,
+              backgroundColor: "#ffffff",
+            }}
+          >
+            <Typography color="text.secondary" sx={{ mb: isSearching ? 1 : 0 }}>
+              No FAQ results found
+              {isSearching ? ` for "${searchTerm}".` : "."} Try another keyword
+              or choose a different category.
+            </Typography>
+
+            {isSearching && (
+              <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                <Button size="small" variant="outlined" onClick={clearSearch}>
+                  Clear Search
+                </Button>
+
+                <Button
+                  size="small"
+                  variant="contained"
+                  component={MuiLink}
+                  href="mailto:runningstart@greenriver.edu"
+                  sx={{
+                    textDecoration: "none",
+                    backgroundColor: "#006225",
+                    "&:hover": { backgroundColor: "#004d1a" },
+                  }}
+                >
+                  Email Running Start
+                </Button>
+
+                <Button
+                  size="small"
+                  variant="outlined"
+                  component={MuiLink}
+                  href="tel:2532883380"
+                  sx={{ textDecoration: "none" }}
+                >
+                  Call Office
+                </Button>
+              </Stack>
+            )}
+          </Box>
         )}
 
         {(selectedCategory || isSearching) &&
@@ -306,16 +371,17 @@ export default function StudentFAQPage({
                     </Typography>
 
                     {category && (
-                      <Chip
-                        label={category.name}
-                        size="small"
-                        sx={{
-                          mt: 1,
-                          backgroundColor: "#eef7ef",
-                          color: "#006225",
-                          fontWeight: 600,
-                        }}
-                      />
+                      <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 1 }}>
+                        <Chip
+                          label={category.name}
+                          size="small"
+                          sx={{
+                            backgroundColor: "#eef7ef",
+                            color: "#006225",
+                            fontWeight: 600,
+                          }}
+                        />
+                      </Stack>
                     )}
                   </Box>
                 </AccordionSummary>
@@ -369,6 +435,7 @@ export default function StudentFAQPage({
                       Content coming soon.
                     </Typography>
                   )}
+
                 </AccordionDetails>
               </Accordion>
             );

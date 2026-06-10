@@ -1,52 +1,5 @@
 import pool from "../db/db.js";
 
-const ALLOWED_CATEGORIES = {
-  current: [
-    {
-      id: "fee-waiver-book-loan",
-      name: "Fee Waiver & Book Loan",
-      description: "Fee waiver steps, book loan info, and related support",
-    },
-    {
-      id: "how-to-plan-classes",
-      name: "How to Plan Classes",
-      description: "Advising, planning schedules, and choosing classes",
-    },
-    {
-      id: "dates-deadlines",
-      name: "Dates & Deadlines",
-      description: "Enrollment deadlines, important dates, and term timelines",
-    },
-    {
-      id: "campus-resources",
-      name: "Campus Resources",
-      description: "Support services, offices, and student resources at GRC",
-    },
-  ],
-  future: [
-    {
-      id: "general",
-      name: "General Questions",
-      description: "Program overview, eligibility, and participation basics",
-    },
-    {
-      id: "enrollment",
-      name: "Enrollment",
-      description: "Deadlines, placement, and getting registered",
-    },
-    {
-      id: "classes",
-      name: "Classes",
-      description: "Allowed courses, online learning, transfer, and degrees",
-    },
-    {
-      id: "other",
-      name: "Other",
-      description: "Moving districts, FERPA, and parent/guardian info",
-    },
-  ],
-};
-
 function isValidHttpUrl(value) {
   try {
     const url = new URL(value);
@@ -135,101 +88,23 @@ function createCategoryId(name) {
     .replace(/^-|-$/g, "");
 }
 
-async function ensureCategoriesTable() {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS categories (
-      id VARCHAR(100) NOT NULL,
-      audience VARCHAR(20) NOT NULL,
-      name VARCHAR(255) NOT NULL,
-      description TEXT,
-      sort_order INT NOT NULL DEFAULT 0,
-      PRIMARY KEY (id, audience)
-    )
-  `);
+async function categoryNameExists(audience, name, excludeId = "") {
+  const normalizedName = createCategoryId(name);
 
-  const [descriptionCols] = await pool.query(`
-    SELECT COLUMN_NAME
-    FROM INFORMATION_SCHEMA.COLUMNS
-    WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME = 'categories'
-      AND COLUMN_NAME = 'description'
-  `);
+  if (!normalizedName) return false;
 
-  if (descriptionCols.length === 0) {
-    await pool.query("ALTER TABLE categories ADD COLUMN description TEXT");
-  }
+  const [rows] = await pool.query(
+    "SELECT id, name FROM categories WHERE audience = ?",
+    [audience]
+  );
 
-  const [sortCols] = await pool.query(`
-    SELECT COLUMN_NAME
-    FROM INFORMATION_SCHEMA.COLUMNS
-    WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME = 'categories'
-      AND COLUMN_NAME = 'sort_order'
-  `);
-
-  if (sortCols.length === 0) {
-    await pool.query(
-      "ALTER TABLE categories ADD COLUMN sort_order INT NOT NULL DEFAULT 0"
-    );
-  }
-
-  const [idCol] = await pool.query(`
-    SELECT DATA_TYPE
-    FROM INFORMATION_SCHEMA.COLUMNS
-    WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME = 'categories'
-      AND COLUMN_NAME = 'id'
-  `);
-
-  if (idCol.length > 0 && idCol[0].DATA_TYPE !== "varchar") {
-    await pool.query(`
-      ALTER TABLE categories
-        DROP PRIMARY KEY,
-        MODIFY COLUMN id VARCHAR(100) NOT NULL,
-        ADD PRIMARY KEY (id, audience)
-    `);
-  }
-
-  await pool.query("DELETE FROM categories WHERE id REGEXP '^[0-9]+$'");
-
-  for (const [audience, cats] of Object.entries(ALLOWED_CATEGORIES)) {
-    for (let i = 0; i < cats.length; i += 1) {
-      const cat = cats[i];
-
-      await pool.query(
-        `
-        INSERT IGNORE INTO categories
-          (id, audience, name, description, sort_order)
-        VALUES (?, ?, ?, ?, ?)
-        `,
-        [cat.id, audience, cat.name, cat.description || "", i + 1]
-      );
-    }
-  }
-
-  for (const audience of ["current", "future"]) {
-    const [rows] = await pool.query(
-      `
-      SELECT id
-      FROM categories
-      WHERE audience = ?
-      ORDER BY sort_order, name
-      `,
-      [audience]
-    );
-
-    for (let i = 0; i < rows.length; i += 1) {
-      await pool.query(
-        "UPDATE categories SET sort_order = ? WHERE audience = ? AND id = ?",
-        [i + 1, audience, rows[i].id]
-      );
-    }
-  }
+  return rows.some((row) => {
+    if (excludeId && row.id === excludeId) return false;
+    return createCategoryId(row.name) === normalizedName;
+  });
 }
 
 async function getValidCategoryIds(audience) {
-  await ensureCategoriesTable();
-
   const [rows] = await pool.query(
     "SELECT id FROM categories WHERE audience = ?",
     [audience]
@@ -307,10 +182,14 @@ export const getFaqs = async (req, res) => {
       return res.status(400).json({ error: "Invalid audience value" });
     }
 
+    const includeHidden = req.user?.role === "admin";
+    const visibilityClause = includeHidden ? "" : "AND is_published = TRUE";
+
     const [rows] = await pool.query(
-      `SELECT id, audience, type, question, answer, sort_order, created_at
+      `SELECT id, audience, type, question, answer, is_published, sort_order, created_at, updated_at
        FROM faq
        WHERE audience = ?
+       ${visibilityClause}
        ORDER BY type, sort_order, created_at, id`,
       [audience]
     );
@@ -320,7 +199,9 @@ export const getFaqs = async (req, res) => {
       audience: row.audience,
       type: row.type,
       sort_order: row.sort_order,
+      is_published: Boolean(row.is_published),
       created_at: row.created_at,
+      updated_at: row.updated_at,
       question: row.question,
       answer: parseAnswer(row.answer),
     }));
@@ -341,6 +222,8 @@ export const addFaq = async (req, res) => {
     }
 
     const { audience, type, question, answer } = validated.value;
+    const isPublished =
+      typeof req.body.is_published === "boolean" ? req.body.is_published : true;
 
     const [maxRows] = await pool.query(
       "SELECT COALESCE(MAX(sort_order), 0) AS maxSort FROM faq WHERE audience = ? AND type = ?",
@@ -350,8 +233,8 @@ export const addFaq = async (req, res) => {
     const nextSort = (maxRows?.[0]?.maxSort ?? 0) + 1;
 
     const [result] = await pool.query(
-      "INSERT INTO faq (audience, type, question, answer, sort_order) VALUES (?, ?, ?, ?, ?)",
-      [audience, type, question, JSON.stringify(answer), nextSort]
+      "INSERT INTO faq (audience, type, question, answer, is_published, sort_order) VALUES (?, ?, ?, ?, ?, ?)",
+      [audience, type, question, JSON.stringify(answer), isPublished, nextSort]
     );
 
     return res.status(201).json({
@@ -382,7 +265,7 @@ export const updateFaq = async (req, res) => {
     const { audience, type, question, answer } = validated.value;
 
     const [existingRows] = await pool.query(
-      "SELECT id, audience, type, sort_order FROM faq WHERE id = ?",
+      "SELECT id, audience, type, sort_order, is_published FROM faq WHERE id = ?",
       [id]
     );
 
@@ -391,6 +274,10 @@ export const updateFaq = async (req, res) => {
     }
 
     const existing = existingRows[0];
+    const isPublished =
+      typeof req.body.is_published === "boolean"
+        ? req.body.is_published
+        : Boolean(existing.is_published);
     let sortOrder = existing.sort_order;
 
     const movedToDifferentGroup =
@@ -407,9 +294,9 @@ export const updateFaq = async (req, res) => {
 
     await pool.query(
       `UPDATE faq
-       SET audience = ?, type = ?, question = ?, answer = ?, sort_order = ?
+       SET audience = ?, type = ?, question = ?, answer = ?, is_published = ?, sort_order = ?
        WHERE id = ?`,
-      [audience, type, question, JSON.stringify(answer), sortOrder, id]
+      [audience, type, question, JSON.stringify(answer), isPublished, sortOrder, id]
     );
 
     if (movedToDifferentGroup) {
@@ -420,6 +307,37 @@ export const updateFaq = async (req, res) => {
     return res.json({ message: "FAQ updated successfully" });
   } catch (err) {
     console.error("Update FAQ error:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const updateFaqVisibility = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ error: "Valid FAQ id is required" });
+    }
+
+    if (typeof req.body.is_published !== "boolean") {
+      return res.status(400).json({ error: "is_published boolean is required" });
+    }
+
+    const [result] = await pool.query(
+      "UPDATE faq SET is_published = ? WHERE id = ?",
+      [req.body.is_published, id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "FAQ not found" });
+    }
+
+    return res.json({
+      message: req.body.is_published ? "FAQ published" : "FAQ hidden",
+      is_published: req.body.is_published,
+    });
+  } catch (err) {
+    console.error("Update FAQ visibility error:", err);
     return res.status(500).json({ error: "Server error" });
   }
 };
@@ -455,8 +373,6 @@ export const deleteFaq = async (req, res) => {
 
 export const getFaqCategories = async (_req, res) => {
   try {
-    await ensureCategoriesTable();
-
     const [rows] = await pool.query(`
       SELECT id, audience, name, description, sort_order
       FROM categories
@@ -489,8 +405,6 @@ export const getFaqCategories = async (_req, res) => {
 
 export const addCategory = async (req, res) => {
   try {
-    await ensureCategoriesTable();
-
     const audience =
       typeof req.body.audience === "string" ? req.body.audience.trim() : "";
     const name = typeof req.body.name === "string" ? req.body.name.trim() : "";
@@ -515,12 +429,7 @@ export const addCategory = async (req, res) => {
       });
     }
 
-    const [existing] = await pool.query(
-      "SELECT id FROM categories WHERE id = ? AND audience = ?",
-      [id, audience]
-    );
-
-    if (existing.length > 0) {
+    if (await categoryNameExists(audience, name)) {
       return res.status(409).json({
         error: "A category with that name already exists for this audience",
       });
@@ -559,8 +468,6 @@ export const addCategory = async (req, res) => {
 
 export const updateCategory = async (req, res) => {
   try {
-    await ensureCategoriesTable();
-
     const audience =
       typeof req.params.audience === "string"
         ? req.params.audience.trim()
@@ -585,6 +492,14 @@ export const updateCategory = async (req, res) => {
       return res.status(400).json({ error: "Category name is required" });
     }
 
+    const nextId = createCategoryId(name);
+
+    if (!nextId) {
+      return res.status(400).json({
+        error: "Category name must include at least one letter or number",
+      });
+    }
+
     const [existing] = await pool.query(
       "SELECT id FROM categories WHERE id = ? AND audience = ?",
       [id, audience]
@@ -592,6 +507,12 @@ export const updateCategory = async (req, res) => {
 
     if (existing.length === 0) {
       return res.status(404).json({ error: "Category not found" });
+    }
+
+    if (await categoryNameExists(audience, name, id)) {
+      return res.status(409).json({
+        error: "A category with that name already exists for this audience",
+      });
     }
 
     await pool.query(
@@ -620,8 +541,6 @@ export const updateCategory = async (req, res) => {
 
 export const deleteCategory = async (req, res) => {
   try {
-    await ensureCategoriesTable();
-
     const audience =
       typeof req.params.audience === "string"
         ? req.params.audience.trim()
@@ -696,8 +615,6 @@ async function resequenceCategories(audience) {
 
 export const updateCategoryOrder = async (req, res) => {
   try {
-    await ensureCategoriesTable();
-
     const audience =
       typeof req.body.audience === "string" ? req.body.audience.trim() : "";
 
@@ -826,6 +743,7 @@ export default {
   deleteCategory,
   updateCategoryOrder,
   updateFaq,
+  updateFaqVisibility,
   deleteFaq,
   updateFaqOrder,
 };
