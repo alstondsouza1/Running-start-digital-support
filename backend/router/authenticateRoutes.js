@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
-router.post("/login", async (req, res) => {
+export async function loginAdmin(req, res) {
   const { username, password } = req.body ?? {};
 
   if (!username || !password) {
@@ -39,6 +39,8 @@ router.post("/login", async (req, res) => {
   const token = jwt.sign(payload, jwtSecret, { expiresIn: "2h" });
 
   return res.json({ message: "Login successful", token });
-});
+}
+
+router.post("/login", loginAdmin);
 
 export default router;

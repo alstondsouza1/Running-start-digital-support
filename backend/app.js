@@ -7,6 +7,7 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 
 import { testConnection } from "./db/db.js";
+import { runMigrations } from "./migrations/index.js";
 import router from "./router/router.js";
 import authenticateRoutes from "./router/authenticateRoutes.js";
 
@@ -70,7 +71,15 @@ app.use((err, _req, res, next) => {
   return res.status(500).json({ error: "Server error" });
 });
 
-app.listen(PORT, async () => {
+async function startServer() {
   await testConnection();
-  console.log(`Listening on http://localhost:${PORT}`);
+  await runMigrations();
+  app.listen(PORT, () => {
+    console.log(`Listening on http://localhost:${PORT}`);
+  });
+}
+
+startServer().catch((err) => {
+  console.error("Server startup failed:", err.message);
+  process.exit(1);
 });

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Box,
@@ -11,8 +11,7 @@ import {
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
-
-const API_BASE = import.meta.env.VITE_API_BASE;
+import { ADMIN_SESSION_MESSAGE_KEY, apiUrl } from "../../utils/api";
 
 export default function AdminLogin() {
   const [username, setUsername] = useState("");
@@ -23,6 +22,15 @@ export default function AdminLogin() {
 
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  useEffect(() => {
+    const sessionMessage = localStorage.getItem(ADMIN_SESSION_MESSAGE_KEY);
+
+    if (sessionMessage) {
+      setError(sessionMessage);
+      localStorage.removeItem(ADMIN_SESSION_MESSAGE_KEY);
+    }
+  }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -37,7 +45,7 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE}/auth/login`, {
+      const response = await fetch(apiUrl("/auth/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
