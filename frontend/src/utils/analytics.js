@@ -72,6 +72,7 @@ export function trackQuestionClick({
   vercelTrack("FAQ Opened", {
     question,
     category: categoryName || "Unknown category",
+    category_id: categoryId,
     audience,
     source,
   });
@@ -79,6 +80,7 @@ export function trackQuestionClick({
     question_text: question,
     category_id: categoryId,
     category_name: categoryName,
+    audience,
     source,
   });
 }
@@ -87,6 +89,7 @@ export function trackQuestionClick({
 export function trackCategoryClick({ categoryId, categoryName, audience = "" }) {
   vercelTrack("Category Selected", {
     category: categoryName,
+    category_id: categoryId,
     audience,
   });
   gtagEvent("category_click", {
