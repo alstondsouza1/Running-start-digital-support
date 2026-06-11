@@ -39,6 +39,7 @@ import AddFaqForm from "../components/admin/addFAQ.jsx";
 import AddCategoryForm from "../components/admin/addCategory.jsx";
 import { useAuth } from "../context/useAuth";
 import { apiUrl, handleAuthErrorResponse } from "../utils/api";
+import { trackAdminAccess } from "../utils/analytics";
 
 function groupByType(questions) {
   return questions.reduce((acc, q) => {
@@ -345,6 +346,11 @@ export default function Admin() {
     severity: "success",
     message: "",
   });
+
+  // Analytics: reaching the protected Admin dashboard.
+  useEffect(() => {
+    trackAdminAccess();
+  }, []);
 
   const activeCategories = useMemo(
     () => (activeTab === 0 ? categories.current : categories.future) ?? [],
@@ -850,6 +856,9 @@ export default function Admin() {
       <Box sx={{ p: { xs: 1.5, sm: 3 } }}>
         <Box
           sx={{
+            position: "sticky",
+            top: { xs: 72, sm: 80 },
+            zIndex: 10,
             backgroundColor: "#ffffff",
             border: "1px solid #d7d7d7",
             borderRadius: 2.5,
@@ -1101,6 +1110,9 @@ export default function Admin() {
     <Box sx={{ p: { xs: 1.5, sm: 3 } }}>
       <Box
         sx={{
+          position: "sticky",
+          top: { xs: 72, sm: 80 },
+          zIndex: 10,
           backgroundColor: "#ffffff",
           border: "1px solid #d7d7d7",
           borderRadius: 2.5,

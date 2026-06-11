@@ -51,21 +51,35 @@ Analytics events are anonymous and intended only for general usage insights.
 
 # Analytics Tools Used
 
+## Dual Tracking (Google Analytics 4 + Vercel Analytics)
+
+All meaningful user actions are tracked through a single centralized utility
+(`frontend/src/utils/analytics.js`). Each helper sends the event to **both**
+Google Analytics 4 (via `window.gtag`) **and** Vercel Analytics (via
+`track()` from `@vercel/analytics`). Components import these named helpers
+rather than calling `track()` or `gtag()` directly, so event names and
+payloads stay consistent and only business-important actions are instrumented
+(not every button or component).
+
+Both destinations are best-effort and guarded:
+
+* The Vercel call is wrapped in a `try/catch` so analytics can never break the UI.
+* The GA call is a no-op unless `window.gtag` is present (initialized in `index.html`).
+
 ## Google Analytics 4 (GA4)
 
-Google Analytics 4 is used to track custom FAQ-related events.
-
-Tracked events include:
-
-* FAQ question clicks
-* FAQ searches
-* Category clicks
+Google Analytics 4 receives every centralized event. The three original FAQ
+events keep their established names so existing GA reports continue to work:
+`question_click`, `faq_search`, `category_click`. The remaining events were
+added alongside the Vercel rollout.
 
 ---
 
 ## Vercel Analytics
 
-The application also uses Vercel Analytics to collect anonymous traffic and performance information.
+Vercel Analytics receives every centralized event as a named custom event, in
+addition to the automatic anonymous traffic and performance data collected by
+the `<Analytics />` component.
 
 Vercel Analytics can help monitor:
 
@@ -76,6 +90,30 @@ Vercel Analytics can help monitor:
 * Production troubleshooting information
 
 No personally identifiable information is intentionally collected by the application through Vercel Analytics.
+
+---
+
+## Tracked Events (Full List)
+
+Every action below is sent to both GA4 and Vercel Analytics.
+
+| User action | Vercel event name | GA4 event name |
+| --- | --- | --- |
+| Page visit (named per route) | `Page Visit` | `page_visit` |
+| Navigation menu click | `Navigation Click` | `navigation_click` |
+| FAQ search | `FAQ Search` | `faq_search` |
+| FAQ question opened | `FAQ Opened` | `question_click` |
+| Category selected | `Category Selected` | `category_click` |
+| Support/help contact click | `Support Contact Clicked` | `support_contact_clicked` |
+| Feedback / contact form opened | `Feedback Form Opened` | `feedback_form_opened` |
+| Admin login attempt | `Login Attempt` | `login_attempt` |
+| Admin login success | `Login Success` | `login_success` |
+| Admin logout | `Logout` | `logout` |
+| Admin form submitted (FAQ/category) | `Form Submitted` | `form_submitted` |
+| Admin dashboard access | `Admin Page Access` | `admin_page_access` |
+| External resource link click | `External Link Clicked` | `external_link_clicked` |
+
+> Login events capture **no** credentials — only that an attempt/success occurred.
 
 ---
 
@@ -385,10 +423,18 @@ When reviewing analytics:
 # Related Files
 
 ```txt
-frontend/src/utils/analytics.js
-frontend/src/components/StudentFAQPage.jsx
-frontend/src/App.jsx
-frontend/index.html
+frontend/src/utils/analytics.js            (centralized tracking utility)
+frontend/index.html                        (GA4 initialization)
+frontend/src/App.jsx                        (page visits)
+frontend/src/components/Navbar.jsx          (navigation clicks, logout, feedback)
+frontend/src/components/StudentFAQPage.jsx  (FAQ search, opens, category select)
+frontend/src/components/NeedMoreHelp.jsx    (support contact clicks)
+frontend/src/components/QuickLinksPanel.jsx (external resource links)
+frontend/src/components/FeedbackButton.jsx  (feedback/contact form open)
+frontend/src/components/admin/AdminLogin.jsx   (login attempt/success)
+frontend/src/components/admin/addFAQ.jsx       (FAQ form submit)
+frontend/src/components/admin/addCategory.jsx  (category form submit)
+frontend/src/pages/Admin.jsx                   (admin page access)
 ```
 
 ---

@@ -7,6 +7,7 @@ import {
     Stack,
     Typography,
   } from "@mui/material";
+import { trackSupportClick } from "../utils/analytics";
   
   import VideocamIcon from "@mui/icons-material/Videocam";
   import EmailIcon from "@mui/icons-material/Email";
@@ -64,6 +65,7 @@ import {
               subText="Fri: 2:00 PM – 4:00 PM"
               buttonText="Join Zoom"
               href="https://zoom.us/j/92758435873?pwd=M2Z2cHQ5MWdVZm9WdHA2UEN3K3Mzdz09"
+              supportType="virtual_lobby"
             />
   
             <SupportBox
@@ -73,6 +75,7 @@ import {
               subText="Questions or documents"
               buttonText="Send Email"
               href="mailto:runningstart@greenriver.edu"
+              supportType="email"
             />
   
             <SupportBox
@@ -82,6 +85,7 @@ import {
               subText="During office hours"
               buttonText="Call Office"
               href="tel:2532883380"
+              supportType="phone"
             />
           </Box>
         </CardContent>
@@ -96,9 +100,15 @@ import {
     subText,
     buttonText,
     href,
+    supportType,
   }) {
     const isExternal = href.startsWith("http");
-  
+
+    function handleClick() {
+      // Analytics: support/help contact click.
+      trackSupportClick({ type: supportType });
+    }
+
     return (
       <Box
         sx={{
@@ -133,6 +143,7 @@ import {
             href={href}
             target={isExternal ? "_blank" : undefined}
             rel={isExternal ? "noopener noreferrer" : undefined}
+            onClick={handleClick}
             variant="text"
             sx={{
               justifyContent: "flex-start",

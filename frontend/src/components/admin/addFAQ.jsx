@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { apiUrl, handleAuthErrorResponse } from "../../utils/api";
+import { trackFormSubmit } from "../../utils/analytics";
 
 function createEmptyForm() {
   return {
@@ -229,6 +230,13 @@ export default function AddFaqForm({
         handleAuthErrorResponse(response);
         throw new Error(data.error || data.message || "Request failed");
       }
+
+      // Analytics: successful FAQ form submission.
+      trackFormSubmit({
+        form: "faq",
+        mode: mode === "edit" ? "edit" : "create",
+        audience: payload.audience,
+      });
 
       setFormSuccess(
         mode === "edit" ? "FAQ updated successfully." : "FAQ added successfully."

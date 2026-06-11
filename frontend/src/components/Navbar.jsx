@@ -20,6 +20,7 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import Logo from "../assets/GRC_Logo_White.png";
 import { useAuth } from "../context/useAuth";
+import { trackNavClick, trackLogout, trackFeedbackOpen } from "../utils/analytics";
 
 export default function Navbar() {
   const { adminInfo, logout } = useAuth();
@@ -32,8 +33,16 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   const handleLogout = () => {
+    // Analytics: admin logout.
+    trackLogout();
     logout();
     navigate("/");
+  };
+
+  // Analytics: navigation menu click (shared by desktop + mobile nav).
+  const handleNavClick = (item) => {
+    if (item.label === "Logout") return; // logout tracked in handleLogout
+    trackNavClick({ label: item.label, destination: item.to });
   };
 
   const links = [
@@ -89,7 +98,10 @@ export default function Navbar() {
               key={index}
               component={item.to ? NavLink : "button"}
               to={item.to}
-              onClick={item.action}
+              onClick={() => {
+                handleNavClick(item);
+                item.action?.();
+              }}
               selected={active}
               aria-current={active ? "page" : undefined}
               sx={{
@@ -125,6 +137,7 @@ export default function Navbar() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Give feedback about this site"
+          onClick={() => trackFeedbackOpen({ location: "navbar_drawer" })}
           sx={{ px: 2, color: "#2c882b" }}
         >
           <ListItemIcon sx={{ minWidth: 36, color: "#2c882b" }}>
@@ -226,6 +239,7 @@ export default function Navbar() {
                   key={index}
                   component={NavLink}
                   to={item.to}
+                  onClick={() => handleNavClick(item)}
                   aria-current={isActive ? "page" : undefined}
                   variant={isLogin ? "contained" : "text"}
                   sx={
