@@ -197,6 +197,24 @@ select:focus-visible {
   color: #ffffff !important;
 }
 
+.high-contrast-mode .MuiCardActionArea-root .MuiTypography-root,
+.high-contrast-mode .MuiAccordionSummary-root .MuiTypography-root,
+.high-contrast-mode .MuiAccordionDetails-root,
+.high-contrast-mode .MuiAccordionDetails-root .MuiTypography-root {
+  color: #ffffff !important;
+}
+
+.high-contrast-mode .MuiAccordionSummary-expandIconWrapper,
+.high-contrast-mode .MuiAccordionSummary-expandIconWrapper .MuiSvgIcon-root {
+  color: #ffff00 !important;
+}
+
+.high-contrast-mode .MuiAccordionDetails-root a,
+.high-contrast-mode .MuiAccordionDetails-root .MuiLink-root {
+  color: #ffff00 !important;
+  text-decoration: underline !important;
+}
+
 .high-contrast-mode .MuiListItemButton-root:hover,
 .high-contrast-mode .MuiListItemButton-root.Mui-selected,
 .high-contrast-mode .MuiListItemButton-root.Mui-selected:hover,
@@ -210,6 +228,12 @@ select:focus-visible {
 
 .high-contrast-mode .MuiTabs-indicator {
   background-color: #ffff00 !important;
+}
+
+.high-contrast-mode .MuiPaper-root a:focus-visible,
+.high-contrast-mode .MuiCardActionArea-root:focus-visible,
+.high-contrast-mode .MuiAccordionSummary-root:focus-visible {
+  outline-color: #ffff00 !important;
 }
 
 .high-contrast-mode .MuiCircularProgress-root {

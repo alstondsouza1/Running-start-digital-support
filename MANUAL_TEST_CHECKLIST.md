@@ -83,6 +83,7 @@ Use this checklist before a demo, submission, or deployment. Mark each item as p
 - [ ] FAQ categories can be selected with keyboard only.
 - [ ] Accordion controls can be expanded/collapsed with keyboard only.
 - [ ] Admin forms have visible labels and focus states.
+- [ ] Admin FAQ and category Move up/Move down buttons work with Enter or Space.
 - [ ] Status/error messages are visible and understandable.
 - [ ] Lighthouse accessibility scores are recorded in `ACCESSIBILITY_AUDIT_GUIDE.md`.
 - [ ] Screen reader smoke-test notes are recorded in `ACCESSIBILITY_AUDIT_GUIDE.md`.

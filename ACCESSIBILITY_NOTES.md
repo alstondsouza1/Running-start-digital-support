@@ -77,7 +77,7 @@ The toolbar was improved so it remains usable on smaller screens and does not ov
 
 The following accessibility limitations are still known:
 
-- Drag-and-drop functionality in the admin dashboard is still primarily mouse-based
+- Admin FAQ and category ordering includes keyboard-accessible move controls
 - Translation support is provided through Google Translate, but translations are machine-generated and may not be fully accurate
 - Additional screen reader testing should be completed before long-term production use
 - Some advanced accessibility testing tools, such as Axe or Lighthouse audits, have not yet been fully integrated into the development workflow
@@ -165,13 +165,13 @@ Important notes:
 
 # Future Accessibility Goals
 
-- Improve drag-and-drop keyboard accessibility
+- Continue testing admin ordering with keyboard and assistive technology
 - Add touch-drag support for the accessibility toolbar on mobile devices
 - Expand multilingual accessibility support
 - Improve screen reader announcements
 - Continue WCAG 2.1 AA compliance improvements
-- Add automated accessibility testing using Lighthouse and Axe
-- Improve admin dashboard keyboard reordering options
+- Expand automated Axe coverage to additional authenticated workflows
+- Add scheduled Lighthouse accessibility reporting
 - Continue testing with real users and assistive technologies
 
 ---

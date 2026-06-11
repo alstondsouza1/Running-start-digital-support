@@ -72,7 +72,6 @@ export default function Footer() {
         sx={{
           mt: 2,
           fontSize: "0.75rem",
-          opacity: 0.8,
           lineHeight: 1.4,
         }}
       >

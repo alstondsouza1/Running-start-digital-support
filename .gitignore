@@ -17,6 +17,9 @@ dist/
 frontend/dist/
 backend/dist/
 
+# Local database backups
+backups/
+
 # Logs
 *.log
 npm-debug.log*
