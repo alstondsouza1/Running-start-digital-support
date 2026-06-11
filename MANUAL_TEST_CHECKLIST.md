@@ -83,6 +83,7 @@ Use this checklist before a demo, submission, or deployment. Mark each item as p
 - [ ] FAQ categories can be selected with keyboard only.
 - [ ] Accordion controls can be expanded/collapsed with keyboard only.
 - [ ] Admin forms have visible labels and focus states.
+- [ ] Admin FAQ and category Move up/Move down buttons work with Enter or Space.
 - [ ] Status/error messages are visible and understandable.
 - [ ] Lighthouse accessibility scores are recorded in `ACCESSIBILITY_AUDIT_GUIDE.md`.
 - [ ] Screen reader smoke-test notes are recorded in `ACCESSIBILITY_AUDIT_GUIDE.md`.
@@ -93,6 +94,7 @@ Use this checklist before a demo, submission, or deployment. Mark each item as p
 - [ ] `npm test` passes in `frontend`.
 - [ ] `npm run build` passes in `frontend`.
 - [ ] `npm run test:e2e` passes in `frontend`.
+- [ ] `npm run screenshots` regenerates all eight evidence images.
 - [ ] `npm test` passes in `backend`.
 - [ ] `node --check app.js` passes from the `backend` directory.
 - [ ] `node --check controllers/adminController.js` passes from the `backend` directory.

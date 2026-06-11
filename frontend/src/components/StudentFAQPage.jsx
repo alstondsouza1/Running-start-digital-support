@@ -197,8 +197,8 @@ export default function StudentFAQPage({
       component="section"
       aria-labelledby="student-faq-page-title"
       sx={{
-        px: { xs: 2, sm: 3 },
-        py: { xs: 4, sm: 5 },
+        px: { xs: 1.5, sm: 3 },
+        py: { xs: 3, sm: 5 },
       }}
     >
       <Box sx={{ maxWidth: 1100, mx: "auto", textAlign: "center" }}>
@@ -208,7 +208,8 @@ export default function StudentFAQPage({
           component="h1"
           fontWeight={700}
           sx={{
-            fontSize: { xs: "2rem", sm: "2.6rem", md: "3rem" },
+            fontSize: { xs: "1.85rem", sm: "2.6rem", md: "3rem" },
+            overflowWrap: "anywhere",
           }}
         >
           {title}
@@ -272,7 +273,7 @@ export default function StudentFAQPage({
         sx={{
           maxWidth: 980,
           mx: "auto",
-          mt: 4,
+          mt: { xs: 3, sm: 4 },
           scrollMarginTop: { xs: 88, sm: 96 },
         }}
       >
@@ -356,7 +357,8 @@ export default function StudentFAQPage({
                 onChange={handleAccordionChange(question, category)}
                 sx={{
                   mb: 1.5,
-                  borderRadius: 1,
+                  borderRadius: 2,
+                  overflow: "hidden",
                   "&:before": { display: "none" },
                 }}
               >

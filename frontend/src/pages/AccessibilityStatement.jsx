@@ -59,8 +59,14 @@ export default function AccessibilityStatement() {
         <Box component="ul" sx={{ pl: 3, lineHeight: 1.7 }}>
           <li>Google Translate depends on an external Google script.</li>
           <li>Read aloud behavior depends on browser and operating system support.</li>
-          <li>Admin drag-and-drop ordering may be easier with a mouse or touch device.</li>
-          <li>Full automated accessibility testing is not yet part of the build pipeline.</li>
+          <li>
+            Admin ordering supports keyboard controls, but additional testing
+            with assistive technology is still recommended.
+          </li>
+          <li>
+            Automated Axe checks cover key public pages, but automated tools do
+            not replace manual keyboard and screen-reader testing.
+          </li>
         </Box>
 
         <Typography variant="h5" component="h2" fontWeight={700} sx={{ mt: 3 }}>

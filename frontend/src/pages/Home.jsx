@@ -17,7 +17,7 @@ export default function Home() {
     width: "100%",
     maxWidth: 360,
     minHeight: { xs: 250, sm: 280 },
-    borderRadius: 2,
+    borderRadius: 2.5,
     border: "2px solid transparent",
     transition: "all 0.25s ease",
     boxShadow: 2,
@@ -44,9 +44,9 @@ export default function Home() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          gap: 2,
+          gap: { xs: 1.5, sm: 2 },
           px: { xs: 2, sm: 3 },
-          py: { xs: 4, sm: 5 },
+          py: { xs: 3, sm: 5 },
         }}
       >
         <Typography
@@ -56,7 +56,8 @@ export default function Home() {
           fontWeight={700}
           sx={{
             textAlign: "center",
-            fontSize: { xs: "2.2rem", sm: "2.8rem", md: "3.2rem" },
+            fontSize: { xs: "2rem", sm: "2.8rem", md: "3.2rem" },
+            lineHeight: 1.15,
           }}
         >
           Welcome to Green River College
