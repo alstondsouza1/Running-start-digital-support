@@ -15,9 +15,9 @@ The system also includes an administrative dashboard that allows staff or studen
 Frontend (Vercel):  
 https://running-start-portal.vercel.app/
 
-> Note:  
-> The backend is hosted separately.  
-> Admin functionality may require local backend setup depending on deployment status.
+> Note:
+> The backend is hosted separately on Render.
+> Admin functionality requires a configured admin account and credentials.
 
 ---
 
@@ -164,7 +164,6 @@ Running-start-digital-support
 │   │   └── App.jsx
 │   └── package.json
 │
-├── REVIEW_NOTES.md
 └── README.md
 ```
 
@@ -309,14 +308,13 @@ cp .env.example .env
 
 ```sql
 CREATE DATABASE runningstart;
-
-USE runningstart;
 ```
 
-Run:
+Then configure `backend/.env` and run the migrations from the `backend`
+directory:
 
-```text
-backend/sql/faq.sql
+```bash
+npm run migrate
 ```
 
 ---
@@ -329,10 +327,12 @@ mysql -u root -p
 
 ```sql
 CREATE DATABASE runningstart;
+```
 
-USE runningstart;
+Exit MySQL, configure `backend/.env`, and run:
 
-SOURCE backend/sql/faq.sql;
+```bash
+npm run migrate
 ```
 
 ---
@@ -435,6 +435,15 @@ Goal target:
 
 - WCAG 2.1 AA compliance
 
+Survey-requested FAQ topics that still need staff verification are tracked in
+`FUTURE_FAQ_CONTENT_NOTES.md`.
+
+Operational guides:
+
+- `DOCUMENTATION_INDEX.md`
+- `DATABASE_BACKUP_AND_RESTORE.md`
+- `SECURE_AUTH_MIGRATION_PLAN.md`
+
 ---
 
 # Deployment Overview
@@ -523,11 +532,12 @@ Current protections include:
 - Password hashing with bcrypt
 - Protected admin routes
 - Environment variable configuration
+- Helmet security headers
+- Login rate limiting
 
 Future security improvements:
 
-- Rate limiting
-- Helmet middleware
+- Broader API rate limiting
 - Better input validation
 - Refresh tokens
 - Secure cookie auth
@@ -539,11 +549,11 @@ Future security improvements:
 
 - Requires JavaScript enabled
 - JWT stored in localStorage
-- No automated testing yet
+- Automated coverage is focused on key unit, backend, and browser workflows
 - Analytics currently limited to FAQ interactions, searches, and category usage
 - Accessibility improvements still ongoing
-- No rate limiting currently implemented
-- Drag-and-drop interactions in the admin dashboard are primarily mouse-based
+- Rate limiting currently focuses on admin login attempts
+- Admin ordering includes keyboard-accessible Move up and Move down controls
 
 ---
 
@@ -589,7 +599,7 @@ Potential future enhancements include:
 - AI-powered FAQ suggestions
 - Admin analytics dashboard
 - Role-based access control
-- Automated testing
+- Expanded automated and accessibility test coverage
 - Better admin UI
 - Expanded accessibility support
 - Live support/contact integration

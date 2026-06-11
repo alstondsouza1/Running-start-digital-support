@@ -33,12 +33,13 @@ export default function Categories({ categories, onSelectCategory, selectedId })
             <Box role="listitem" key={cat.id}>
               <Card
                 sx={{
-                  borderRadius: 2,
+                  borderRadius: 2.5,
                   border: isSelected
                     ? "2px solid #2c882b"
                     : "1px solid rgba(0,0,0,0.12)",
                   boxShadow: isSelected ? 4 : 1,
-                  minHeight: { xs: 120, sm: 140 },
+                  minHeight: { xs: 112, sm: 140 },
+                  overflow: "hidden",
                 }}
               >
                 <CardActionArea
@@ -73,10 +74,7 @@ export default function Categories({ categories, onSelectCategory, selectedId })
                       sx={{
                         lineHeight: 1.2,
                         fontSize: { xs: "1rem", sm: "1.15rem" },
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
+                        overflowWrap: "anywhere",
                       }}
                     >
                       {cat.name}
@@ -88,10 +86,7 @@ export default function Categories({ categories, onSelectCategory, selectedId })
                       sx={{
                         lineHeight: 1.35,
                         fontSize: { xs: "0.92rem", sm: "0.95rem" },
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
+                        overflowWrap: "anywhere",
                       }}
                     >
                       {cat.description}

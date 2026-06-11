@@ -21,12 +21,12 @@ import {
           mt: 4,
           mx: "auto",
           maxWidth: 900,
-          borderRadius: 1,
+          borderRadius: 2.5,
           boxShadow: "none",
           border: "1px solid #dddddd",
         }}
       >
-        <CardContent sx={{ p: 3 }}>
+        <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
           <Typography
             id="need-more-help-heading"
             variant="h5"
@@ -104,7 +104,7 @@ import {
         sx={{
           p: 2,
           border: "1px solid #e5e5e5",
-          borderRadius: 1,
+          borderRadius: 2,
           backgroundColor: "#ffffff",
         }}
       >

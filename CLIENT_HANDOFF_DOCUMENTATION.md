@@ -517,10 +517,11 @@ CREATE DATABASE runningstart;
 USE runningstart;
 ```
 
-Import schema:
+Configure the backend environment variables, then apply database migrations:
 
-```sql
-SOURCE faq.sql;
+```bash
+cd backend
+npm run migrate
 ```
 
 Run seed scripts:
@@ -650,18 +651,19 @@ Current protections:
 * Protected admin routes
 * Environment variables for secrets
 * SQL parameters used in queries
+* Helmet security headers
+* Login rate limiting
 
 Known concerns:
 
 * JWT is stored in localStorage
-* Rate limiting may need improvement
+* Rate limiting currently focuses on login attempts
 * Additional security hardening is recommended
 * Secrets must never be committed to GitHub
 
 Future security recommendations:
 
-* Add Helmet middleware
-* Add stronger rate limiting
+* Expand rate limiting to additional API routes where appropriate
 * Use secure HTTP-only cookies
 * Improve role-based access control
 * Add automated security checks
@@ -817,9 +819,9 @@ Before final handoff, test:
 
 Current known limitations:
 
-* Drag-and-drop accessibility is limited
+* Drag-and-drop remains available, with keyboard move controls provided as an alternative
 * JWT is stored in localStorage
-* No automated test suite yet
+* Automated test coverage is focused on key workflows
 * No advanced analytics dashboard yet
 * Some production settings may need future security hardening
 * Translation is machine-generated and may not be perfect
@@ -830,7 +832,7 @@ Current known limitations:
 
 Recommended future improvements:
 
-* Add automated tests
+* Expand automated and accessibility tests
 * Improve drag-and-drop keyboard accessibility
 * Add admin analytics dashboard
 * Add role-based access control

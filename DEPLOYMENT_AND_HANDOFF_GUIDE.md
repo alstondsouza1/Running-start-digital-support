@@ -249,10 +249,11 @@ Create database:
 CREATE DATABASE runningstart;
 ```
 
-Import schema:
+Configure the backend environment variables, then apply database migrations:
 
-```sql
-SOURCE faq.sql;
+```bash
+cd backend
+npm run migrate
 ```
 
 Run seed scripts if needed:
@@ -372,7 +373,6 @@ Analytics are used only for general usage trends and portal improvement.
 Completed:
 
 * README.md
-* REVIEW_NOTES.md
 * ACCESSIBILITY_NOTES.md
 * ANALYTICS_DOCUMENTATION.md
 * CHANGE_MANAGEMENT_PLAN.md
@@ -495,7 +495,7 @@ Potential future enhancements:
 * Accessibility usage reporting
 * Search trend reporting
 * Improved translation support
-* Automated testing
+* Expanded automated and accessibility testing
 * Enhanced accessibility tools
 * Role-based permissions
 * Automated backups

@@ -66,3 +66,5 @@ npm test
 npm run build
 npm run test:e2e
 ```
+
+The end-to-end suite includes automated Axe checks for key public pages.

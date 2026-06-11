@@ -274,14 +274,13 @@ Recommendation:
 Current known concerns:
 
 * JWT authentication currently uses browser localStorage.
-* Rate limiting has not yet been implemented.
+* Rate limiting currently focuses on administrative login attempts.
 * Additional security hardening may be beneficial as the application grows.
 * Administrative access should be periodically reviewed and updated.
 
 ### Recommendations
 
-* Add Helmet middleware.
-* Add API rate limiting.
+* Expand API rate limiting beyond login attempts.
 * Improve token handling in future versions.
 * Review administrator permissions regularly.
 * Rotate secrets when necessary.
@@ -350,7 +349,6 @@ Future maintainers should review:
 
 ```txt
 README.md
-REVIEW_NOTES.md
 ACCESSIBILITY_NOTES.md
 ANALYTICS_DOCUMENTATION.md
 CHANGE_MANAGEMENT_PLAN.md
@@ -365,7 +363,7 @@ Potential future enhancements:
 * Better admin dashboard UI
 * Full multilingual support
 * Advanced analytics dashboard
-* Automated testing
+* Expanded automated and accessibility testing
 * Better accessibility tooling
 * Role-based admin permissions
 * Accessibility usage reporting

@@ -15,12 +15,22 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 
-import { DndContext, closestCenter } from "@dnd-kit/core";
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
   arrayMove,
+  sortableKeyboardCoordinates,
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -82,7 +92,16 @@ function getAllFaqs(groupedCurrent, groupedFuture) {
   ];
 }
 
-function SortableCard({ question, onEdit, onDelete, onToggleVisibility }) {
+function SortableCard({
+  question,
+  onEdit,
+  onDelete,
+  onToggleVisibility,
+  onMoveUp,
+  onMoveDown,
+  disableMoveUp,
+  disableMoveDown,
+}) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({
       id: question.id,
@@ -116,7 +135,7 @@ function SortableCard({ question, onEdit, onDelete, onToggleVisibility }) {
         {...attributes}
         {...listeners}
         aria-describedby="drag-help-text"
-        aria-label={`Drag to reorder question: ${question.question}`}
+        aria-label={`Reorder question: ${question.question}`}
         sx={{ flex: 1, cursor: "grab", minWidth: 0 }}
       >
         <Typography sx={{ wordBreak: "break-word", fontWeight: 600 }}>
@@ -143,6 +162,24 @@ function SortableCard({ question, onEdit, onDelete, onToggleVisibility }) {
           justifyContent: { xs: "flex-start", md: "flex-end" },
         }}
       >
+        <IconButton
+          size="small"
+          onClick={onMoveUp}
+          disabled={disableMoveUp}
+          aria-label={`Move question up: ${question.question}`}
+        >
+          <KeyboardArrowUpIcon />
+        </IconButton>
+
+        <IconButton
+          size="small"
+          onClick={onMoveDown}
+          disabled={disableMoveDown}
+          aria-label={`Move question down: ${question.question}`}
+        >
+          <KeyboardArrowDownIcon />
+        </IconButton>
+
         <Button size="small" variant="outlined" onClick={() => onEdit(question)}>
           Edit
         </Button>
@@ -168,7 +205,16 @@ function SortableCard({ question, onEdit, onDelete, onToggleVisibility }) {
   );
 }
 
-function SortableCategoryCard({ category, audience, onEdit, onDelete }) {
+function SortableCategoryCard({
+  category,
+  audience,
+  onEdit,
+  onDelete,
+  onMoveUp,
+  onMoveDown,
+  disableMoveUp,
+  disableMoveDown,
+}) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({
       id: category.id,
@@ -201,7 +247,8 @@ function SortableCategoryCard({ category, audience, onEdit, onDelete }) {
       <Box
         {...attributes}
         {...listeners}
-        aria-label={`Drag to reorder category: ${category.name}`}
+        aria-describedby="category-drag-help-text"
+        aria-label={`Reorder category: ${category.name}`}
         sx={{ flex: 1, cursor: "grab", minWidth: 0 }}
       >
         <Typography sx={{ wordBreak: "break-word", fontWeight: 600 }}>
@@ -232,6 +279,24 @@ function SortableCategoryCard({ category, audience, onEdit, onDelete }) {
           justifyContent: { xs: "flex-start", md: "flex-end" },
         }}
       >
+        <IconButton
+          size="small"
+          onClick={onMoveUp}
+          disabled={disableMoveUp}
+          aria-label={`Move category up: ${category.name}`}
+        >
+          <KeyboardArrowUpIcon />
+        </IconButton>
+
+        <IconButton
+          size="small"
+          onClick={onMoveDown}
+          disabled={disableMoveDown}
+          aria-label={`Move category down: ${category.name}`}
+        >
+          <KeyboardArrowDownIcon />
+        </IconButton>
+
         <Button
           size="small"
           variant="outlined"
@@ -255,6 +320,12 @@ function SortableCategoryCard({ category, audience, onEdit, onDelete }) {
 
 export default function Admin() {
   const { isAdmin } = useAuth();
+  const sortingSensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const [view, setView] = useState("dashboard");
   const [activeTab, setActiveTab] = useState(0);
@@ -584,6 +655,33 @@ export default function Admin() {
     }
   }
 
+  async function handleFaqMove(catId, questionId, direction) {
+    if (searchTerm.trim()) {
+      showMessage("Clear search before reordering FAQs.", "info");
+      return;
+    }
+
+    const currentGroups = activeTab === 0 ? groupedCurrent : groupedFuture;
+    const list = currentGroups[catId] || [];
+    const oldIndex = list.findIndex(
+      (question) => String(question.id) === String(questionId)
+    );
+    const newIndex = oldIndex + direction;
+
+    if (oldIndex < 0 || newIndex < 0 || newIndex >= list.length) return;
+
+    const reordered = arrayMove(list, oldIndex, newIndex);
+
+    if (activeTab === 0) {
+      setGroupedCurrent((prev) => ({ ...prev, [catId]: reordered }));
+    } else {
+      setGroupedFuture((prev) => ({ ...prev, [catId]: reordered }));
+    }
+
+    const success = await saveOrderToBackend(catId, reordered);
+    if (!success) loadFaqs();
+  }
+
   async function saveCategoryOrderToBackend(audience, reorderedList) {
     const token = localStorage.getItem("token");
 
@@ -646,6 +744,22 @@ export default function Admin() {
     if (!success) {
       loadCategories();
     }
+  }
+
+  async function handleCategoryMove(audience, categoryId, direction) {
+    const list = categories[audience] || [];
+    const oldIndex = list.findIndex(
+      (category) => String(category.id) === String(categoryId)
+    );
+    const newIndex = oldIndex + direction;
+
+    if (oldIndex < 0 || newIndex < 0 || newIndex >= list.length) return;
+
+    const reordered = arrayMove(list, oldIndex, newIndex);
+    setCategories((prev) => ({ ...prev, [audience]: reordered }));
+
+    const success = await saveCategoryOrderToBackend(audience, reordered);
+    if (!success) loadCategories();
   }
 
   async function handleDeleteCategory(audience, id) {
@@ -733,17 +847,16 @@ export default function Admin() {
 
   if (view === "manageCategories") {
     return (
-      <Box sx={{ p: { xs: 2, sm: 3 }, pt: { xs: 12, sm: 13 } }}>
+      <Box sx={{ p: { xs: 1.5, sm: 3 } }}>
         <Box
           sx={{
-            position: "fixed",
-            top: { xs: 56, sm: 64 },
-            left: 0,
-            right: 0,
-            zIndex: 3000,
             backgroundColor: "#ffffff",
-            borderBottom: "1px solid #d7d7d7",
+            border: "1px solid #d7d7d7",
+            borderRadius: 2.5,
             boxShadow: "0 2px 5px rgba(0,0,0,0.08)",
+            maxWidth: "1200px",
+            mx: "auto",
+            mb: 3,
           }}
         >
           <Box
@@ -753,7 +866,7 @@ export default function Admin() {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              gap: 2,
+              gap: { xs: 1.5, sm: 2 },
               flexWrap: "wrap",
             }}
           >
@@ -766,6 +879,7 @@ export default function Admin() {
                   fontWeight: 700,
                   color: "#222",
                   lineHeight: 1.1,
+                  fontSize: { xs: "1.7rem", sm: "2.125rem" },
                 }}
               >
                 Manage Categories
@@ -776,7 +890,17 @@ export default function Admin() {
               </Typography>
             </Box>
 
-            <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+            <Box
+              sx={{
+                display: "flex",
+                gap: 1.25,
+                flexWrap: "wrap",
+                width: { xs: "100%", sm: "auto" },
+                "& .MuiButton-root": {
+                  flex: { xs: "1 1 150px", sm: "0 0 auto" },
+                },
+              }}
+            >
               <Button
                 variant="outlined"
                 onClick={() => setView("dashboard")}
@@ -819,14 +943,24 @@ export default function Admin() {
         {["current", "future"].map((audience) => (
           <Box
             key={audience}
-            sx={{ mt: 4, maxWidth: "1200px", mx: "auto", width: "100%" }}
+            sx={{ mt: 3, maxWidth: "1200px", mx: "auto", width: "100%" }}
           >
             <Typography variant="h6" gutterBottom>
               {audience === "current" ? "Current Students" : "Future Students"}
             </Typography>
 
             <Typography color="text.secondary" sx={{ mb: 1 }}>
-              Drag categories to reorder them.
+              Drag categories to reorder them, or use the arrow buttons.
+            </Typography>
+
+            <Typography
+              id="category-drag-help-text"
+              color="text.secondary"
+              variant="body2"
+              sx={{ mb: 1 }}
+            >
+              Keyboard users can focus the Move up or Move down button and
+              press Enter or Space.
             </Typography>
 
             <Box
@@ -846,8 +980,16 @@ export default function Admin() {
               <Typography>Description</Typography>
             </Box>
 
-            <Paper sx={{ p: { xs: 1.25, sm: 2 }, mt: 1, overflow: "hidden" }}>
+            <Paper
+              sx={{
+                p: { xs: 1.25, sm: 2 },
+                mt: 1,
+                overflow: "hidden",
+                borderRadius: 2.5,
+              }}
+            >
               <DndContext
+                sensors={sortingSensors}
                 collisionDetection={closestCenter}
                 onDragEnd={(evt) => handleCategoryDragEnd(evt, audience)}
               >
@@ -861,11 +1003,19 @@ export default function Admin() {
                         No categories yet.
                       </Typography>
                     ) : (
-                      (categories[audience] || []).map((cat) => (
+                      (categories[audience] || []).map((cat, index, list) => (
                         <SortableCategoryCard
                           key={cat.id}
                           category={cat}
                           audience={audience}
+                          onMoveUp={() =>
+                            handleCategoryMove(audience, cat.id, -1)
+                          }
+                          onMoveDown={() =>
+                            handleCategoryMove(audience, cat.id, 1)
+                          }
+                          disableMoveUp={index === 0}
+                          disableMoveDown={index === list.length - 1}
                           onEdit={(categoryToEdit) => {
                             setEditingCategory(categoryToEdit);
                             setView("addCategory");
@@ -948,17 +1098,16 @@ export default function Admin() {
   }
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 }, pt: { xs: 12, sm: 13 } }}>
+    <Box sx={{ p: { xs: 1.5, sm: 3 } }}>
       <Box
         sx={{
-          position: "fixed",
-          top: { xs: 56, sm: 64 },
-          left: 0,
-          right: 0,
-          zIndex: 3000,
           backgroundColor: "#ffffff",
-          borderBottom: "1px solid #d7d7d7",
+          border: "1px solid #d7d7d7",
+          borderRadius: 2.5,
           boxShadow: "0 2px 5px rgba(0,0,0,0.08)",
+          maxWidth: "1200px",
+          mx: "auto",
+          mb: 3,
         }}
       >
         <Box
@@ -968,7 +1117,7 @@ export default function Admin() {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            gap: 2,
+            gap: { xs: 1.5, sm: 2 },
             flexWrap: "wrap",
           }}
         >
@@ -981,6 +1130,7 @@ export default function Admin() {
                 fontWeight: 700,
                 color: "#222",
                 lineHeight: 1.1,
+                fontSize: { xs: "1.7rem", sm: "2.125rem" },
               }}
             >
               Admin Dashboard
@@ -991,7 +1141,17 @@ export default function Admin() {
             </Typography>
           </Box>
 
-          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1.25,
+              flexWrap: "wrap",
+              width: { xs: "100%", sm: "auto" },
+              "& .MuiButton-root": {
+                flex: { xs: "1 1 150px", sm: "0 0 auto" },
+              },
+            }}
+          >
             <Button
               variant="outlined"
               onClick={() => setView("manageCategories")}
@@ -1035,13 +1195,13 @@ export default function Admin() {
         sx={{
           maxWidth: "1200px",
           mx: "auto",
-          mt: 5,
+          mt: 0,
           display: "grid",
           gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(4, 1fr)" },
           gap: 2,
         }}
       >
-        <Paper sx={{ p: 2, textAlign: "center" }}>
+        <Paper sx={{ p: 2, textAlign: "center", borderRadius: 2.5 }}>
           <Typography variant="h5" fontWeight={700}>
             {currentTotal}
           </Typography>
@@ -1050,7 +1210,7 @@ export default function Admin() {
           </Typography>
         </Paper>
 
-        <Paper sx={{ p: 2, textAlign: "center" }}>
+        <Paper sx={{ p: 2, textAlign: "center", borderRadius: 2.5 }}>
           <Typography variant="h5" fontWeight={700}>
             {futureTotal}
           </Typography>
@@ -1059,7 +1219,7 @@ export default function Admin() {
           </Typography>
         </Paper>
 
-        <Paper sx={{ p: 2, textAlign: "center" }}>
+        <Paper sx={{ p: 2, textAlign: "center", borderRadius: 2.5 }}>
           <Typography variant="h5" fontWeight={700}>
             {categoryTotal}
           </Typography>
@@ -1068,7 +1228,7 @@ export default function Admin() {
           </Typography>
         </Paper>
 
-        <Paper sx={{ p: 2, textAlign: "center" }}>
+        <Paper sx={{ p: 2, textAlign: "center", borderRadius: 2.5 }}>
           <Typography variant="h6" fontWeight={700}>
             {lastUpdated}
           </Typography>
@@ -1129,8 +1289,10 @@ export default function Admin() {
         color="text.secondary"
         sx={{ mt: 2, mb: 1, textAlign: "center" }}
       >
-        Drag and drop questions to reorder them within each category. Edit and
-        Delete buttons are available on each item.
+        Drag questions to reorder them within each category, or use each
+        question's Move up and Move down buttons. Keyboard users can focus a
+        move button and press Enter or Space. Edit and Delete buttons are
+        available on each item.
       </Typography>
 
       {loadingFaqs && (
@@ -1189,8 +1351,16 @@ export default function Admin() {
                 <Typography>Type</Typography>
               </Box>
 
-              <Paper sx={{ p: { xs: 1.25, sm: 2 }, mt: 1, overflow: "hidden" }}>
+              <Paper
+                sx={{
+                  p: { xs: 1.25, sm: 2 },
+                  mt: 1,
+                  overflow: "hidden",
+                  borderRadius: 2.5,
+                }}
+              >
                 <DndContext
+                  sensors={sortingSensors}
                   collisionDetection={closestCenter}
                   onDragEnd={(evt) => handleDragEnd(evt, cat.id)}
                 >
@@ -1200,10 +1370,14 @@ export default function Admin() {
                   >
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                       {questions.length > 0 ? (
-                        questions.map((q) => (
+                        questions.map((q, index) => (
                           <SortableCard
                             key={q.id}
                             question={q}
+                            onMoveUp={() => handleFaqMove(cat.id, q.id, -1)}
+                            onMoveDown={() => handleFaqMove(cat.id, q.id, 1)}
+                            disableMoveUp={index === 0}
+                            disableMoveDown={index === questions.length - 1}
                             onEdit={(faq) => {
                               setEditingFaq(faq);
                               setView("addFaq");
