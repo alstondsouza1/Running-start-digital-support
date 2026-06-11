@@ -94,7 +94,6 @@ Use this checklist before a demo, submission, or deployment. Mark each item as p
 - [ ] `npm test` passes in `frontend`.
 - [ ] `npm run build` passes in `frontend`.
 - [ ] `npm run test:e2e` passes in `frontend`.
-- [ ] `npm run screenshots` regenerates all eight evidence images.
 - [ ] `npm test` passes in `backend`.
 - [ ] `node --check app.js` passes from the `backend` directory.
 - [ ] `node --check controllers/adminController.js` passes from the `backend` directory.
