@@ -12,6 +12,7 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import { ADMIN_SESSION_MESSAGE_KEY, apiUrl } from "../../utils/api";
+import { trackLoginAttempt, trackLoginSuccess } from "../../utils/analytics";
 
 export default function AdminLogin() {
   const [username, setUsername] = useState("");
@@ -43,6 +44,8 @@ export default function AdminLogin() {
     }
 
     setLoading(true);
+    // Analytics: admin login attempt (no credentials captured).
+    trackLoginAttempt();
 
     try {
       const response = await fetch(apiUrl("/auth/login"), {
@@ -61,6 +64,8 @@ export default function AdminLogin() {
       }
 
       login(data.token);
+      // Analytics: successful admin login.
+      trackLoginSuccess();
       setMessage("Login successful. Redirecting...");
 
       setTimeout(() => {

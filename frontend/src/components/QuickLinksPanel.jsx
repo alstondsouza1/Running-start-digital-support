@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import LaunchIcon from "@mui/icons-material/Launch";
+import { trackExternalLink } from "../utils/analytics";
 
 const studentLinks = [
   { label: "My Green River", href: "https://my.greenriver.edu/" },
@@ -42,6 +43,9 @@ function QuickLinkItem({ label, href }) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={() =>
+        trackExternalLink({ label, url: href, location: "quick_links" })
+      }
       sx={{
         px: 0,
         py: 0.75,

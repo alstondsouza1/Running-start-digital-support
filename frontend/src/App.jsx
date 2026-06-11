@@ -15,6 +15,7 @@ import Footer from "./components/Footer";
 import SkipLink from "./components/SkipLink";
 import AccessibilityBar from "./components/AccessibilityBar";
 import { prefetchStudentData } from "./utils/studentData";
+import { trackPageVisit } from "./utils/analytics";
 
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 
@@ -59,7 +60,9 @@ function RouteAnnouncer() {
 
   useEffect(() => {
     document.title = `${pageTitle} | Running Start Digital Portal`;
-  }, [pageTitle]);
+    // Analytics: record each page visit (named so Current/Future/Admin are distinct).
+    trackPageVisit({ page: pageTitle, path: location.pathname });
+  }, [pageTitle, location.pathname]);
 
   return (
     <Box aria-live="polite" aria-atomic="true" sx={srOnlyStyles}>

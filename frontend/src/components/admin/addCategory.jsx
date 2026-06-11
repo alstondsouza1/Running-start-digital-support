@@ -8,6 +8,7 @@ import {
   Alert,
 } from "@mui/material";
 import { apiUrl, handleAuthErrorResponse } from "../../utils/api";
+import { trackFormSubmit } from "../../utils/analytics";
 
 function createEmptyForm() {
   return { audience: "", name: "", description: "" };
@@ -106,6 +107,13 @@ export default function AddCategoryForm({
         handleAuthErrorResponse(response);
         throw new Error(data.error || data.message || "Request failed");
       }
+
+      // Analytics: successful category form submission.
+      trackFormSubmit({
+        form: "category",
+        mode: mode === "edit" ? "edit" : "create",
+        audience: payload.audience,
+      });
 
       setFormSuccess(
         mode === "edit"

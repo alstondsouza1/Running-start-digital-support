@@ -1,5 +1,6 @@
 import { Button } from "@mui/material";
 import FeedbackIcon from "@mui/icons-material/Feedback";
+import { trackFeedbackOpen } from "../utils/analytics";
 
 export default function FeedbackButton() {
   return (
@@ -8,6 +9,7 @@ export default function FeedbackButton() {
       href="https://docs.google.com/forms/d/e/1FAIpQLScN1mQvZYCjWOsUCj7B-RyMK16dd6ad2I51pHDZ0cWk2_6v9Q/viewform?usp=dialog"
       target="_blank"
       rel="noopener noreferrer"
+      onClick={() => trackFeedbackOpen({ location: "home_floating_button" })}
       variant="outlined"
       size="small"
       startIcon={<FeedbackIcon />}

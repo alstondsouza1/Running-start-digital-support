@@ -131,14 +131,16 @@ export default function StudentFAQPage({
     if (!isSearching) return;
 
     const timeoutId = window.setTimeout(() => {
+      // Analytics: FAQ search (debounced).
       trackFaqSearch({
         searchTerm,
         resultCount: visibleQuestions.length,
+        audience,
       });
     }, 500);
 
     return () => window.clearTimeout(timeoutId);
-  }, [isSearching, searchTerm, visibleQuestions.length]);
+  }, [isSearching, searchTerm, visibleQuestions.length, audience]);
 
   function handleCategorySelect(categoryId) {
     const nextCategoryId = selectedCategoryId === categoryId ? null : categoryId;
@@ -168,10 +170,12 @@ export default function StudentFAQPage({
       setExpandedId(isExpanded ? question.id : false);
 
       if (isExpanded) {
+        // Analytics: FAQ question opened.
         trackQuestionClick({
           question: question.question,
           categoryId: question.type,
           categoryName: category?.name || "Unknown category",
+          audience,
           source: isSearching ? "search" : "category",
         });
       }
